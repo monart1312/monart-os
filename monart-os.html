@@ -1782,18 +1782,24 @@ async function sbGet(table, id) {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
     });
     const data = await r.json();
-    return data[0] || null;
-  } catch(e) { return null; }
+    console.log('[SYNC] sbGet', table, id, '→', r.status, data);
+    return Array.isArray(data) ? (data[0] || null) : null;
+  } catch(e) {
+    console.error('[SYNC] sbGet error:', e);
+    return null;
+  }
 }
 
 async function sbUpsert(table, row) {
   try {
-    await fetch(`${SB_URL}/rest/v1/${table}`, {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(row)
     });
-  } catch(e) { console.warn('Supabase save failed, using localStorage fallback'); }
+    console.log('[SYNC] sbUpsert', table, '→', r.status);
+    if(!r.ok) console.error('[SYNC] upsert failed:', await r.text());
+  } catch(e) { console.error('[SYNC] sbUpsert error:', e); }
 }
 
 async function sbGetAllTasks() {
