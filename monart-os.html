@@ -1852,8 +1852,8 @@ async function syncToCloud() {
   });
 }
 
-async function loadFromCloud() {
-  showToast('☁️ Sincronizando...');
+async function loadFromCloud(silent = false) {
+  if(!silent) showToast('☁️ Sincronizando...');
   const remote = await sbGet('habits', 'sergi');
   if(remote) {
     const localUpdated = ST.updated_at || '2000-01-01';
@@ -1886,7 +1886,7 @@ async function loadFromCloud() {
 
   updateAll();
   renderTasks();
-  showToast('✅ Sincronizado');
+  if(!silent) showToast('✅ Sincronizado');
 }
 
 // ══════════════════════════════════
@@ -2942,7 +2942,7 @@ async function init() {
 }
 
 init();
-setInterval(() => loadFromCloud(), 30000);
+setInterval(() => loadFromCloud(true), 30000);
 </script>
 
 <!-- ══ VOICE PANEL ══ -->
