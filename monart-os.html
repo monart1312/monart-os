@@ -620,48 +620,58 @@ body::after {
 }
 
 .cal-cell {
-  aspect-ratio: 1;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-start;
-  padding: 6px 4px 4px;
+  padding: 5px 4px 4px;
   cursor: pointer;
   transition: all .15s;
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   background: var(--s1);
-  min-height: 52px;
+  min-height: 72px;
+  overflow: hidden;
+  gap: 2px;
 }
 
-.cal-cell:hover { border-color: var(--border2); }
-.cal-cell.today { border-color: var(--accent); background: rgba(108,99,255,.08); }
-.cal-cell.other-month .cal-num { color: var(--muted); }
-.cal-cell.has-events { border-color: var(--border2); }
+.cal-cell:hover { border-color: var(--border3); background: var(--s2); }
+.cal-cell.today { border-color: var(--accent) !important; background: rgba(123,111,255,.1) !important; box-shadow: 0 0 0 1px rgba(123,111,255,.3); }
+.cal-cell.selected { border-color: var(--gold) !important; background: rgba(255,204,0,.06) !important; }
+.cal-cell.other-month { opacity: .35; }
 
 .cal-num {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   font-family: var(--fm);
+  width: 100%;
+  text-align: center;
+  padding-bottom: 3px;
+  color: var(--text);
 }
 
-.cal-dots {
-  display: flex;
-  gap: 2px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 3px;
+.cal-cell.other-month .cal-num { color: var(--muted); }
+
+.cal-ev-chip {
+  display: block;
+  width: 100%;
+  font-family: var(--fm);
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  letter-spacing: 0;
 }
 
-.cal-dot {
-  width: 4px; height: 4px;
-  border-radius: 50%;
-}
-
-.dot-blue { background: var(--cyan); }
-.dot-green { background: var(--green); }
-.dot-pink { background: var(--accent2); }
-.dot-gold { background: var(--gold); }
+.chip-despinsage { background: rgba(0,212,255,0.2); color: #00d4ff; border-left: 2px solid #00d4ff; }
+.chip-personal   { background: rgba(0,245,160,0.2); color: #00f5a0; border-left: 2px solid #00f5a0; }
+.chip-cumple     { background: rgba(255,110,180,0.2); color: #ff6eb4; border-left: 2px solid #ff6eb4; }
+.chip-work       { background: rgba(255,204,0,0.2);  color: #ffcc00; border-left: 2px solid #ffcc00; }
+.chip-span       { background: rgba(123,111,255,0.15); color: #9b8fff; border-left: 2px solid #7b6fff; opacity: .7; }
 
 .event-list { margin-top: 16px; }
 
@@ -920,6 +930,7 @@ body::after {
 .atab:nth-child(4).active { background: #00d4ff !important; border-color: #00d4ff !important; color: #000 !important; }
 .atab:nth-child(5).active { background: #00f5a0 !important; border-color: #00f5a0 !important; color: #000 !important; }
 .atab:nth-child(6).active { background: #ff6eb4 !important; border-color: #ff6eb4 !important; }
+.atab:nth-child(7).active { background: #f5a623 !important; border-color: #f5a623 !important; }
 
 /* Calendar today highlight */
 .cal-cell.today {
@@ -1000,6 +1011,406 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   z-index: 1;
 }
 
+
+/* ── RPG HERO CARD ── */
+.rpg-hero-card {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.rpg-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #7b6fff, #00f5a0);
+}
+
+.rpg-scene {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#pixelCanvas {
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: #04040a;
+}
+
+.rpg-stats-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rpg-pct {
+  font-family: var(--fm);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.rpg-done {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--muted2);
+  letter-spacing: 2px;
+}
+
+.rpg-lvl-name {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 3px;
+  margin-top: 4px;
+}
+
+.rpg-xp-wrap {
+  background: var(--s3);
+  border-radius: 3px;
+  height: 6px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.rpg-xp-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 6px rgba(123,111,255,.5);
+}
+
+.rpg-xp-lbl {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+/* ── SCHEDULE LIST ── */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sched-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all .15s;
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+
+.sched-item:active { transform: scale(.98); }
+
+.sched-item.done {
+  opacity: .5;
+}
+
+.sched-item.done .sched-name {
+  text-decoration: line-through;
+}
+
+/* Color por categoría */
+.sched-item.cat-green  { border-left-color: #00f5a0; }
+.sched-item.cat-cyan   { border-left-color: #00d4ff; }
+.sched-item.cat-purple { border-left-color: #7b6fff; }
+.sched-item.cat-gold   { border-left-color: #ffcc00; }
+.sched-item.cat-pink   { border-left-color: #ff6eb4; }
+
+.sched-item.cat-green.done  { border-left-color: #00f5a040; }
+.sched-item.cat-cyan.done   { border-left-color: #00d4ff40; }
+.sched-item.cat-purple.done { border-left-color: #7b6fff40; }
+.sched-item.cat-gold.done   { border-left-color: #ffcc0040; }
+.sched-item.cat-pink.done   { border-left-color: #ff6eb440; }
+
+.sched-time {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--muted2);
+  width: 44px;
+  flex-shrink: 0;
+}
+
+.sched-tag {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.cat-green  .sched-tag { color: #00f5a0; }
+.cat-cyan   .sched-tag { color: #00d4ff; }
+.cat-purple .sched-tag { color: #7b6fff; }
+.cat-gold   .sched-tag { color: #ffcc00; }
+.cat-pink   .sched-tag { color: #ff6eb4; }
+
+.sched-info { flex: 1; }
+
+.sched-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sched-sub {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--muted2);
+  margin-top: 1px;
+}
+
+.sched-xp {
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.sched-item.done .sched-xp { color: var(--gold); }
+
+.sched-check {
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  transition: all .2s;
+}
+
+.sched-item.done .sched-check {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+}
+
+.sched-divider {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 6px 0 2px 4px;
+  margin-top: 4px;
+}
+
+
+/* ── RPG TABS ── */
+.rpg-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  background: var(--s2);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.rpg-tab {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted2);
+  font-family: var(--fm);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.rpg-tab.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── WEEK PLAN ── */
+.week-plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-top: 8px;
+}
+
+.plan-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--green));
+  border: none;
+  color: white;
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.week-prio-card {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.week-prio-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.week-prio-item:last-child { border-bottom: none; }
+
+.prio-num {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--muted2);
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.prio-area-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── WEEK GRID ── */
+.week-grid-wrap {
+  overflow-x: auto;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+}
+
+.week-grid-wrap::-webkit-scrollbar { height: 3px; }
+.week-grid-wrap::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.week-grid {
+  display: grid;
+  grid-template-columns: 52px repeat(7, minmax(100px, 1fr));
+  min-width: 752px;
+  background: var(--s1);
+}
+
+.wg-header {
+  padding: 8px 6px;
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  border-bottom: 1px solid var(--border2);
+  border-right: 1px solid var(--border);
+  color: var(--muted2);
+}
+
+.wg-header.today-col {
+  color: var(--accent);
+  background: rgba(123,111,255,.06);
+}
+
+.wg-time {
+  padding: 6px 4px;
+  font-family: var(--fm);
+  font-size: 8px;
+  color: var(--muted);
+  text-align: right;
+  border-right: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border);
+  background: var(--s2);
+}
+
+.wg-cell {
+  padding: 3px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  min-height: 40px;
+  background: var(--s1);
+  vertical-align: top;
+}
+
+.wg-cell.today-col { background: rgba(123,111,255,.03); }
+
+.wg-block {
+  border-radius: 5px;
+  padding: 3px 5px;
+  margin-bottom: 2px;
+  font-family: var(--fm);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: default;
+}
+
+.wg-block.fixed   { background: rgba(123,111,255,.15); color: #9b8fff; }
+.wg-block.work    { background: rgba(123,111,255,.2);  color: #7b6fff; }
+.wg-block.green   { background: rgba(0,245,160,.12);   color: #00f5a0; }
+.wg-block.cyan    { background: rgba(0,212,255,.12);   color: #00d4ff; }
+.wg-block.gold    { background: rgba(255,204,0,.12);   color: #ffcc00; }
+.wg-block.pink    { background: rgba(255,110,180,.12); color: #ff6eb4; }
+.wg-block.event   { background: rgba(255,204,0,.2);    color: #ffcc00; border-left: 2px solid #ffcc00; }
+.wg-block.despins { background: rgba(0,212,255,.2);    color: #00d4ff; border-left: 2px solid #00d4ff; }
+
+.week-events-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.week-ev-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.week-ev-item:last-child { border-bottom: none; }
+.week-ev-day { font-family: var(--fm); font-size: 10px; color: var(--muted2); width: 40px; flex-shrink: 0; }
+.week-ev-name { flex: 1; font-weight: 600; }
+.week-ev-tag { font-family: var(--fm); font-size: 8px; padding: 2px 6px; border-radius: 5px; }
+
+
+/* ── VOICE ── */
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity:1; }
+  50% { transform: scale(1.4); opacity:.6; }
+}
+.listening #voicePulse { animation: pulse .8s infinite; background: var(--accent2) !important; }
+.nav-btn.voice-active { background: rgba(255,77,109,.15) !important; color: var(--accent2) !important; border-color: var(--accent2) !important; }
+
 </style>
 </head>
 <body>
@@ -1041,6 +1452,10 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <span class="nav-label">LOG</span>
   </button>
   <div class="nav-spacer"></div>
+  <button class="nav-btn" id="voiceBtn" onclick="toggleVoice()" title="Voz">
+    <span class="nav-icon" style="font-family:var(--fm);font-size:14px;font-weight:700" id="voiceIcon">🎤</span>
+    <span class="nav-label">VOZ</span>
+  </button>
   <button class="nav-btn" onclick="loadFromCloud()" title="Sincronizar">
     <span class="nav-icon" style="font-family:var(--fm);font-size:12px;font-weight:700">↑↓</span>
     <span class="nav-label">SYNC</span>
@@ -1115,53 +1530,76 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 <!-- ══ PAGE: HABITS ══ -->
 <div class="page" id="page-habits">
+
+  <!-- HEADER -->
   <div class="page-header">
     <div>
-      <div class="page-title">Life Reset RPG</div>
+      <div class="page-title">Life Reset</div>
       <div class="page-sub" id="hab-day-sub">Día 1 de 66</div>
     </div>
-    <div class="chip" id="hab-streak-chip">⬡ 0 DÍAS</div>
+    <div class="chip" id="hab-streak-chip">🔥 0 días</div>
   </div>
 
-  <div class="progress-ring-wrap">
-    <div class="progress-ring-inner">
-      <svg width="120" height="120" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r="52" fill="none" stroke="#1e1e30" stroke-width="8"/>
-        <circle id="ring-circle" cx="60" cy="60" r="52" fill="none" stroke="url(#rg)" stroke-width="8"
-          stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327"
-          transform="rotate(-90 60 60)" style="transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)"/>
-        <defs>
-          <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#6c63ff"/>
-            <stop offset="100%" stop-color="#06d6a0"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <div class="ring-label">
-        <div class="ring-pct" id="ring-pct">0%</div>
-        <div class="ring-sub" id="ring-sub">0/11</div>
+  <!-- TABS DÍA / SEMANA -->
+  <div class="rpg-tabs">
+    <button class="rpg-tab active" id="tab-dia" onclick="switchRpgTab('dia')">DÍA</button>
+    <button class="rpg-tab" id="tab-semana" onclick="switchRpgTab('semana')">SEMANA</button>
+  </div>
+
+  <div id="rpg-dia-content">
+  <!-- PIXEL CHARACTER PROGRESS -->
+  <div class="rpg-hero-card">
+    <div class="rpg-scene">
+      <canvas id="pixelCanvas" width="280" height="100"></canvas>
+      <div class="rpg-stats-col">
+        <div class="rpg-pct" id="ring-pct">0%</div>
+        <div class="rpg-done" id="ring-sub">0 / 11</div>
+        <div class="rpg-lvl-name" id="rpg-lvl-name">INITIATE</div>
+        <div class="rpg-xp-wrap">
+          <div class="rpg-xp-bar" id="rpg-xp-fill" style="width:0%"></div>
+        </div>
+        <div class="rpg-xp-lbl" id="rpg-xp-lbl">0 XP</div>
       </div>
     </div>
   </div>
 
-  <div style="font-size:10px;font-family:var(--fm);color:var(--green);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;border-left:2px solid var(--green);padding-left:10px">◈ FÍSICO · SALUD</div>
-  <div class="habit-item hc-green" id="hh-paseo-m" onclick="toggleH('paseo-m',15)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--green)">↑AM</div><div class="h-info"><div class="h-name">Paseo mañana</div><div class="h-sub">20 min · 10:00h</div></div><div class="h-xp">+15XP</div></div>
-  <div class="habit-item hc-green" id="hh-paseo-d" onclick="toggleH('paseo-d',15)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--green)">⬡PM</div><div class="h-info"><div class="h-name">Paseo mediodía</div><div class="h-sub">1h · 13:00h</div></div><div class="h-xp">+15XP</div></div>
-  <div class="habit-item hc-green" id="hh-paseo-n" onclick="toggleH('paseo-n',15)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--green)">↓PM</div><div class="h-info"><div class="h-name">Paseo noche</div><div class="h-sub">40 min · 23:00h</div></div><div class="h-xp">+15XP</div></div>
-  <div class="habit-item hc-blue" id="hh-entreno" onclick="toggleH('entreno',20)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--cyan)">▲FX</div><div class="h-info"><div class="h-name">Entreno / Estiramientos</div><div class="h-sub">11:30h · L/M/V entreno · M/J/S estira</div></div><div class="h-xp">+20XP</div></div>
-  <div class="habit-item hc-blue" id="hh-agua" onclick="toggleH('agua',10)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--cyan)">◈H2O</div><div class="h-info"><div class="h-name">2L de agua</div><div class="h-sub">Hidratación durante el día</div></div><div class="h-xp">+10XP</div></div>
-
-  <div style="font-size:10px;font-family:var(--fm);color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin:14px 0 10px;border-left:2px solid var(--accent);padding-left:10px">⬡ MENTE · TRABAJO</div>
-  <div class="habit-item hc-purple" id="hh-trabajo1" onclick="toggleH('trabajo1',25)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--accent)">▶WRK</div><div class="h-info"><div class="h-name">Trabajo profundo — Bloque 1</div><div class="h-sub">90 min · 10:30h · Sin distracciones</div></div><div class="h-xp">+25XP</div></div>
-  <div class="habit-item hc-purple" id="hh-trabajo2" onclick="toggleH('trabajo2',25)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--accent)">▶WRK</div><div class="h-info"><div class="h-name">Trabajo profundo — Bloque 2</div><div class="h-sub">90 min · 15:30h · Cerrar una tarea</div></div><div class="h-xp">+25XP</div></div>
-  <div class="habit-item hc-gold" id="hh-creativo" onclick="toggleH('creativo',25)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--gold)">◈ART</div><div class="h-info"><div class="h-name">Bloque creativo MONART</div><div class="h-sub">90 min · 17:20h · Contenido / marca</div></div><div class="h-xp">+25XP</div></div>
-
-  <div style="font-size:10px;font-family:var(--fm);color:var(--pink);letter-spacing:3px;text-transform:uppercase;margin:14px 0 10px;border-left:2px solid var(--pink);padding-left:10px">▦ RUTINA · DESCANSO</div>
-  <div class="habit-item hc-pink" id="hh-windown" onclick="toggleH('windown',15)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--pink)">⊘OFF</div><div class="h-info"><div class="h-name">Wind down</div><div class="h-sub">00:30h · Sin móvil · Preparar dormir</div></div><div class="h-xp">+15XP</div></div>
-  <div class="habit-item hc-pink" id="hh-dormir" onclick="toggleH('dormir',20)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--pink)">▼ZZZ</div><div class="h-info"><div class="h-name">En cama antes de la 1h</div><div class="h-sub">Objetivo: respetar el horario de sueño</div></div><div class="h-xp">+20XP</div></div>
-  <div class="habit-item hc-gold" id="hh-notion" onclick="toggleH('notion',10)"><div class="h-check"></div><div class="h-ico" style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--gold)">⬡CHK</div><div class="h-info"><div class="h-name">Check diario Notion</div><div class="h-sub">5 min · Revisar Daily Focus + tareas</div></div><div class="h-xp">+10XP</div></div>
+  <!-- HORARIO DEL DÍA -->
+  <div class="schedule-list" id="scheduleList">
+    <!-- generado por JS -->
+  </div>
 
   <button class="next-day-btn" onclick="nextDay()">⏭ CERRAR DÍA Y PASAR AL SIGUIENTE</button>
+  </div><!-- /rpg-dia-content -->
+</div>
+
+<!-- ══ SEMANA VIEW (dentro de habits) ══ -->
+<div id="rpg-semana-view" style="display:none;padding:0 24px 24px;">
+
+  <div class="week-plan-header">
+    <div>
+      <div class="page-title" style="font-size:18px" id="week-title">Semana actual</div>
+      <div class="page-sub" id="week-sub">Planifica tus prioridades</div>
+    </div>
+    <button class="plan-btn" onclick="autoplanWeek()">⚡ PLANIFICAR</button>
+  </div>
+
+  <!-- Prioridades de la semana -->
+  <div class="week-prio-card" id="weekPrioCard">
+    <div class="card-title">🎯 Prioridades esta semana</div>
+    <div id="weekPrioList"></div>
+  </div>
+
+  <!-- Grid semanal -->
+  <div class="week-grid-wrap">
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
+
+  <!-- Eventos de la semana -->
+  <div class="week-events-card">
+    <div class="card-title">📅 Entregas y eventos</div>
+    <div id="weekEvents"></div>
+  </div>
+
 </div>
 
 <!-- ══ PAGE: TASKS ══ -->
@@ -1180,6 +1618,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <button class="atab" onclick="filterArea('despinsage',this)">▦ DESPINS</button>
     <button class="atab" onclick="filterArea('casa',this)">◫ CASA</button>
     <button class="atab" onclick="filterArea('yo',this)">⌘ YO</button>
+    <button class="atab" onclick="filterArea('estudios',this)">◭ ESTUDIOS</button>
   </div>
 
   <div id="task-list"></div>
@@ -1266,8 +1705,8 @@ const LEVELS = [
   {min:2200, name:'Legendary Creator'},
 ];
 
-const ALL_HABITS = ['paseo-m','paseo-d','paseo-n','entreno','agua','trabajo1','trabajo2','creativo','windown','dormir','notion'];
-const XP_MAP = {'paseo-m':15,'paseo-d':15,'paseo-n':15,'entreno':20,'agua':10,'trabajo1':25,'trabajo2':25,'creativo':25,'windown':15,'dormir':20,'notion':10};
+const ALL_HABITS = ['notion','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4','windown','dormir'];
+const XP_MAP = {'notion':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5,'windown':15,'dormir':20};
 
 const EVENTS = [
   {d:'2026-05-07',n:'Psicólogo 13:00h',t:'personal'},
@@ -1317,6 +1756,12 @@ let TASKS = [
   {id:'t22',name:'Arreglar Dientes',area:'yo',prio:'alta',done:false},
   {id:'t23',name:'Pieza Delapu',area:'yo',prio:'prog',done:false},
   {id:'t24',name:'Return Climbing',area:'yo',prio:'alta',done:false},
+  {id:'e1',name:'Study Houdini — simulaciones FX',area:'estudios',prio:'alta',done:false},
+  {id:'e2',name:'Blender — rigging y animación de personajes',area:'estudios',prio:'alta',done:false},
+  {id:'e3',name:'IA generativa — flujos con ComfyUI',area:'estudios',prio:'alta',done:false},
+  {id:'e4',name:'Higgsfield — dominar generación de vídeo',area:'estudios',prio:'media',done:false},
+  {id:'e5',name:'Filosofía — lectura semanal',area:'estudios',prio:'baja',done:false},
+  {id:'e6',name:'Estudiar futuro empresarial / modelo de negocio',area:'estudios',prio:'media',done:false},
 ];
 
 // ══════════════════════════════════
@@ -1467,23 +1912,193 @@ function goPage(id, btn) {
   if(id==='cal') renderCal();
   if(id==='hist') renderHist();
   if(id==='tasks') renderTasks();
+  if(id==='habits') { renderSchedule(); drawPixelChar(Math.round((ALL_HABITS.filter(h=>ST.completed[h]).length/ALL_HABITS.length)*100)); }
+}
+
+// ══════════════════════════════════
+// SCHEDULE DATA
+// ══════════════════════════════════
+const SCHEDULE = [
+  {id:'notion',   time:'09:30', tag:'CHECK', cat:'gold',   name:'Check diario',           sub:'5 min · Abrir app · Ver tareas del día',                        xp:10},
+  {id:'paseo-m',  time:'10:00', tag:'WALK',  cat:'green',  name:'Paseo mañana',           sub:'20 min · Correa, vuelta al bloque',                             xp:15},
+  {id:'trabajo1', time:'10:30', tag:'WORK',  cat:'purple', name:'Trabajo profundo I',     sub:'90 min · Móvil boca abajo · Tarea prioritaria del día',         xp:25},
+  {id:'dibujo',   time:'12:00', tag:'DRAW',  cat:'gold',   name:'Dibujo diario',          sub:'10 min · Rápido · Sin juzgar · Solo trazar',                   xp:10},
+  {id:'agua1',    time:'12:30', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 1',          sub:'500ml · Primer vaso del día',                                   xp:5},
+  {id:'paseo-d',  time:'13:30', tag:'WALK',  cat:'green',  name:'Paseo mediodía',         sub:'1h · Parque o ruta larga',                                      xp:15},
+  {id:'agua2',    time:'14:30', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 2',          sub:'500ml · Con la comida o después',                               xp:5},
+  {id:'trabajo2', time:'15:30', tag:'WORK',  cat:'purple', name:'Trabajo profundo II',    sub:'90 min · Cerrar o avanzar proyecto en curso',                  xp:25},
+  {id:'entreno',  time:'17:00', tag:'GYM',   cat:'cyan',   name:'Entreno / Estiramientos',sub:'L·X·V gym 1h tarde · M·J·S estiramientos 20min',               xp:20},
+  {id:'marca',    time:'18:30', tag:'MARCA', cat:'purple', name:'Trabajo personal marca', sub:'90 min · Portfolio · Redes · Contenido · Clientes',             xp:25},
+  {id:'agua3',    time:'19:00', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 3',          sub:'500ml · Por la tarde',                                          xp:5},
+  {id:'paseo-n',  time:'23:00', tag:'WALK',  cat:'green',  name:'Paseo noche',            sub:'40 min · Paseo tranquilo para desconectar',                    xp:15},
+  {id:'agua4',    time:'23:30', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 4',          sub:'500ml · Último vaso del día',                                   xp:5},
+  {id:'windown',  time:'01:00', tag:'OFF',   cat:'pink',   name:'Wind down',              sub:'Apaga pantallas · Prepara ropa · Leer o música',               xp:15},
+  {id:'dormir',   time:'02:00', tag:'ZZZ',   cat:'pink',   name:'En cama',                sub:'Antes de 02:00h · Sin TikTok/Reels en cama',                   xp:20},
+];
+
+// Sync ALL_HABITS con SCHEDULE
+// (ya definido arriba como array de IDs)
+
+// ══════════════════════════════════
+// PIXEL CHARACTER
+// ══════════════════════════════════
+function drawPixelChar(pct) {
+  const canvas = document.getElementById('pixelCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const S = 4; // pixel size
+
+  ctx.clearRect(0,0,W,H);
+
+  // Background grid subtle
+  ctx.fillStyle = 'rgba(123,111,255,0.03)';
+  for(let x=0;x<W;x+=S*2) for(let y=0;y<H;y+=S*2) ctx.fillRect(x,y,S,S);
+
+  // Character evolves with progress
+  // 0-25%: egg/seed, 25-50%: sprout, 50-75%: warrior, 75-100%: master
+  const stage = pct >= 100 ? 3 : pct >= 75 ? 3 : pct >= 50 ? 2 : pct >= 25 ? 1 : 0;
+
+  const CHARS = [
+    // Stage 0: sleeping blob
+    [
+      '  OOO  ',
+      ' OOOOO ',
+      'OOOOOOO',
+      ' O   O ',
+      '  OOO  ',
+      '   O   ',
+      '  O O  ',
+    ],
+    // Stage 1: awake, standing
+    [
+      '  OOO  ',
+      ' OOOOO ',
+      'O OOOOO',
+      'OO O O ',
+      ' OOOOO ',
+      '  O O  ',
+      ' O   O ',
+    ],
+    // Stage 2: warrior with weapon
+    [
+      ' OOOOO ',
+      'OOOOOOO',
+      'O OOOOO',
+      'OOOOOOO',
+      ' OOOOO ',
+      ' O   O ',
+      'OO   OO',
+    ],
+    // Stage 3: master glowing
+    [
+      'OOOOOOO',
+      'OOOOOOO',
+      'OOOOOOO',
+      'OOOOOOO',
+      'OOOOOOO',
+      ' OOOOO ',
+      'OO   OO',
+    ],
+  ];
+
+  const colors = ['#4a4a6a','#7b6fff','#00d4ff','#00f5a0'];
+  const glowColors = ['rgba(74,74,106,0)','rgba(123,111,255,0.3)','rgba(0,212,255,0.3)','rgba(0,245,160,0.4)'];
+
+  const char = CHARS[stage];
+  const col = colors[stage];
+  const glow = glowColors[stage];
+  const charW = char[0].length * S;
+  const charH = char.length * S;
+  const offsetX = Math.floor((W/2 - charW/2));
+  const offsetY = Math.floor((H - charH)/2);
+
+  // Glow effect for higher stages
+  if(stage >= 2) {
+    const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 50);
+    gradient.addColorStop(0, glow);
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // Draw character
+  char.forEach((row, ry) => {
+    row.split('').forEach((px, rx) => {
+      if(px !== ' ') {
+        // Slight shimmer on completed chars
+        const shimmer = stage >= 2 ? (Math.sin(Date.now()/300 + rx + ry) * 0.1 + 0.9) : 1;
+        ctx.fillStyle = col;
+        ctx.globalAlpha = shimmer;
+        ctx.fillRect(offsetX + rx*S, offsetY + ry*S, S-1, S-1);
+        ctx.globalAlpha = 1;
+      }
+    });
+  });
+
+  // Progress bar below character
+  const barY = H - 8;
+  const barW = W - 24;
+  ctx.fillStyle = '#0e0e1e';
+  ctx.fillRect(12, barY, barW, 4);
+  ctx.fillStyle = col;
+  ctx.fillRect(12, barY, Math.round(barW * pct/100), 4);
+
+  // Stage label
+  const labels = ['DORMIDO','DESPIERTO','GUERRERO','MAESTRO'];
+  ctx.fillStyle = col;
+  ctx.font = `bold ${S*2}px monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText(labels[stage], W/2, barY - 4);
+  ctx.textAlign = 'left';
+
+  // Animate if active
+  if(pct > 0 && pct < 100) {
+    requestAnimationFrame(() => drawPixelChar(pct));
+  }
 }
 
 // ══════════════════════════════════
 // HABITS
 // ══════════════════════════════════
 function toggleH(id, xpVal) {
+  // Find xp from schedule if not passed
+  const item = SCHEDULE.find(s => s.id === id);
+  const xp = xpVal || (item ? item.xp : 10);
   const was = ST.completed[id];
   if(!was) {
     ST.completed[id] = true;
-    ST.xp += xpVal;
-    showXpPop('+'+xpVal+' XP');
+    ST.xp += xp;
+    showXpPop('+'+xp+' XP');
   } else {
     ST.completed[id] = false;
-    ST.xp = Math.max(0, ST.xp - xpVal);
+    ST.xp = Math.max(0, ST.xp - xp);
   }
   save();
   updateAll();
+  renderSchedule();
+}
+
+function renderSchedule() {
+  const list = document.getElementById('scheduleList');
+  if(!list) return;
+
+  let html = '';
+  SCHEDULE.forEach(item => {
+    const done = ST.completed[item.id] ? 'done' : '';
+    html += `
+      <div class="sched-item cat-${item.cat} ${done}" onclick="toggleH('${item.id}', ${item.xp})">
+        <div class="sched-time">${item.time}</div>
+        <div class="sched-tag">${item.tag}</div>
+        <div class="sched-info">
+          <div class="sched-name">${item.name}</div>
+          <div class="sched-sub">${item.sub}</div>
+        </div>
+        <div class="sched-xp">${done ? '+'+item.xp : item.xp}</div>
+        <div class="sched-check">${done ? '✓' : ''}</div>
+      </div>`;
+  });
+  list.innerHTML = html;
 }
 
 function nextDay() {
@@ -1532,23 +2147,21 @@ function updateAll() {
   document.getElementById('hab-day-sub').textContent = 'Día '+ST.day+' de 66';
   document.getElementById('hab-streak-chip').textContent = '🔥 '+ST.streak+' días';
 
-  const circumference = 327;
-  const offset = circumference - (pct/100)*circumference;
-  document.getElementById('ring-circle').style.strokeDashoffset = offset;
-  document.getElementById('ring-pct').textContent = pct+'%';
-  document.getElementById('ring-sub').textContent = done+'/'+ALL_HABITS.length;
+  // RPG hero card
+  const rpgPct = document.getElementById('ring-pct');
+  const rpgSub = document.getElementById('ring-sub');
+  const rpgLvl = document.getElementById('rpg-lvl-name');
+  const rpgFill = document.getElementById('rpg-xp-fill');
+  const rpgXpLbl = document.getElementById('rpg-xp-lbl');
 
-  ALL_HABITS.forEach(id => {
-    const el = document.getElementById('hh-'+id);
-    if(!el) return;
-    if(ST.completed[id]) {
-      el.classList.add('done');
-      el.querySelector('.h-check').textContent = '✓';
-    } else {
-      el.classList.remove('done');
-      el.querySelector('.h-check').textContent = '';
-    }
-  });
+  if(rpgPct) rpgPct.textContent = pct+'%';
+  if(rpgSub) rpgSub.textContent = done+' / '+ALL_HABITS.length;
+  if(rpgLvl) rpgLvl.textContent = getLvlName(lvl).toUpperCase();
+  if(rpgFill) rpgFill.style.width = barPct+'%';
+  if(rpgXpLbl) rpgXpLbl.textContent = xp+' XP';
+
+  drawPixelChar(pct);
+  renderSchedule();
 
   // Level up check
   const newLvl = getLevel(xp);
@@ -1594,7 +2207,7 @@ function renderTasks() {
 }
 
 function areaLabel(a) {
-  return {trabajo:'💼 TRABAJO',marca:'🌟 MARCA',despinsage:'🤝 DESPINSAGE',casa:'🏠 CASA',yo:'🧠 YO'}[a]||a;
+  return {trabajo:'💼 TRABAJO',marca:'🌟 MARCA',despinsage:'🤝 DESPINSAGE',casa:'🏠 CASA',yo:'🧠 YO',estudios:'◭ ESTUDIOS'}[a]||a;
 }
 
 function prioLabel(p) {
@@ -1617,7 +2230,7 @@ function addTask() {
   const inp = document.getElementById('newTaskInput');
   const name = inp.value.trim();
   if(!name) return;
-  const areaMap = {all:'trabajo',trabajo:'trabajo',marca:'marca',despinsage:'despinsage',casa:'casa',yo:'yo'};
+  const areaMap = {all:'trabajo',trabajo:'trabajo',marca:'marca',despinsage:'despinsage',casa:'casa',yo:'yo',estudios:'estudios'};
   const newTask = {
     id: 't'+Date.now(),
     name,
@@ -1643,6 +2256,8 @@ function calNav(dir) {
   renderCal();
 }
 
+let selectedDateStr = null;
+
 function renderCal() {
   const y = calDate.getFullYear();
   const m = calDate.getMonth();
@@ -1657,13 +2272,25 @@ function renderCal() {
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const daysInPrev = new Date(y, m, 0).getDate();
 
+  // Eventos por fecha
   const eventsByDate = {};
-  EVENTS.forEach(ev => { eventsByDate[ev.d] = (eventsByDate[ev.d]||[]); eventsByDate[ev.d].push(ev); });
+  EVENTS.forEach(ev => {
+    if(!eventsByDate[ev.d]) eventsByDate[ev.d] = [];
+    eventsByDate[ev.d].push(ev);
+  });
+
+  // Eventos multi-día
+  const SPAN_EVENTS = [
+    {start:'2026-05-06', end:'2026-05-12', n:'Cartell Seguici', t:'despinsage'},
+    {start:'2026-07-31', end:'2026-08-02', n:'Cumple Cris', t:'cumple'},
+    {start:'2026-10-01', end:'2026-11-30', n:'Torneig Esports', t:'despinsage'},
+  ];
 
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
 
-  for(let i=1;i<startDow;i++) {
+  // Días del mes anterior
+  for(let i=1; i<startDow; i++) {
     const d = daysInPrev - (startDow-1) + i;
     const cell = document.createElement('div');
     cell.className = 'cal-cell other-month';
@@ -1671,34 +2298,87 @@ function renderCal() {
     grid.appendChild(cell);
   }
 
-  for(let d=1;d<=daysInMonth;d++) {
+  // Días del mes actual
+  for(let d=1; d<=daysInMonth; d++) {
     const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const evs = eventsByDate[dateStr]||[];
+    const evs = eventsByDate[dateStr] || [];
     const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+    const isSelected = selectedDateStr === dateStr;
+    const spanEvs = SPAN_EVENTS.filter(se => dateStr >= se.start && dateStr <= se.end);
+
     const cell = document.createElement('div');
-    cell.className = 'cal-cell'+(isToday?' today':'')+(evs.length?' has-events':'');
-    const dotColors = {despinsage:'dot-blue',personal:'dot-green',cumple:'dot-pink',work:'dot-gold'};
-    const dots = evs.map(e=>`<div class="cal-dot ${dotColors[e.t]||'dot-blue'}"></div>`).join('');
-    cell.innerHTML = `<div class="cal-num">${d}</div><div class="cal-dots">${dots}</div>`;
+    let cls = 'cal-cell';
+    if(isToday) cls += ' today';
+    if(isSelected) cls += ' selected';
+    if(evs.length || spanEvs.length) cls += ' has-events';
+    cell.className = cls;
+    cell.onclick = () => selectDay(dateStr);
+
+    let html = `<div class="cal-num">${d}</div>`;
+
+    // Chips de eventos del día
+    evs.slice(0,3).forEach(ev => {
+      const name = ev.n.replace('🎂 ','').replace('🎂','');
+      html += `<div class="cal-ev-chip chip-${ev.t}">${name}</div>`;
+    });
+    if(evs.length > 3) {
+      html += `<div class="cal-ev-chip chip-personal">+${evs.length-3}</div>`;
+    }
+
+    // Chips de eventos span
+    spanEvs.slice(0,1).forEach(se => {
+      html += `<div class="cal-ev-chip chip-span">↔ ${se.n}</div>`;
+    });
+
+    cell.innerHTML = html;
     grid.appendChild(cell);
   }
 
-  // Upcoming events list
-  const todayStr = today.toISOString().split('T')[0];
-  const upcoming = EVENTS.filter(e=>e.d >= todayStr).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,8);
-  const evList = document.getElementById('eventList');
-  const tagLabels = {despinsage:'Despinsage',personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
+  renderEventList();
+}
 
-  evList.innerHTML = upcoming.map(ev => {
-    const dt = new Date(ev.d+'T12:00:00');
-    const label = dt.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+function selectDay(dateStr) {
+  selectedDateStr = (selectedDateStr === dateStr) ? null : dateStr;
+  renderCal();
+}
+
+function renderEventList() {
+  const evList = document.getElementById('eventList');
+  const listTitle = document.querySelector('.event-list .card-title');
+  const tagLabels = {despinsage:'Despinsage', personal:'Personal', cumple:'Cumpleaños', work:'Trabajo'};
+
+  let eventsToShow, titleText;
+
+  if(selectedDateStr) {
+    eventsToShow = EVENTS.filter(e => e.d === selectedDateStr);
+    const dt = new Date(selectedDateStr + 'T12:00:00');
+    const label = dt.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+    titleText = label.charAt(0).toUpperCase() + label.slice(1);
+    if(!eventsToShow.length) {
+      if(listTitle) listTitle.textContent = titleText;
+      evList.innerHTML = '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:12px 0;letter-spacing:1px">SIN EVENTOS ESTE DÍA</div>';
+      return;
+    }
+  } else {
+    const todayStr = new Date().toISOString().split('T')[0];
+    eventsToShow = EVENTS.filter(e => e.d >= todayStr).sort((a,b) => a.d.localeCompare(b.d)).slice(0,8);
+    titleText = 'Próximos eventos';
+  }
+
+  if(listTitle) listTitle.textContent = titleText;
+
+  evList.innerHTML = eventsToShow.map(ev => {
+    const dt = new Date(ev.d + 'T12:00:00');
+    const label = dt.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
     return `<div class="event-item ev-${ev.t}">
-      <div class="ev-date">${label}</div>
+      <div class="ev-date">${selectedDateStr ? '' : label}</div>
       <div class="ev-name">${ev.n}</div>
-      <div class="ev-tag">${tagLabels[ev.t]||ev.t}</div>
+      <div class="ev-tag">${tagLabels[ev.t] || ev.t}</div>
     </div>`;
   }).join('');
 }
+
+
 
 // ══════════════════════════════════
 // DASHBOARD EXTRAS
@@ -1823,6 +2503,421 @@ function resetAll() {
   showToast('↺ Reset completado');
 }
 
+
+// ══════════════════════════════════
+// RPG TABS
+// ══════════════════════════════════
+let currentRpgTab = 'dia';
+
+function switchRpgTab(tab) {
+  currentRpgTab = tab;
+  document.getElementById('tab-dia').classList.toggle('active', tab==='dia');
+  document.getElementById('tab-semana').classList.toggle('active', tab==='semana');
+
+  // Mostrar/ocultar vistas
+  const diaEls = ['page-habits'];
+  const semanaEl = document.getElementById('rpg-semana-view');
+
+  const diaContent = document.getElementById('rpg-dia-content');
+  const semanaView = document.getElementById('rpg-semana-view');
+  if(tab === 'dia') {
+    if(diaContent) diaContent.style.display = 'block';
+    semanaView.style.display = 'none';
+  } else {
+    if(diaContent) diaContent.style.display = 'none';
+    semanaView.style.display = 'block';
+    renderWeekPlan();
+  }
+}
+
+// ══════════════════════════════════
+// WEEK PLAN
+// ══════════════════════════════════
+const AREA_COLORS = {
+  trabajo:'#7b6fff', marca:'#b57aff', despinsage:'#00d4ff',
+  casa:'#00f5a0', yo:'#ff6eb4', estudios:'#f5a623'
+};
+
+function getWeekDates() {
+  const today = new Date();
+  const dow = today.getDay()===0 ? 6 : today.getDay()-1;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - dow);
+  const days = [];
+  for(let i=0;i<7;i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate()+i);
+    days.push(d);
+  }
+  return days;
+}
+
+function renderWeekPlan() {
+  const days = getWeekDates();
+  const today = new Date();
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const dayNames = ['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
+
+  // Title
+  document.getElementById('week-title').textContent =
+    days[0].getDate()+' '+months[days[0].getMonth()]+' — '+days[6].getDate()+' '+months[days[6].getMonth()];
+  document.getElementById('week-sub').textContent = 'Semana '+getWeekNum(today)+' · '+new Date().getFullYear();
+
+  // Events this week
+  const weekStart = days[0].toISOString().split('T')[0];
+  const weekEnd = days[6].toISOString().split('T')[0];
+  const weekEvents = EVENTS.filter(e => e.d >= weekStart && e.d <= weekEnd);
+
+  // Week events section
+  const evEl = document.getElementById('weekEvents');
+  if(weekEvents.length === 0) {
+    evEl.innerHTML = '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:8px 0">Sin entregas esta semana</div>';
+  } else {
+    const tagLabels = {despinsage:'DESPINSAGE',personal:'PERSONAL',cumple:'CUMPLE',work:'TRABAJO'};
+    const tagBg = {despinsage:'rgba(0,212,255,.15)',personal:'rgba(0,245,160,.15)',cumple:'rgba(255,110,180,.15)',work:'rgba(255,204,0,.15)'};
+    const tagCol = {despinsage:'#00d4ff',personal:'#00f5a0',cumple:'#ff6eb4',work:'#ffcc00'};
+    evEl.innerHTML = weekEvents.map(ev => {
+      const dt = new Date(ev.d+'T12:00:00');
+      const dayN = dt.getDay()===0?6:dt.getDay()-1;
+      return `<div class="week-ev-item">
+        <div class="week-ev-day">${dayNames[dayN]} ${dt.getDate()}</div>
+        <div class="week-ev-name">${ev.n}</div>
+        <div class="week-ev-tag" style="background:${tagBg[ev.t]||'rgba(123,111,255,.15)'};color:${tagCol[ev.t]||'#7b6fff'}">${tagLabels[ev.t]||ev.t}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Build week grid
+  const grid = document.getElementById('weekGrid');
+
+  // Time slots to show
+  const TIME_SLOTS = [
+    {time:'10:00', label:'10h'},
+    {time:'10:30', label:'10:30'},
+    {time:'12:00', label:'12h'},
+    {time:'13:00', label:'13h'},
+    {time:'13:30', label:'13:30'},
+    {time:'15:30', label:'15:30'},
+    {time:'17:20', label:'17:20'},
+    {time:'23:00', label:'23h'},
+    {time:'00:30', label:'00:30'},
+  ];
+
+  // Fixed blocks for each day
+  const FIXED_BLOCKS = {
+    '10:00':  {text:'WALK AM', cls:'green'},
+    '10:30':  {text:'WORK I', cls:'work'},
+    '12:00':  {text:'GYM/ESTIRA', cls:'cyan'},
+    '13:00':  {text:'H2O', cls:'cyan'},
+    '13:30':  {text:'WALK MID', cls:'green'},
+    '15:30':  {text:'WORK II', cls:'work'},
+    '17:20':  {text:'ART/MONART', cls:'gold'},
+    '23:00':  {text:'WALK NIGHT', cls:'green'},
+    '00:30':  {text:'WIND DOWN', cls:'pink'},
+  };
+
+  // Specific tasks per day from weekly plan
+  const weekPlan = ST.weekPlan || {};
+
+  let html = '';
+
+  // Header row
+  html += '<div class="wg-header" style="background:var(--s2)">HORA</div>';
+  days.forEach((d,i) => {
+    const isToday = d.toDateString()===today.toDateString();
+    const dateStr = d.toISOString().split('T')[0];
+    const hasEv = weekEvents.some(e=>e.d===dateStr);
+    html += `<div class="wg-header${isToday?' today-col':''}">${dayNames[i]}<br><span style="color:var(--muted);font-size:8px">${d.getDate()}</span>${hasEv?'<br><span style="color:#ffcc00;font-size:8px">●</span>':''}</div>`;
+  });
+
+  // Time rows
+  TIME_SLOTS.forEach(slot => {
+    html += `<div class="wg-time">${slot.label}</div>`;
+    const fixed = FIXED_BLOCKS[slot.time];
+    days.forEach((d,i) => {
+      const isToday = d.toDateString()===today.toDateString();
+      const dateStr = d.toISOString().split('T')[0];
+      const dayEv = weekEvents.filter(e=>e.d===dateStr);
+      const isSunday = i===6;
+
+      html += `<div class="wg-cell${isToday?' today-col':''}">`;
+
+      if(fixed && !isSunday) {
+        html += `<div class="wg-block ${fixed.cls}">${fixed.text}</div>`;
+      }
+
+      // Events on this day+time
+      if(slot.time==='18:00' || slot.time==='19:00') {
+        dayEv.forEach(ev => {
+          const cls = ev.t==='despinsage'?'despins':'event';
+          html += `<div class="wg-block ${cls}">${ev.n.substring(0,18)}</div>`;
+        });
+      }
+
+      // Specific task if planned
+      const planKey = dateStr+'_'+slot.time;
+      if(weekPlan[planKey]) {
+        html += `<div class="wg-block work" style="margin-top:2px;opacity:.8">${weekPlan[planKey].substring(0,20)}</div>`;
+      }
+
+      html += '</div>';
+    });
+  });
+
+  // Events row
+  html += '<div class="wg-time" style="color:var(--gold)">EVT</div>';
+  days.forEach((d,i) => {
+    const isToday = d.toDateString()===today.toDateString();
+    const dateStr = d.toISOString().split('T')[0];
+    const dayEv = weekEvents.filter(e=>e.d===dateStr);
+    html += `<div class="wg-cell${isToday?' today-col':''}">`;
+    dayEv.forEach(ev => {
+      const cls = ev.t==='despinsage'?'despins':'event';
+      html += `<div class="wg-block ${cls}">${ev.n.replace('🎂','').substring(0,16)}</div>`;
+    });
+    html += '</div>';
+  });
+
+  grid.innerHTML = html;
+
+  // Render priorities
+  renderWeekPriorities(weekEvents);
+}
+
+function renderWeekPriorities(weekEvents) {
+  const plan = ST.weekPlan || {};
+  const prios = plan.priorities || [];
+  const el = document.getElementById('weekPrioList');
+
+  if(!prios.length) {
+    el.innerHTML = '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:8px 0">Pulsa ⚡ PLANIFICAR para generar prioridades automáticamente</div>';
+    return;
+  }
+
+  el.innerHTML = prios.map((p,i) => `
+    <div class="week-prio-item">
+      <div class="prio-num">${i+1}</div>
+      <div class="prio-area-dot" style="background:${AREA_COLORS[p.area]||'#7b6fff'}"></div>
+      <div style="flex:1">${p.name}</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${p.area.toUpperCase()}</div>
+    </div>
+  `).join('');
+}
+
+function autoplanWeek() {
+  const days = getWeekDates();
+  const weekStart = days[0].toISOString().split('T')[0];
+  const weekEnd   = days[6].toISOString().split('T')[0];
+  const weekEvents = EVENTS.filter(e => e.d >= weekStart && e.d <= weekEnd);
+
+  // Gather urgent tasks: in-progress first, then alta priority, then media
+  const urgentTasks = TASKS.filter(t => !t.done).sort((a,b) => {
+    const order = {prog:0, alta:1, media:2, baja:3};
+    return (order[a.prio]||3) - (order[b.prio]||3);
+  });
+
+  // Event-driven urgency: if there's a despinsage event this week, push those tasks first
+  const hasDespinsage = weekEvents.some(e=>e.t==='despinsage');
+  const hasWork = weekEvents.some(e=>e.t==='work');
+
+  let priorities = [];
+
+  // Always add deadline-driven tasks first
+  if(hasDespinsage) {
+    const despTasks = urgentTasks.filter(t=>t.area==='despinsage').slice(0,2);
+    priorities.push(...despTasks);
+  }
+  if(hasWork) {
+    const workTasks = urgentTasks.filter(t=>t.area==='trabajo'||t.area==='marca').slice(0,2);
+    priorities.push(...workTasks);
+  }
+
+  // Fill up to 5 with other high priority tasks
+  const remaining = urgentTasks.filter(t => !priorities.find(p=>p.id===t.id));
+  priorities.push(...remaining.slice(0, 5 - priorities.length));
+  priorities = priorities.slice(0,5);
+
+  if(!ST.weekPlan) ST.weekPlan = {};
+  ST.weekPlan.priorities = priorities;
+  ST.weekPlan.generatedAt = new Date().toISOString();
+  save();
+
+  renderWeekPlan();
+  showToast('⚡ Semana planificada — '+priorities.length+' prioridades');
+}
+
+function getWeekNum(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+}
+
+
+// ══════════════════════════════════
+// VOICE ASSISTANT
+// ══════════════════════════════════
+let recognition = null;
+let voiceAction = null;
+
+function toggleVoice() {
+  const panel = document.getElementById('voicePanel');
+  const isOpen = panel.style.display !== 'none';
+  if(isOpen) {
+    closeVoice();
+  } else {
+    panel.style.display = 'block';
+    document.getElementById('voiceBtn').classList.add('voice-active');
+  }
+}
+
+function closeVoice() {
+  document.getElementById('voicePanel').style.display = 'none';
+  document.getElementById('voiceBtn').classList.remove('voice-active');
+  if(recognition) recognition.stop();
+  voiceAction = null;
+  document.getElementById('voiceResult').style.display = 'none';
+  document.getElementById('confirmBtn').style.display = 'none';
+  document.getElementById('voiceTranscript').textContent = 'Di algo como: "Añade llamar a cliente en trabajo" o "Qué tengo hoy"';
+}
+
+function startListening() {
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('⚠️ Tu navegador no soporta voz — usa Safari en iPhone');
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'es-ES';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  const panel = document.getElementById('voicePanel');
+  const status = document.getElementById('voiceStatus');
+  const transcript = document.getElementById('voiceTranscript');
+
+  panel.classList.add('listening');
+  status.textContent = 'ESCUCHANDO...';
+  document.getElementById('listenBtn').textContent = '⏹ PARAR';
+  document.getElementById('listenBtn').onclick = () => recognition.stop();
+
+  recognition.onresult = (e) => {
+    const text = Array.from(e.results).map(r=>r[0].transcript).join('');
+    transcript.textContent = '"' + text + '"';
+    transcript.style.color = 'var(--text)';
+  };
+
+  recognition.onend = () => {
+    panel.classList.remove('listening');
+    status.textContent = 'PROCESANDO...';
+    document.getElementById('listenBtn').textContent = '● ESCUCHAR';
+    document.getElementById('listenBtn').onclick = startListening;
+
+    const text = transcript.textContent.replace(/"/g,'').trim();
+    if(text) parseVoiceCommand(text);
+    else {
+      status.textContent = 'LISTO · HABLA';
+      transcript.textContent = 'No te he escuchado. Inténtalo de nuevo.';
+    }
+  };
+
+  recognition.onerror = () => {
+    panel.classList.remove('listening');
+    status.textContent = 'LISTO · HABLA';
+    showToast('Error al escuchar — intenta de nuevo');
+  };
+
+  recognition.start();
+}
+
+function parseVoiceCommand(text) {
+  const lower = text.toLowerCase();
+  const status = document.getElementById('voiceStatus');
+  const result = document.getElementById('voiceResult');
+  const resultText = document.getElementById('voiceResultText');
+  const confirmBtn = document.getElementById('confirmBtn');
+
+  // Detectar área
+  const areaMap = {
+    'trabajo': 'trabajo', 'curro': 'trabajo', 'work': 'trabajo',
+    'marca': 'marca', 'monart': 'marca', 'contenido': 'marca',
+    'despinsage': 'despinsage', 'despins': 'despinsage', 'nucli': 'despinsage',
+    'casa': 'casa', 'hogar': 'casa', 'home': 'casa',
+    'yo': 'yo', 'personal': 'yo', 'salud': 'yo',
+    'estudios': 'estudios', 'estudio': 'estudios', 'aprender': 'estudios',
+  };
+
+  let detectedArea = 'trabajo';
+  for(const [kw, area] of Object.entries(areaMap)) {
+    if(lower.includes(kw)) { detectedArea = area; break; }
+  }
+
+  // Detectar prioridad
+  let prio = 'media';
+  if(lower.includes('urgent') || lower.includes('important') || lower.includes('priorit') || lower.includes('hoy')) prio = 'alta';
+  if(lower.includes('baja') || lower.includes('cuando pueda') || lower.includes('algún día')) prio = 'baja';
+
+  // Detectar tipo de comando
+  if(lower.includes('qué tengo') || lower.includes('que tengo') || lower.includes('mis tareas') || lower.includes('tareas de hoy')) {
+    // Consulta
+    const pending = TASKS.filter(t=>!t.done).slice(0,5);
+    voiceAction = {type:'query', data: pending};
+    resultText.innerHTML = '<div style="font-family:var(--fm);font-size:10px;color:var(--muted2);margin-bottom:6px">TAREAS PENDIENTES</div>' +
+      pending.map(t=>`<div style="padding:3px 0;font-size:12px">· ${t.name} <span style="color:var(--muted2);font-size:10px">(${t.area})</span></div>`).join('');
+    result.style.display = 'block';
+    confirmBtn.style.display = 'none';
+    status.textContent = 'CONSULTA ✓';
+    return;
+  }
+
+  if(lower.includes('añade') || lower.includes('agrega') || lower.includes('apunta') || lower.includes('crea') || lower.includes('nueva tarea')) {
+    // Limpiar comando de la tarea
+    let taskName = text
+      .replace(/añade?|agrega?|apunta?|crea?|nueva tarea|en trabajo|en marca|en casa|en yo|en estudios|en despinsage|urgente|importante|prioridad/gi, '')
+      .replace(/\s+/g,' ').trim();
+
+    if(!taskName) taskName = text;
+
+    voiceAction = {
+      type: 'add_task',
+      data: { name: taskName, area: detectedArea, prio, done: false, id: 't'+Date.now() }
+    };
+
+    const areaLabels = {trabajo:'💼 TRABAJO',marca:'🌟 MARCA',despinsage:'🤝 DESPINSAGE',casa:'🏠 CASA',yo:'🧠 YO',estudios:'◭ ESTUDIOS'};
+    const prioLabels = {alta:'🔥 Alta',media:'⚡ Media',baja:'🌱 Baja'};
+
+    resultText.innerHTML = `
+      <div style="font-size:14px;margin-bottom:6px">${taskName}</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${areaLabels[detectedArea]} · ${prioLabels[prio]}</div>
+    `;
+    result.style.display = 'block';
+    confirmBtn.style.display = 'block';
+    status.textContent = '¿CONFIRMAR?';
+    return;
+  }
+
+  // No detectado
+  voiceAction = null;
+  resultText.innerHTML = `<div style="color:var(--muted2)">No entendí el comando. Prueba: "Añade [tarea] en [área]"</div>`;
+  result.style.display = 'block';
+  confirmBtn.style.display = 'none';
+  status.textContent = 'NO ENTENDIDO';
+}
+
+function confirmVoiceAction() {
+  if(!voiceAction) return;
+
+  if(voiceAction.type === 'add_task') {
+    TASKS.unshift(voiceAction.data);
+    sbUpsertTask({...voiceAction.data, created_at: new Date().toISOString()});
+    save();
+    renderTasks();
+    showToast('✅ Tarea añadida por voz');
+    closeVoice();
+  }
+}
+
 // ══════════════════════════════════
 // INIT
 // ══════════════════════════════════
@@ -1846,5 +2941,24 @@ async function init() {
 
 init();
 </script>
+
+<!-- ══ VOICE PANEL ══ -->
+<div id="voicePanel" style="display:none;position:fixed;bottom:0;left:var(--nav-w);right:0;background:var(--s1);border-top:1px solid var(--border2);padding:16px;z-index:50;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+    <div id="voicePulse" style="width:12px;height:12px;border-radius:50%;background:var(--accent2);flex-shrink:0"></div>
+    <div style="font-family:var(--fm);font-size:10px;color:var(--muted2);letter-spacing:2px" id="voiceStatus">LISTO · HABLA</div>
+  </div>
+  <div id="voiceTranscript" style="font-size:13px;color:var(--text);min-height:20px;margin-bottom:10px;font-style:italic;color:var(--muted2)">Di algo como: "Añade llamar a cliente en trabajo" o "Qué tengo hoy"</div>
+  <div id="voiceResult" style="display:none;background:var(--s2);border-radius:10px;padding:12px;margin-bottom:10px">
+    <div style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">ACCIÓN DETECTADA</div>
+    <div id="voiceResultText" style="font-size:13px;font-weight:600"></div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button onclick="startListening()" id="listenBtn" style="flex:1;padding:10px;border-radius:10px;background:var(--accent);border:none;color:white;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">● ESCUCHAR</button>
+    <button onclick="confirmVoiceAction()" id="confirmBtn" style="display:none;flex:1;padding:10px;border-radius:10px;background:var(--green);border:none;color:#000;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">✓ CONFIRMAR</button>
+    <button onclick="closeVoice()" style="padding:10px 14px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-family:var(--fm);font-size:10px;cursor:pointer">✕</button>
+  </div>
+</div>
+
 </body>
 </html>
