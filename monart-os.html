@@ -1819,7 +1819,7 @@ async function sbUpsertTask(task) {
 // STATE
 // ══════════════════════════════════
 let ST = JSON.parse(localStorage.getItem('monart-os') || 'null') || {
-  xp: 0, streak: 0, day: 1, completed: {}, history: [], _prevLvl: 1
+  xp: 0, streak: 0, day: 1, completed: {}, history: [], _prevLvl: 1, updated_at: '2000-01-01'
 };
 
 if(localStorage.getItem('monart-tasks')) {
@@ -1838,6 +1838,8 @@ function save() {
 }
 
 async function syncToCloud() {
+  const now = new Date().toISOString();
+  ST.updated_at = now;
   await sbUpsert('habits', {
     id: 'sergi',
     completed: ST.completed,
@@ -1846,7 +1848,7 @@ async function syncToCloud() {
     day: ST.day,
     prev_lvl: ST._prevLvl || 1,
     history: ST.history,
-    updated_at: new Date().toISOString()
+    updated_at: now
   });
 }
 
@@ -1854,17 +1856,17 @@ async function loadFromCloud() {
   showToast('☁️ Sincronizando...');
   const remote = await sbGet('habits', 'sergi');
   if(remote) {
-    // Usar los datos más recientes comparando XP total
-    const localXP = ST.xp || 0;
-    const remoteXP = remote.xp || 0;
-    if(remoteXP >= localXP) {
+    const localUpdated = ST.updated_at || '2000-01-01';
+    const remoteUpdated = remote.updated_at || '2000-01-01';
+    if(remoteUpdated > localUpdated) {
       ST = {
         xp: remote.xp || 0,
         streak: remote.streak || 0,
         day: remote.day || 1,
         completed: remote.completed || {},
         history: remote.history || [],
-        _prevLvl: remote.prev_lvl || 1
+        _prevLvl: remote.prev_lvl || 1,
+        updated_at: remote.updated_at
       };
       localStorage.setItem('monart-os', JSON.stringify(ST));
     }
@@ -2940,6 +2942,7 @@ async function init() {
 }
 
 init();
+setInterval(() => loadFromCloud(), 30000);
 </script>
 
 <!-- ══ VOICE PANEL ══ -->
