@@ -1835,7 +1835,7 @@ if(localStorage.getItem('monart-tasks')) {
 let _saveTimer = null;
 
 function save() {
-  // Guardar siempre en local como fallback inmediato
+  ST.updated_at = new Date().toISOString();
   localStorage.setItem('monart-os', JSON.stringify(ST));
   localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
   // Debounce sync a Supabase (evita llamadas en ráfaga)
@@ -1844,8 +1844,6 @@ function save() {
 }
 
 async function syncToCloud() {
-  const now = new Date().toISOString();
-  ST.updated_at = now;
   await sbUpsert('habits', {
     id: 'sergi',
     completed: ST.completed,
@@ -1854,18 +1852,36 @@ async function syncToCloud() {
     day: ST.day,
     prev_lvl: ST._prevLvl || 1,
     history: ST.history,
-    updated_at: now
+    updated_at: ST.updated_at
   });
 }
 
+async function syncTasks() {
+  const remoteTasks = await sbGetAllTasks();
+  if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
+    TASKS = remoteTasks;
+    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+  } else {
+    for(const t of TASKS) {
+      await sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, created_at: new Date().toISOString() });
+    }
+  }
+}
+
+// Botón SYNC: bidireccional — sube si local es más nuevo, baja si remoto es más nuevo
 async function loadFromCloud(silent = false) {
   if(!silent) showToast('☁️ Sincronizando...');
   const remote = await sbGet('habits', 'sergi');
+
   if(remote) {
     const localUpdated = ST.updated_at || '2000-01-01';
     const remoteUpdated = remote.updated_at || '2000-01-01';
-    // Manual sync: always load. Auto-sync: only if remote is newer
-    if(!silent || remoteUpdated > localUpdated) {
+
+    if(localUpdated >= remoteUpdated) {
+      // Local es más reciente → sube a Supabase
+      await syncToCloud();
+    } else {
+      // Remoto es más reciente → descarga
       ST = {
         xp: remote.xp || 0,
         streak: remote.streak || 0,
@@ -1877,20 +1893,11 @@ async function loadFromCloud(silent = false) {
       };
       localStorage.setItem('monart-os', JSON.stringify(ST));
     }
-  }
-
-  // Cargar tareas desde Supabase
-  const remoteTasks = await sbGetAllTasks();
-  if(remoteTasks && remoteTasks.length > 0) {
-    TASKS = remoteTasks;
-    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
   } else {
-    // Primera vez: subir tareas locales a Supabase
-    for(const t of TASKS) {
-      await sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, created_at: new Date().toISOString() });
-    }
+    await syncToCloud();
   }
 
+  await syncTasks();
   updateAll();
   renderTasks();
   if(!silent) showToast('✅ Sincronizado');
