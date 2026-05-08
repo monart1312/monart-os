@@ -1844,6 +1844,8 @@ function save() {
 }
 
 async function syncToCloud() {
+  ST.updated_at = new Date().toISOString();
+  localStorage.setItem('monart-os', JSON.stringify(ST));
   await sbUpsert('habits', {
     id: 'sergi',
     completed: ST.completed,
@@ -1856,48 +1858,47 @@ async function syncToCloud() {
   });
 }
 
-async function syncTasks() {
-  const remoteTasks = await sbGetAllTasks();
-  if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
-    TASKS = remoteTasks;
-    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
-  } else {
-    for(const t of TASKS) {
-      await sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, created_at: new Date().toISOString() });
-    }
-  }
-}
-
-// Botón SYNC: bidireccional — sube si local es más nuevo, baja si remoto es más nuevo
+// SYNC manual: fusiona local + remoto (gana el que tiene más hábitos), luego sube
+// SYNC automático (silent): solo descarga si remoto es más nuevo
 async function loadFromCloud(silent = false) {
   if(!silent) showToast('☁️ Sincronizando...');
   const remote = await sbGet('habits', 'sergi');
 
-  if(remote) {
-    const localUpdated = ST.updated_at || '2000-01-01';
-    const remoteUpdated = remote.updated_at || '2000-01-01';
-
-    if(localUpdated >= remoteUpdated) {
-      // Local es más reciente → sube a Supabase
-      await syncToCloud();
+  if(remote && remote.completed !== undefined) {
+    if(!silent) {
+      // Fusión: marcar como hecho si cualquiera de los dos lo tiene hecho
+      const merged = Object.assign({}, remote.completed);
+      Object.keys(ST.completed || {}).forEach(k => {
+        if(ST.completed[k]) merged[k] = true;
+      });
+      ST.completed = merged;
+      ST.xp       = Math.max(ST.xp || 0, remote.xp || 0);
+      ST.streak   = Math.max(ST.streak || 0, remote.streak || 0);
+      ST.day      = Math.max(ST.day || 1, remote.day || 1);
+      if((remote.history||[]).length > (ST.history||[]).length) ST.history = remote.history;
+      await syncToCloud(); // sube estado fusionado
     } else {
-      // Remoto es más reciente → descarga
-      ST = {
-        xp: remote.xp || 0,
-        streak: remote.streak || 0,
-        day: remote.day || 1,
-        completed: remote.completed || {},
-        history: remote.history || [],
-        _prevLvl: remote.prev_lvl || 1,
-        updated_at: remote.updated_at
-      };
-      localStorage.setItem('monart-os', JSON.stringify(ST));
+      // Auto-sync silencioso: descarga solo si remoto es más nuevo
+      const localTs = ST.updated_at || '2000-01-01';
+      const remoteTs = remote.updated_at || '2000-01-01';
+      if(remoteTs > localTs) {
+        ST = { xp: remote.xp||0, streak: remote.streak||0, day: remote.day||1,
+               completed: remote.completed||{}, history: remote.history||[],
+               _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at };
+        localStorage.setItem('monart-os', JSON.stringify(ST));
+      }
     }
-  } else {
-    await syncToCloud();
+  } else if(!silent) {
+    await syncToCloud(); // sin dato remoto → sube local
   }
 
-  await syncTasks();
+  // Tareas
+  const remoteTasks = await sbGetAllTasks();
+  if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
+    TASKS = remoteTasks;
+    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+  }
+
   updateAll();
   renderTasks();
   if(!silent) showToast('✅ Sincronizado');
