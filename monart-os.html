@@ -1864,7 +1864,8 @@ async function loadFromCloud(silent = false) {
   if(remote) {
     const localUpdated = ST.updated_at || '2000-01-01';
     const remoteUpdated = remote.updated_at || '2000-01-01';
-    if(remoteUpdated > localUpdated) {
+    // Manual sync: always load. Auto-sync: only if remote is newer
+    if(!silent || remoteUpdated > localUpdated) {
       ST = {
         xp: remote.xp || 0,
         streak: remote.streak || 0,
