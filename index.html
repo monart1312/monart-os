@@ -1583,6 +1583,14 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .col-empty { font-family:var(--fm); font-size:10px; color:var(--muted); padding:8px 4px; }
 .fab-add { position:absolute; bottom:10px; right:4px; width:36px; height:36px; border-radius:50%; background:var(--accent); border:none; color:white; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(123,111,255,.4); transition:all .2s; z-index:10; line-height:1; }
 .fab-add:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(123,111,255,.6); }
+.todo-two-sec .kanban-cards { max-height:none !important; overflow-y:visible !important; }
+.todo-two-sec .kanban-col { height:auto; }
+.drop-placeholder { height:52px; border:2px dashed var(--accent); border-radius:10px; background:rgba(123,111,255,.06); animation:phPulse .9s ease infinite; flex-shrink:0; }
+@keyframes phPulse { 0%,100%{opacity:.5}50%{opacity:1} }
+.r-card.dragging,.mc-pill.dragging { opacity:.3; }
+.week-prio-item { cursor:grab; border-radius:8px; padding:7px 6px; transition:background .15s; }
+.week-prio-item:last-child { border-bottom:none; }
+.week-prio-item.wpi-over { background:rgba(123,111,255,.12); border-bottom-color:transparent; }
 .todo-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:500; backdrop-filter:blur(6px); }
 .todo-modal-box { background:var(--s2); border:1px solid var(--border2); border-radius:16px; padding:24px; width:320px; max-width:90vw; display:flex; flex-direction:column; gap:12px; }
 .todo-modal-title { font-family:var(--fm); font-size:11px; font-weight:700; letter-spacing:2px; color:var(--accent); text-transform:uppercase; }
@@ -1775,10 +1783,9 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
   <button class="next-day-btn" onclick="nextDay()">⏭ CERRAR DÍA Y PASAR AL SIGUIENTE</button>
   </div><!-- /rpg-dia-content -->
-</div>
 
-<!-- ══ SEMANA VIEW (dentro de habits) ══ -->
-<div id="rpg-semana-view" style="display:none;padding:0 24px 24px;">
+  <!-- ══ SEMANA VIEW ══ -->
+  <div id="rpg-semana-view" style="display:none">
 
   <div class="week-plan-header">
     <div>
@@ -1805,7 +1812,9 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div id="weekEvents"></div>
   </div>
 
-</div>
+  </div><!-- /rpg-semana-view -->
+
+</div><!-- /page-habits -->
 
 <!-- ══ PAGE: TASKS ══ -->
 <div class="page" id="page-tasks">
@@ -2448,11 +2457,37 @@ function getStatus(t) {
 }
 
 let _dragId = null;
-function tdragStart(e, id) { _dragId = id; e.dataTransfer.effectAllowed = 'move'; }
-function tdragOver(e, el) { e.preventDefault(); el.classList.add('drag-over'); }
-function tdragLeave(el) { el.classList.remove('drag-over'); }
+function tdragStart(e, id) {
+  _dragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  const el = e.currentTarget;
+  requestAnimationFrame(() => el.classList.add('dragging'));
+}
+function _getOrAddPlaceholder(col) {
+  const cards = col.querySelector('.kanban-cards');
+  if(!cards) return;
+  if(!cards.querySelector('.drop-placeholder')) {
+    const ph = document.createElement('div');
+    ph.className = 'drop-placeholder';
+    cards.appendChild(ph);
+  }
+}
+function tdragOver(e, el) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  el.classList.add('drag-over');
+  _getOrAddPlaceholder(el);
+}
+function tdragLeave(el) {
+  el.classList.remove('drag-over');
+  const ph = el.querySelector('.drop-placeholder');
+  if(ph) ph.remove();
+}
 function tdropTask(e, newStatus, el) {
-  e.preventDefault(); el.classList.remove('drag-over');
+  e.preventDefault();
+  el.classList.remove('drag-over');
+  const ph = el.querySelector('.drop-placeholder');
+  if(ph) ph.remove();
   if(!_dragId) return;
   const t = TASKS.find(x => x.id === _dragId);
   if(t) {
@@ -3197,6 +3232,22 @@ function renderWeekPlan() {
   renderWeekPriorities(weekEvents);
 }
 
+let _wpiDragIdx = null;
+function wpiDragStart(e, idx) { _wpiDragIdx = idx; e.dataTransfer.effectAllowed = 'move'; }
+function wpiDragOver(e, el) { e.preventDefault(); el.classList.add('wpi-over'); }
+function wpiDragLeave(el) { el.classList.remove('wpi-over'); }
+function wpiDrop(e, idx, el) {
+  e.preventDefault(); el.classList.remove('wpi-over');
+  if(_wpiDragIdx === null || _wpiDragIdx === idx) { _wpiDragIdx = null; return; }
+  const plan = ST.weekPlan || {};
+  const prios = [...(plan.priorities || [])];
+  const [moved] = prios.splice(_wpiDragIdx, 1);
+  prios.splice(idx, 0, moved);
+  ST.weekPlan = {...plan, priorities: prios};
+  save(); renderWeekPriorities([]);
+  _wpiDragIdx = null;
+}
+
 function renderWeekPriorities(weekEvents) {
   const plan = ST.weekPlan || {};
   const prios = plan.priorities || [];
@@ -3208,11 +3259,16 @@ function renderWeekPriorities(weekEvents) {
   }
 
   el.innerHTML = prios.map((p,i) => `
-    <div class="week-prio-item">
+    <div class="week-prio-item" draggable="true"
+      ondragstart="wpiDragStart(event,${i})"
+      ondragover="wpiDragOver(event,this)"
+      ondragleave="wpiDragLeave(this)"
+      ondrop="wpiDrop(event,${i},this)">
       <div class="prio-num">${i+1}</div>
       <div class="prio-area-dot" style="background:${AREA_COLORS[p.area]||'#7b6fff'}"></div>
       <div style="flex:1">${p.name}</div>
       <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${p.area.toUpperCase()}</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--muted);margin-left:4px">&#8597;</div>
     </div>
   `).join('');
 }
