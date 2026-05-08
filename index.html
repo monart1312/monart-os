@@ -2383,9 +2383,10 @@ function filterArea(area, btn) {
 
 function renderTasks() {
   if(currentArea === 'kanban') { renderKanban(); return; }
+  if(currentArea === 'all') { renderAllColumns(); renderFocusTasks(); return; }
   renderFocusTasks();
   const list = document.getElementById('task-list');
-  const filtered = currentArea === 'all' ? TASKS : TASKS.filter(t=>t.area===currentArea);
+  const filtered = TASKS.filter(t=>t.area===currentArea);
   const prioOrder = {alta:0, prog:1, media:2, baja:3};
   const active = filtered.filter(t=>!t.done).sort((a,b) => (prioOrder[a.prio]??4) - (prioOrder[b.prio]??4));
   const done = filtered.filter(t=>t.done);
@@ -2401,6 +2402,47 @@ function renderTasks() {
       <div class="prio-badge ${prioBadgeClass(t.prio)}">${prioLabel(t.prio)}</div>
     </div>
   `).join('');
+}
+
+function renderAllColumns() {
+  const list = document.getElementById('task-list');
+  const AREA_COLORS_T = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
+
+  const p1    = TASKS.filter(t => !t.done && t.prio === 'alta');
+  const curso = TASKS.filter(t => !t.done && t.prio === 'prog');
+  const p2    = TASKS.filter(t => !t.done && t.prio === 'media');
+  const p3    = TASKS.filter(t => !t.done && t.prio === 'baja');
+  const mid   = [...curso, ...p2];
+
+  function colCard(t) {
+    const dot = AREA_COLORS_T[t.area] || '#6a6a8a';
+    const areaShort = areaLabel(t.area).split(' ')[1] || t.area;
+    return `<div class="kanban-card" onclick="toggleTask('${t.id}')">
+      <div class="kanban-card-name">${t.name}</div>
+      <div class="kanban-card-meta">
+        <div class="kanban-area-dot" style="background:${dot}"></div>
+        <span style="font-family:var(--fm);font-size:8px;color:var(--muted2)">${areaShort}</span>
+        <span class="prio-badge ${prioBadgeClass(t.prio)}" style="margin-left:auto">${prioLabel(t.prio)}</span>
+      </div>
+    </div>`;
+  }
+
+  const empty = '<div style="font-family:var(--fm);font-size:10px;color:var(--muted);padding:8px 4px">—</div>';
+
+  list.innerHTML = `<div class="kanban-wrap">
+    <div class="kanban-col" style="border-top:2px solid #ff4d6d">
+      <div class="kanban-col-header" style="color:#ff4d6d">Urgente<span class="kanban-col-count">${p1.length}</span></div>
+      <div class="kanban-cards">${p1.map(colCard).join('') || empty}</div>
+    </div>
+    <div class="kanban-col" style="border-top:2px solid #7b6fff">
+      <div class="kanban-col-header" style="color:#7b6fff">En curso / Alta<span class="kanban-col-count">${mid.length}</span></div>
+      <div class="kanban-cards">${mid.map(colCard).join('') || empty}</div>
+    </div>
+    <div class="kanban-col" style="border-top:2px solid #00f5a0">
+      <div class="kanban-col-header" style="color:#00f5a0">Normal<span class="kanban-col-count">${p3.length}</span></div>
+      <div class="kanban-cards">${p3.map(colCard).join('') || empty}</div>
+    </div>
+  </div>`;
 }
 
 function renderKanban() {
