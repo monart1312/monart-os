@@ -2258,10 +2258,6 @@ function renderSchedule() {
   const list = document.getElementById('scheduleList');
   if(!list) return;
 
-  const rutina = SCHEDULE.filter(i => i.cat === 'green' || i.cat === 'cyan');
-  const trabajo = SCHEDULE.filter(i => i.cat === 'purple' || i.cat === 'gold');
-  const check = SCHEDULE.filter(i => i.cat === 'pink');
-
   function schedItemHTML(item) {
     const done = ST.completed[item.id] ? 'done' : '';
     return `
@@ -2277,15 +2273,7 @@ function renderSchedule() {
       </div>`;
   }
 
-  let html = '';
-  html += `<div class="sched-section-header" style="color:#00f5a0">Rutina</div>`;
-  rutina.forEach(item => { html += schedItemHTML(item); });
-  html += `<div class="sched-section-header" style="color:#7b6fff">Trabajo</div>`;
-  trabajo.forEach(item => { html += schedItemHTML(item); });
-  html += `<div class="sched-section-header" style="color:#ff6eb4">Check</div>`;
-  check.forEach(item => { html += schedItemHTML(item); });
-
-  list.innerHTML = html;
+  list.innerHTML = SCHEDULE.map(item => schedItemHTML(item)).join('');
 }
 
 function nextDay() {
