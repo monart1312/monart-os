@@ -1559,6 +1559,40 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .kanban-card.kc-done { opacity: 0.45; }
 .kanban-card.kc-done .kanban-card-name { text-decoration: line-through; }
 
+/* ── TODO: RIDING + MINDCHEST ── */
+.todo-two-sec { display:flex; flex-direction:column; gap:20px; }
+.todo-sec { position:relative; }
+.todo-sec-head { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+.todo-sec-label { font-family:var(--fm); font-size:11px; font-weight:700; letter-spacing:3px; color:var(--text); }
+.todo-sec-sub { font-family:var(--fm); font-size:9px; color:var(--muted2); letter-spacing:1px; }
+.todo-kanban { min-height:180px; }
+.todo-two-sec .kanban-cards { max-height:210px; }
+.r-card { background:var(--s2); border:1px solid var(--border2); border-radius:10px; padding:10px 12px; cursor:grab; transition:all .15s; margin-bottom:0; }
+.r-card:hover { border-color:var(--border3); background:var(--s3); }
+.r-card:active { cursor:grabbing; }
+.r-card-name { font-size:12px; font-weight:600; margin-bottom:4px; line-height:1.3; }
+.r-card-meta { display:flex; align-items:center; gap:6px; }
+.mc-pill { border-radius:10px; padding:8px 10px; cursor:grab; display:flex; align-items:center; gap:6px; transition:all .15s; }
+.mc-pill:hover { filter:brightness(1.15); }
+.mc-pill:active { cursor:grabbing; }
+.mc-pill-name { font-size:11px; font-weight:600; line-height:1.3; color:var(--text); }
+.mc-pill-due { font-family:var(--fm); font-size:8px; opacity:.7; color:var(--text); margin-top:2px; }
+.mc-send-btn { background:rgba(255,255,255,.15); border:none; border-radius:6px; color:white; font-size:14px; width:26px; height:26px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:background .15s; padding:0; }
+.mc-send-btn:hover { background:rgba(255,255,255,.35); }
+.kanban-col.drag-over { background:rgba(123,111,255,.07) !important; border-color:var(--accent) !important; }
+.col-empty { font-family:var(--fm); font-size:10px; color:var(--muted); padding:8px 4px; }
+.fab-add { position:absolute; bottom:10px; right:4px; width:36px; height:36px; border-radius:50%; background:var(--accent); border:none; color:white; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(123,111,255,.4); transition:all .2s; z-index:10; line-height:1; }
+.fab-add:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(123,111,255,.6); }
+.todo-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:500; backdrop-filter:blur(6px); }
+.todo-modal-box { background:var(--s2); border:1px solid var(--border2); border-radius:16px; padding:24px; width:320px; max-width:90vw; display:flex; flex-direction:column; gap:12px; }
+.todo-modal-title { font-family:var(--fm); font-size:11px; font-weight:700; letter-spacing:2px; color:var(--accent); text-transform:uppercase; }
+.todo-modal-box input,.todo-modal-box select { background:var(--s3); border:1px solid var(--border2); border-radius:8px; padding:10px 12px; color:var(--text); font-family:var(--ff); font-size:13px; outline:none; width:100%; }
+.todo-modal-box input:focus,.todo-modal-box select:focus { border-color:var(--accent); }
+.todo-modal-box select option { background:var(--s3); }
+.todo-modal-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:4px; }
+.todo-modal-cancel { padding:8px 16px; border-radius:8px; border:1px solid var(--border2); background:transparent; color:var(--muted2); font-family:var(--fm); font-size:11px; cursor:pointer; }
+.todo-modal-confirm { padding:8px 20px; border-radius:8px; border:none; background:var(--accent); color:white; font-family:var(--fm); font-size:11px; cursor:pointer; font-weight:700; }
+
 /* ── CALENDAR DAY PANEL ── */
 .cal-day-panel {
   background: var(--s1);
@@ -2382,8 +2416,10 @@ function filterArea(area, btn) {
 }
 
 function renderTasks() {
-  if(currentArea === 'kanban') { renderKanban(); return; }
-  if(currentArea === 'all') { renderAllColumns(); renderFocusTasks(); return; }
+  const addRow = document.querySelector('.add-task-row');
+  if(currentArea === 'kanban') { renderKanban(); if(addRow) addRow.style.display='none'; return; }
+  if(currentArea === 'all') { renderTodoAll(); renderFocusTasks(); if(addRow) addRow.style.display='none'; return; }
+  if(addRow) addRow.style.display='';
   renderFocusTasks();
   const list = document.getElementById('task-list');
   const filtered = TASKS.filter(t=>t.area===currentArea);
@@ -2404,7 +2440,145 @@ function renderTasks() {
   `).join('');
 }
 
-function renderAllColumns() {
+function getStatus(t) {
+  if(t.status) return t.status;
+  if(t.done) return 'done';
+  if(t.prio === 'prog') return 'ontheline';
+  return 'backlog';
+}
+
+let _dragId = null;
+function tdragStart(e, id) { _dragId = id; e.dataTransfer.effectAllowed = 'move'; }
+function tdragOver(e, el) { e.preventDefault(); el.classList.add('drag-over'); }
+function tdragLeave(el) { el.classList.remove('drag-over'); }
+function tdropTask(e, newStatus, el) {
+  e.preventDefault(); el.classList.remove('drag-over');
+  if(!_dragId) return;
+  const t = TASKS.find(x => x.id === _dragId);
+  if(t) {
+    const wasNotDone = getStatus(t) !== 'done';
+    t.status = newStatus;
+    t.done = newStatus === 'done';
+    if(t.done && wasNotDone) { ST.xp += 10; showXpPop('+10 XP'); }
+    save(); updateAll(); renderTasks();
+  }
+  _dragId = null;
+}
+
+function sendToRiding(id) {
+  const t = TASKS.find(x => x.id === id);
+  if(!t) return;
+  t.status = 'ontheline';
+  t.done = false;
+  save(); renderTasks();
+  showToast('→ En Riding: On the Line');
+}
+
+function openAddModal() { document.getElementById('todoAddModal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('todoAddModal').style.display = 'none'; }
+function confirmAddTask() {
+  const name = document.getElementById('modalName').value.trim();
+  const area = document.getElementById('modalArea').value;
+  const due  = document.getElementById('modalDue').value;
+  if(!name) return;
+  const t = { id:'t'+Date.now(), name, area, prio:'media', done:false, status:'backlog', due: due||null };
+  TASKS.unshift(t);
+  sbUpsertTask({...t, created_at: new Date().toISOString()});
+  document.getElementById('modalName').value = '';
+  document.getElementById('modalDue').value = '';
+  save(); renderTasks(); closeAddModal();
+  showToast('✅ Tarea añadida');
+}
+
+function renderTodoAll() {
+  const list = document.getElementById('task-list');
+  const AREA_COLORS = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
+  const AREAS = ['trabajo','marca','despinsage','casa','yo','estudios'];
+  const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
+
+  const riding = {
+    ontheline: TASKS.filter(t => getStatus(t) === 'ontheline'),
+    ongoing:   TASKS.filter(t => getStatus(t) === 'ongoing'),
+    forreview: TASKS.filter(t => getStatus(t) === 'forreview'),
+    done:      TASKS.filter(t => getStatus(t) === 'done')
+  };
+  const backlog = {};
+  AREAS.forEach(a => { backlog[a] = TASKS.filter(t => getStatus(t) === 'backlog' && t.area === a); });
+
+  function rCard(t) {
+    const col = AREA_COLORS[t.area] || '#6a6a8a';
+    const dueTxt = t.due ? `<span style="font-family:var(--fm);font-size:8px;color:var(--muted2);margin-left:auto">${t.due}</span>` : '';
+    return `<div class="r-card" draggable="true" ondragstart="tdragStart(event,'${t.id}')">
+      <div class="r-card-name">${t.name}</div>
+      <div class="r-card-meta">
+        <span style="font-family:var(--fm);font-size:8px;color:${col}">${AREA_NAMES[t.area]||t.area}</span>
+        ${dueTxt}
+      </div>
+    </div>`;
+  }
+
+  function mcPill(t) {
+    const col = AREA_COLORS[t.area] || '#6a6a8a';
+    const dueTxt = t.due ? `<div class="mc-pill-due">${t.due}</div>` : '';
+    return `<div class="mc-pill" draggable="true"
+      ondragstart="tdragStart(event,'${t.id}')"
+      style="background:${col}22;border:1px solid ${col}55">
+      <div style="flex:1;min-width:0">
+        <div class="mc-pill-name">${t.name}</div>
+        ${dueTxt}
+      </div>
+      <button class="mc-send-btn" onclick="event.stopPropagation();sendToRiding('${t.id}')" title="Enviar a Riding">&#8594;</button>
+    </div>`;
+  }
+
+  function da(status) {
+    return `ondragover="tdragOver(event,this)" ondragleave="tdragLeave(this)" ondrop="tdropTask(event,'${status}',this)"`;
+  }
+
+  function rCol(status, label, color, items) {
+    return `<div class="kanban-col" style="border-top:2px solid ${color}" ${da(status)}>
+      <div class="kanban-col-header" style="color:${color}">${label}<span class="kanban-col-count">${items.length}</span></div>
+      <div class="kanban-cards">${items.map(rCard).join('')||'<div class="col-empty">&#8212;</div>'}</div>
+    </div>`;
+  }
+
+  function mcCol(area) {
+    const col = AREA_COLORS[area];
+    const items = backlog[area];
+    return `<div class="kanban-col" style="border-top:2px solid ${col}" ${da('backlog')} data-area="${area}">
+      <div class="kanban-col-header" style="color:${col}">${AREA_NAMES[area]}<span class="kanban-col-count">${items.length}</span></div>
+      <div class="kanban-cards">${items.map(mcPill).join('')||'<div class="col-empty">&#8212;</div>'}</div>
+    </div>`;
+  }
+
+  list.innerHTML = `
+  <div class="todo-two-sec">
+    <div class="todo-sec">
+      <div class="todo-sec-head">
+        <span class="todo-sec-label">RIDING</span>
+        <span class="todo-sec-sub">flujo de trabajo activo</span>
+      </div>
+      <div class="kanban-wrap todo-kanban">
+        ${rCol('ontheline','ON THE LINE','#ff4d6d',riding.ontheline)}
+        ${rCol('ongoing','ONGOING','#7b6fff',riding.ongoing)}
+        ${rCol('forreview','FOR REVIEW','#ffcc00',riding.forreview)}
+        ${rCol('done','DONE','#00f5a0',riding.done)}
+      </div>
+    </div>
+    <div class="todo-sec" style="padding-bottom:52px">
+      <div class="todo-sec-head">
+        <span class="todo-sec-label">MINDCHEST</span>
+        <span class="todo-sec-sub">backlog por &#225;rea</span>
+      </div>
+      <div class="kanban-wrap todo-kanban">
+        ${AREAS.map(a => mcCol(a)).join('')}
+      </div>
+      <button class="fab-add" onclick="openAddModal()" title="Nueva tarea">&#xFF0B;</button>
+    </div>
+  </div>`;
+}
+
+function renderAllColumns_REMOVED() {
   const list = document.getElementById('task-list');
   const AREA_COLORS_T = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
 
@@ -2501,8 +2675,9 @@ function toggleTask(id) {
   const t = TASKS.find(x=>x.id===id);
   if(t) {
     t.done = !t.done;
+    t.status = t.done ? 'done' : 'backlog';
     if(t.done) { ST.xp += 10; showXpPop('+10 XP'); }
-    sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, created_at: new Date().toISOString() });
+    sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, created_at: new Date().toISOString() });
     save();
     updateAll();
     renderTasks();
@@ -3296,6 +3471,27 @@ setInterval(() => loadFromCloud(true), 30000);
     <button onclick="startListening()" id="listenBtn" style="flex:1;padding:10px;border-radius:10px;background:var(--accent);border:none;color:white;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">● ESCUCHAR</button>
     <button onclick="confirmVoiceAction()" id="confirmBtn" style="display:none;flex:1;padding:10px;border-radius:10px;background:var(--green);border:none;color:#000;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">✓ CONFIRMAR</button>
     <button onclick="closeVoice()" style="padding:10px 14px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-family:var(--fm);font-size:10px;cursor:pointer">✕</button>
+  </div>
+</div>
+
+<!-- ══ ADD TASK MODAL ══ -->
+<div class="todo-modal-overlay" id="todoAddModal" style="display:none" onclick="if(event.target===this)closeAddModal()">
+  <div class="todo-modal-box">
+    <div class="todo-modal-title">&#8853; Nueva Tarea</div>
+    <input id="modalName" placeholder="Nombre de la tarea..." onkeydown="if(event.key==='Enter')confirmAddTask()" />
+    <select id="modalArea">
+      <option value="trabajo">&#128188; Trabajo</option>
+      <option value="marca">&#11088; Marca</option>
+      <option value="despinsage">&#129309; Despinsage</option>
+      <option value="casa">&#127968; Casa</option>
+      <option value="yo">&#129504; Yo</option>
+      <option value="estudios">&#9651; Estudios</option>
+    </select>
+    <input type="date" id="modalDue" />
+    <div class="todo-modal-btns">
+      <button class="todo-modal-cancel" onclick="closeAddModal()">Cancelar</button>
+      <button class="todo-modal-confirm" onclick="confirmAddTask()">A&#241;adir &#8594;</button>
+    </div>
   </div>
 </div>
 
