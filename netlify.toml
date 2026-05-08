@@ -1,7 +1,2 @@
 [build]
   publish = "."
-
-[[redirects]]
-  from = "/*"
-  to = "/monart-os.html"
-  status = 200

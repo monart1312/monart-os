@@ -1411,6 +1411,177 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .listening #voicePulse { animation: pulse .8s infinite; background: var(--accent2) !important; }
 .nav-btn.voice-active { background: rgba(255,77,109,.15) !important; color: var(--accent2) !important; border-color: var(--accent2) !important; }
 
+/* ── SCHEDULE SECTION HEADERS ── */
+.sched-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 6px;
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.sched-section-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.15;
+}
+
+/* ── PRIORITY SYSTEM P1/P2/P3 ── */
+.task-item[data-prio="alta"] { border-left: 3px solid #ff4d6d; }
+.task-item[data-prio="media"] { border-left: 3px solid #ffcc00; }
+.task-item[data-prio="baja"] { border-left: 3px solid #00f5a0; }
+.task-item[data-prio="prog"] { border-left: 3px solid #7b6fff; }
+
+.prio-badge {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.pb-p1 { background: rgba(255,77,109,.15); color: #ff4d6d; border: 1px solid rgba(255,77,109,.3); }
+.pb-p2 { background: rgba(255,204,0,.12); color: #ffcc00; border: 1px solid rgba(255,204,0,.25); }
+.pb-p3 { background: rgba(0,245,160,.1); color: #00f5a0; border: 1px solid rgba(0,245,160,.2); }
+.pb-prog { background: rgba(123,111,255,.12); color: #7b6fff; border: 1px solid rgba(123,111,255,.25); }
+
+@keyframes urgentPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,77,109,0); }
+  50% { box-shadow: 0 0 0 3px rgba(255,77,109,0.15); }
+}
+.task-item[data-prio="alta"]:not(.done-task) { animation: urgentPulse 2.5s infinite; }
+
+/* ── STATS STRIP (HUB) ── */
+.stats-strip {
+  display: flex;
+  align-items: center;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 10px;
+  gap: 0;
+}
+.ss-item { flex: 1; text-align: center; }
+.ss-val { font-family: var(--fm); font-size: 26px; font-weight: 800; line-height: 1; }
+.ss-val.purple { color: var(--accent); }
+.ss-val.green { color: var(--green); }
+.ss-val.gold { color: var(--gold); }
+.ss-val.pink { color: var(--accent2); }
+.ss-key { font-family: var(--fm); font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+.ss-sep { width: 1px; height: 36px; background: var(--border2); flex-shrink: 0; }
+
+.lvl-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+}
+.lvl-strip-left { flex: 1; }
+.lvl-strip-name { font-family: var(--fm); font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 1px; display: block; }
+.lvl-strip-xp { font-family: var(--fm); font-size: 9px; color: var(--gold); }
+
+/* ── KANBAN ── */
+.kanban-wrap {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  min-height: 300px;
+}
+.kanban-wrap::-webkit-scrollbar { height: 4px; }
+.kanban-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.kanban-col {
+  min-width: 260px;
+  max-width: 260px;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.kanban-col-header {
+  padding: 12px 14px;
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kanban-col-count {
+  margin-left: auto;
+  background: var(--s2);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 9px;
+  color: var(--muted2);
+}
+.kanban-cards {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: calc(100vh - 260px);
+}
+.kanban-cards::-webkit-scrollbar { width: 3px; }
+.kanban-cards::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.kanban-card {
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.kanban-card:hover { border-color: var(--border3); background: var(--s3); }
+.kanban-card-name { font-size: 12px; font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
+.kanban-card-meta { display: flex; align-items: center; gap: 6px; }
+.kanban-area-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.kanban-card.kc-done { opacity: 0.45; }
+.kanban-card.kc-done .kanban-card-name { text-decoration: line-through; }
+
+/* ── CALENDAR DAY PANEL ── */
+.cal-day-panel {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 12px;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+.cal-panel-title {
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  margin-top: 14px;
+}
+.cal-panel-title:first-child { margin-top: 0; }
+.cal-panel-empty { font-family: var(--fm); font-size: 11px; color: var(--green); letter-spacing: 1px; }
+
 </style>
 </head>
 <body>
@@ -1478,43 +1649,43 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="chip" id="dash-day-chip">Día 1/66</div>
   </div>
 
-  <div class="quote-card">
-    <div class="quote-text" id="quoteText">"La disciplina es elegir entre lo que quieres ahora y lo que quieres más."</div>
-    <div class="quote-author">— Daily Reset</div>
-  </div>
-
-  <div class="player-banner">
-    <div class="player-ava">🎨</div>
-    <div class="player-details">
-      <div class="player-name">MONART</div>
-      <div class="player-lvl" id="dash-lvl-lbl">LVL 1 — Creative Initiate</div>
-      <div class="xp-row">
-        <span class="xp-lbl" id="dash-xp-lbl">LVL 1</span>
-        <span class="xp-val" id="dash-xp-val">0 / 100 XP</span>
-      </div>
-      <div class="bar-wrap">
-        <div class="bar-fill" id="dash-xp-bar" style="width:0%"></div>
-      </div>
+  <!-- Compact stats strip -->
+  <div class="stats-strip">
+    <div class="ss-item">
+      <div class="ss-val purple" id="d-xp">0</div>
+      <div class="ss-key">XP</div>
+    </div>
+    <div class="ss-sep"></div>
+    <div class="ss-item">
+      <div class="ss-val green" id="d-streak">0</div>
+      <div class="ss-key">Racha</div>
+    </div>
+    <div class="ss-sep"></div>
+    <div class="ss-item">
+      <div class="ss-val gold" id="d-day">1</div>
+      <div class="ss-key">Día</div>
+    </div>
+    <div class="ss-sep"></div>
+    <div class="ss-item">
+      <div class="ss-val pink" id="d-done">0%</div>
+      <div class="ss-key">Hoy</div>
     </div>
   </div>
 
-  <div class="dash-grid">
-    <div class="stat-card sc-purple">
-      <div class="stat-val purple" id="d-xp">0</div>
-      <div class="stat-key">XP Total</div>
+  <!-- Level bar compact -->
+  <div class="lvl-strip">
+    <div class="lvl-strip-left">
+      <span class="lvl-strip-name" id="dash-lvl-lbl">LVL 1 — Creative Initiate</span>
+      <span class="lvl-strip-xp" id="dash-xp-val">0 / 100 XP</span>
     </div>
-    <div class="stat-card sc-green">
-      <div class="stat-val green" id="d-streak">0</div>
-      <div class="stat-key">Racha días</div>
+    <div class="bar-wrap" style="flex:1;max-width:160px">
+      <div class="bar-fill" id="dash-xp-bar" style="width:0%"></div>
     </div>
-    <div class="stat-card sc-gold">
-      <div class="stat-val gold" id="d-day">1</div>
-      <div class="stat-key">Día reset</div>
-    </div>
-    <div class="stat-card sc-pink">
-      <div class="stat-val pink" id="d-done">0%</div>
-      <div class="stat-key">Hoy</div>
-    </div>
+  </div>
+
+  <div class="card" id="focus-card">
+    <div class="card-title">🎯 Foco de hoy</div>
+    <div id="focus-tasks"></div>
   </div>
 
   <div class="card">
@@ -1619,6 +1790,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <button class="atab" onclick="filterArea('casa',this)">◫ CASA</button>
     <button class="atab" onclick="filterArea('yo',this)">⌘ YO</button>
     <button class="atab" onclick="filterArea('estudios',this)">◭ ESTUDIOS</button>
+    <button class="atab" onclick="filterArea('kanban',this)">◉ KANBAN</button>
   </div>
 
   <div id="task-list"></div>
@@ -1650,6 +1822,8 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   </div>
 
   <div class="cal-grid" id="calGrid"></div>
+
+  <div class="cal-day-panel" id="calDayPanel" style="display:none"></div>
 
   <div class="event-list">
     <div class="card-title" style="margin-top:16px">Próximos eventos</div>
@@ -1782,24 +1956,18 @@ async function sbGet(table, id) {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
     });
     const data = await r.json();
-    console.log('[SYNC] sbGet', table, id, '→', r.status, data);
-    return Array.isArray(data) ? (data[0] || null) : null;
-  } catch(e) {
-    console.error('[SYNC] sbGet error:', e);
-    return null;
-  }
+    return data[0] || null;
+  } catch(e) { return null; }
 }
 
 async function sbUpsert(table, row) {
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    await fetch(`${SB_URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(row)
     });
-    console.log('[SYNC] sbUpsert', table, '→', r.status);
-    if(!r.ok) console.error('[SYNC] upsert failed:', await r.text());
-  } catch(e) { console.error('[SYNC] sbUpsert error:', e); }
+  } catch(e) { console.warn('Supabase save failed, using localStorage fallback'); }
 }
 
 async function sbGetAllTasks() {
@@ -1825,7 +1993,7 @@ async function sbUpsertTask(task) {
 // STATE
 // ══════════════════════════════════
 let ST = JSON.parse(localStorage.getItem('monart-os') || 'null') || {
-  xp: 0, streak: 0, day: 1, completed: {}, history: [], _prevLvl: 1, updated_at: '2000-01-01'
+  xp: 0, streak: 0, day: 1, completed: {}, history: [], _prevLvl: 1
 };
 
 if(localStorage.getItem('monart-tasks')) {
@@ -1836,6 +2004,7 @@ let _saveTimer = null;
 
 function save() {
   ST.updated_at = new Date().toISOString();
+  // Guardar siempre en local como fallback inmediato
   localStorage.setItem('monart-os', JSON.stringify(ST));
   localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
   // Debounce sync a Supabase (evita llamadas en ráfaga)
@@ -1858,27 +2027,20 @@ async function syncToCloud() {
   });
 }
 
-// SYNC manual: fusiona local + remoto (gana el que tiene más hábitos), luego sube
-// SYNC automático (silent): solo descarga si remoto es más nuevo
 async function loadFromCloud(silent = false) {
   if(!silent) showToast('☁️ Sincronizando...');
   const remote = await sbGet('habits', 'sergi');
-
   if(remote && remote.completed !== undefined) {
     if(!silent) {
-      // Fusión: marcar como hecho si cualquiera de los dos lo tiene hecho
       const merged = Object.assign({}, remote.completed);
-      Object.keys(ST.completed || {}).forEach(k => {
-        if(ST.completed[k]) merged[k] = true;
-      });
+      Object.keys(ST.completed || {}).forEach(k => { if(ST.completed[k]) merged[k] = true; });
       ST.completed = merged;
-      ST.xp       = Math.max(ST.xp || 0, remote.xp || 0);
-      ST.streak   = Math.max(ST.streak || 0, remote.streak || 0);
-      ST.day      = Math.max(ST.day || 1, remote.day || 1);
+      ST.xp = Math.max(ST.xp || 0, remote.xp || 0);
+      ST.streak = Math.max(ST.streak || 0, remote.streak || 0);
+      ST.day = Math.max(ST.day || 1, remote.day || 1);
       if((remote.history||[]).length > (ST.history||[]).length) ST.history = remote.history;
-      await syncToCloud(); // sube estado fusionado
+      await syncToCloud();
     } else {
-      // Auto-sync silencioso: descarga solo si remoto es más nuevo
       const localTs = ST.updated_at || '2000-01-01';
       const remoteTs = remote.updated_at || '2000-01-01';
       if(remoteTs > localTs) {
@@ -1889,18 +2051,14 @@ async function loadFromCloud(silent = false) {
       }
     }
   } else if(!silent) {
-    await syncToCloud(); // sin dato remoto → sube local
+    await syncToCloud();
   }
-
-  // Tareas
   const remoteTasks = await sbGetAllTasks();
   if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
     TASKS = remoteTasks;
     localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
   }
-
-  updateAll();
-  renderTasks();
+  updateAll(); renderTasks();
   if(!silent) showToast('✅ Sincronizado');
 }
 
@@ -2100,10 +2258,13 @@ function renderSchedule() {
   const list = document.getElementById('scheduleList');
   if(!list) return;
 
-  let html = '';
-  SCHEDULE.forEach(item => {
+  const rutina = SCHEDULE.filter(i => i.cat === 'green' || i.cat === 'cyan');
+  const trabajo = SCHEDULE.filter(i => i.cat === 'purple' || i.cat === 'gold');
+  const check = SCHEDULE.filter(i => i.cat === 'pink');
+
+  function schedItemHTML(item) {
     const done = ST.completed[item.id] ? 'done' : '';
-    html += `
+    return `
       <div class="sched-item cat-${item.cat} ${done}" onclick="toggleH('${item.id}', ${item.xp})">
         <div class="sched-time">${item.time}</div>
         <div class="sched-tag">${item.tag}</div>
@@ -2114,7 +2275,16 @@ function renderSchedule() {
         <div class="sched-xp">${done ? '+'+item.xp : item.xp}</div>
         <div class="sched-check">${done ? '✓' : ''}</div>
       </div>`;
-  });
+  }
+
+  let html = '';
+  html += `<div class="sched-section-header" style="color:#00f5a0">Rutina</div>`;
+  rutina.forEach(item => { html += schedItemHTML(item); });
+  html += `<div class="sched-section-header" style="color:#7b6fff">Trabajo</div>`;
+  trabajo.forEach(item => { html += schedItemHTML(item); });
+  html += `<div class="sched-section-header" style="color:#ff6eb4">Check</div>`;
+  check.forEach(item => { html += schedItemHTML(item); });
+
   list.innerHTML = html;
 }
 
@@ -2156,9 +2326,9 @@ function updateAll() {
   document.getElementById('d-done').textContent = pct+'%';
   document.getElementById('dash-day-chip').textContent = 'Día '+ST.day+'/66';
   document.getElementById('dash-lvl-lbl').textContent = 'LVL '+lvl+' — '+getLvlName(lvl);
-  document.getElementById('dash-xp-lbl').textContent = 'LVL '+lvl;
   document.getElementById('dash-xp-val').textContent = (xp-xpS)+' / '+(xpE-xpS)+' XP';
   document.getElementById('dash-xp-bar').style.width = barPct+'%';
+  renderFocusTasks();
 
   // Habits page
   document.getElementById('hab-day-sub').textContent = 'Día '+ST.day+' de 66';
@@ -2193,6 +2363,25 @@ function updateAll() {
 }
 
 // ══════════════════════════════════
+// FOCUS TASKS (HUB)
+// ══════════════════════════════════
+function renderFocusTasks() {
+  const el = document.getElementById('focus-tasks');
+  if(!el) return;
+  const p1 = TASKS.filter(t => !t.done && t.prio === 'alta').slice(0,3);
+  if(!p1.length) {
+    el.innerHTML = '<div style="font-family:var(--fm);font-size:11px;color:var(--green);letter-spacing:1px;padding:4px 0">✓ Sin urgencias hoy</div>';
+    return;
+  }
+  el.innerHTML = p1.map(t => `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span class="prio-badge pb-p1">P1</span>
+      <span style="font-size:13px;font-weight:600;flex:1">${t.name}</span>
+      <span style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${areaLabel(t.area).split(' ')[1]||''}</span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════
 // TASKS
 // ══════════════════════════════════
 let currentArea = 'all';
@@ -2205,22 +2394,66 @@ function filterArea(area, btn) {
 }
 
 function renderTasks() {
+  if(currentArea === 'kanban') { renderKanban(); return; }
+  renderFocusTasks();
   const list = document.getElementById('task-list');
   const filtered = currentArea === 'all' ? TASKS : TASKS.filter(t=>t.area===currentArea);
-  const active = filtered.filter(t=>!t.done);
+  const prioOrder = {alta:0, prog:1, media:2, baja:3};
+  const active = filtered.filter(t=>!t.done).sort((a,b) => (prioOrder[a.prio]??4) - (prioOrder[b.prio]??4));
   const done = filtered.filter(t=>t.done);
   const all = [...active, ...done];
 
   list.innerHTML = all.map(t => `
-    <div class="task-item ${t.done?'done-task':''}" onclick="toggleTask('${t.id}')">
+    <div class="task-item ${t.done?'done-task':''}" data-prio="${t.prio}" onclick="toggleTask('${t.id}')">
       <div class="t-check">${t.done?'✓':''}</div>
       <div class="t-info">
         <div class="t-name">${t.name}</div>
         <div class="t-meta">${areaLabel(t.area)}</div>
       </div>
-      <div class="prio-chip prio-${t.prio}">${prioLabel(t.prio)}</div>
+      <div class="prio-badge ${prioBadgeClass(t.prio)}">${prioLabel(t.prio)}</div>
     </div>
   `).join('');
+}
+
+function renderKanban() {
+  const list = document.getElementById('task-list');
+  const todo = TASKS.filter(t => !t.done && t.prio !== 'prog');
+  const inProgress = TASKS.filter(t => t.prio === 'prog' && !t.done);
+  const done = TASKS.filter(t => t.done).slice(0, 10);
+
+  const prioOrder = {alta:0, media:1, baja:2};
+  todo.sort((a,b) => (prioOrder[a.prio]??3) - (prioOrder[b.prio]??3));
+
+  const AREA_COLORS_K = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
+
+  function cardHTML(t, extraClass='') {
+    const badgeClass = prioBadgeClass(t.prio);
+    const label = prioLabel(t.prio);
+    const dot = AREA_COLORS_K[t.area] || '#6a6a8a';
+    return `<div class="kanban-card ${extraClass}" onclick="toggleTask('${t.id}')">
+      <div class="kanban-card-name">${t.name}</div>
+      <div class="kanban-card-meta">
+        <div class="kanban-area-dot" style="background:${dot}"></div>
+        <span style="font-family:var(--fm);font-size:8px;color:var(--muted2)">${areaLabel(t.area).split(' ')[1]||t.area}</span>
+        ${t.prio !== 'prog' ? `<span class="prio-badge ${badgeClass}" style="margin-left:auto">${label}</span>` : '<span class="prio-badge pb-prog" style="margin-left:auto">▶</span>'}
+      </div>
+    </div>`;
+  }
+
+  list.innerHTML = `<div class="kanban-wrap">
+    <div class="kanban-col">
+      <div class="kanban-col-header" style="color:var(--text)">Por hacer<span class="kanban-col-count">${todo.length}</span></div>
+      <div class="kanban-cards">${todo.map(t=>cardHTML(t)).join('')||'<div style="font-family:var(--fm);font-size:10px;color:var(--muted);padding:8px">Nada pendiente</div>'}</div>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-col-header" style="color:var(--accent)">En curso<span class="kanban-col-count">${inProgress.length}</span></div>
+      <div class="kanban-cards">${inProgress.map(t=>cardHTML(t)).join('')||'<div style="font-family:var(--fm);font-size:10px;color:var(--muted);padding:8px">Nada en curso</div>'}</div>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-col-header" style="color:var(--green)">Listo<span class="kanban-col-count">${done.length}</span></div>
+      <div class="kanban-cards">${done.map(t=>cardHTML(t,'kc-done')).join('')||'<div style="font-family:var(--fm);font-size:10px;color:var(--muted);padding:8px">Nada completado aún</div>'}</div>
+    </div>
+  </div>`;
 }
 
 function areaLabel(a) {
@@ -2228,7 +2461,10 @@ function areaLabel(a) {
 }
 
 function prioLabel(p) {
-  return {alta:'🔥 Alta',media:'⚡ Media',baja:'🌱 Baja',prog:'▶ En curso'}[p]||p;
+  return {alta:'P1',media:'P2',baja:'P3',prog:'▶'}[p]||p;
+}
+function prioBadgeClass(p) {
+  return {alta:'pb-p1',media:'pb-p2',baja:'pb-p3',prog:'pb-prog'}[p]||'pb-p3';
 }
 
 function toggleTask(id) {
@@ -2329,6 +2565,7 @@ function renderCal() {
     if(isSelected) cls += ' selected';
     if(evs.length || spanEvs.length) cls += ' has-events';
     cell.className = cls;
+    cell.setAttribute('data-date', dateStr);
     cell.onclick = () => selectDay(dateStr);
 
     let html = `<div class="cal-num">${d}</div>`;
@@ -2357,6 +2594,60 @@ function renderCal() {
 function selectDay(dateStr) {
   selectedDateStr = (selectedDateStr === dateStr) ? null : dateStr;
   renderCal();
+
+  // Deselect all
+  document.querySelectorAll('.cal-cell.selected').forEach(c => c.classList.remove('selected'));
+  // Select clicked
+  const clickedCell = document.querySelector(`.cal-cell[data-date="${dateStr}"]`);
+  if(clickedCell) clickedCell.classList.add('selected');
+
+  const panel = document.getElementById('calDayPanel');
+  if(!panel) return;
+
+  if(!selectedDateStr) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  const dayEvents = EVENTS.filter(e => e.d === selectedDateStr);
+  const p1Tasks = TASKS.filter(t => !t.done && t.prio === 'alta');
+  const tagLabels = {despinsage:'Despinsage',personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
+  const tagColors = {despinsage:'var(--cyan)',personal:'var(--green)',cumple:'var(--pink)',work:'var(--gold)'};
+
+  const dt = new Date(selectedDateStr + 'T12:00:00');
+  const dateLabel = dt.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+
+  let html = `<div style="font-size:14px;font-weight:800;margin-bottom:12px">${dateLabel.charAt(0).toUpperCase()+dateLabel.slice(1)}</div>`;
+
+  if(dayEvents.length) {
+    html += `<div class="cal-panel-title">Eventos</div>`;
+    html += dayEvents.map(ev => `
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="width:3px;height:32px;border-radius:2px;background:${tagColors[ev.t]||'var(--accent)'};flex-shrink:0"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600">${ev.n}</div>
+          <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${tagLabels[ev.t]||ev.t}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  html += `<div class="cal-panel-title">Tareas urgentes (P1)</div>`;
+  if(p1Tasks.length) {
+    html += p1Tasks.slice(0,5).map(t => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span class="prio-badge pb-p1">P1</span>
+        <span style="font-size:12px;font-weight:600">${t.name}</span>
+      </div>`).join('');
+  } else {
+    html += `<div class="cal-panel-empty">✓ Sin urgencias</div>`;
+  }
+
+  if(!dayEvents.length && !p1Tasks.length) {
+    html += `<div class="cal-panel-empty" style="margin-top:8px">Día libre ✓</div>`;
+  }
+
+  panel.innerHTML = html;
+  panel.style.display = 'block';
 }
 
 function renderEventList() {
@@ -2426,7 +2717,7 @@ function renderWeek() {
 
 function renderUpcoming() {
   const todayStr = new Date().toISOString().split('T')[0];
-  const upcoming = EVENTS.filter(e=>e.d>=todayStr).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4);
+  const upcoming = EVENTS.filter(e=>e.d>=todayStr).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,3);
   const el = document.getElementById('upcoming-events');
   if(!el) return;
   const tagColors = {despinsage:' ev-despinsage',personal:' ev-personal',cumple:' ev-cumple',work:' ev-work'};
@@ -2943,7 +3234,7 @@ async function init() {
   const dateStr = now.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('dash-date').textContent = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
   const qi = now.getDate() % QUOTES.length;
-  document.getElementById('quoteText').textContent = QUOTES[qi];
+  // Quote display removed from HUB (quote card removed in redesign)
   document.getElementById('cal-month-sub').textContent = now.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
 
   ST._prevLvl = ST._prevLvl || getLevel(ST.xp);
