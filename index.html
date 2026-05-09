@@ -2163,10 +2163,12 @@ async function loadFromCloud(silent = false) {
   } else if(!silent) {
     await syncToCloud();
   }
-  const remoteTasks = await sbGetAllTasks();
-  if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
-    TASKS = remoteTasks;
-    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+  if(!document.body.classList.contains('drag-active')) {
+    const remoteTasks = await sbGetAllTasks();
+    if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
+      TASKS = remoteTasks;
+      localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+    }
   }
   updateAll(); renderTasks();
   if(!silent) showToast('✅ Sincronizado');
@@ -2607,12 +2609,31 @@ function getStatus(t) {
 }
 
 let _dragId = null;
+let _dragSourceEl = null;
+
 function tdragStart(e, id) {
   _dragId = id;
   e.dataTransfer.effectAllowed = 'move';
-  const el = e.currentTarget;
-  requestAnimationFrame(() => el.classList.add('dragging'));
+  _dragSourceEl = e.currentTarget;
+  requestAnimationFrame(() => {
+    if(_dragSourceEl) _dragSourceEl.classList.add('dragging');
+  });
+  document.body.classList.add('drag-active');
 }
+
+function _dragCleanup() {
+  document.querySelectorAll('.drop-placeholder').forEach(p => p.remove());
+  document.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+  document.querySelectorAll('.dragging').forEach(c => c.classList.remove('dragging'));
+  document.body.classList.remove('drag-active');
+  _dragId = null;
+  _dragSourceEl = null;
+}
+
+function tdragEnd() {
+  _dragCleanup();
+}
+
 function _getOrAddPlaceholder(col) {
   const cards = col.querySelector('.kanban-cards');
   if(!cards) return;
@@ -2622,32 +2643,39 @@ function _getOrAddPlaceholder(col) {
     cards.appendChild(ph);
   }
 }
+
 function tdragOver(e, el) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
   el.classList.add('drag-over');
   _getOrAddPlaceholder(el);
 }
-function tdragLeave(el) {
+
+function tdragLeave(e, el) {
+  // Only remove highlight if truly leaving the column (not entering a child)
+  if(el.contains(e.relatedTarget)) return;
   el.classList.remove('drag-over');
   const ph = el.querySelector('.drop-placeholder');
   if(ph) ph.remove();
 }
+
 function tdropTask(e, newStatus, el) {
   e.preventDefault();
   el.classList.remove('drag-over');
   const ph = el.querySelector('.drop-placeholder');
   if(ph) ph.remove();
-  if(!_dragId) return;
-  const t = TASKS.find(x => x.id === _dragId);
+  const id = _dragId;
+  _dragCleanup();
+  if(!id) return;
+  const t = TASKS.find(x => x.id === id);
   if(t) {
     const wasNotDone = getStatus(t) !== 'done';
     t.status = newStatus;
     t.done = newStatus === 'done';
     if(t.done && wasNotDone) { ST.xp += 10; showXpPop('+10 XP'); }
+    sbUpsertTask(t);
     save(); updateAll(); renderTasks();
   }
-  _dragId = null;
 }
 
 function sendToRiding(id) {
@@ -2692,7 +2720,7 @@ function renderTodoAll() {
   function rCard(t) {
     const col = AREA_COLORS[t.area] || '#6a6a8a';
     const dueTxt = t.due ? `<span style="font-family:var(--fm);font-size:8px;color:var(--muted2);margin-left:auto">${t.due}</span>` : '';
-    return `<div class="r-card" draggable="true" ondragstart="tdragStart(event,'${t.id}')">
+    return `<div class="r-card" draggable="true" ondragstart="tdragStart(event,'${t.id}')" ondragend="tdragEnd()">
       <div class="r-card-name">${t.name}</div>
       <div class="r-card-meta">
         <span style="font-family:var(--fm);font-size:8px;color:${col}">${AREA_NAMES[t.area]||t.area}</span>
@@ -2705,7 +2733,7 @@ function renderTodoAll() {
     const col = AREA_COLORS[t.area] || '#6a6a8a';
     const dueTxt = t.due ? `<div class="mc-pill-due">${t.due}</div>` : '';
     return `<div class="mc-pill" draggable="true"
-      ondragstart="tdragStart(event,'${t.id}')"
+      ondragstart="tdragStart(event,'${t.id}')" ondragend="tdragEnd()"
       style="background:${col}22;border:1px solid ${col}55">
       <div style="flex:1;min-width:0">
         <div class="mc-pill-name">${t.name}</div>
@@ -2716,7 +2744,7 @@ function renderTodoAll() {
   }
 
   function da(status) {
-    return `ondragover="tdragOver(event,this)" ondragleave="tdragLeave(this)" ondrop="tdropTask(event,'${status}',this)"`;
+    return `ondragover="tdragOver(event,this)" ondragleave="tdragLeave(event,this)" ondrop="tdropTask(event,'${status}',this)"`;
   }
 
   function rCol(status, label, color, items) {
@@ -2988,7 +3016,7 @@ function selectDay(dateStr) {
   document.querySelectorAll('.cal-cell.selected').forEach(c => c.classList.remove('selected'));
   // Select clicked
   const clickedCell = document.querySelector(`.cal-cell[data-date="${dateStr}"]`);
-  if(clickedCell) clickedCell.classList.add('selected');
+  if(clickedCell && selectedDateStr) clickedCell.classList.add('selected');
 
   const panel = document.getElementById('calDayPanel');
   if(!panel) return;
