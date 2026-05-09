@@ -1474,6 +1474,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .ss-val.green { color: var(--green); }
 .ss-val.gold { color: var(--gold); }
 .ss-val.pink { color: var(--accent2); }
+.ss-val.cyan { color: var(--cyan); }
 .ss-key { font-family: var(--fm); font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
 .ss-sep { width: 1px; height: 36px; background: var(--border2); flex-shrink: 0; }
 
@@ -1490,6 +1491,15 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .lvl-strip-left { flex: 1; }
 .lvl-strip-name { font-family: var(--fm); font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 1px; display: block; }
 .lvl-strip-xp { font-family: var(--fm); font-size: 9px; color: var(--gold); }
+
+.hub-hero-card { display:flex; align-items:center; gap:20px; padding:16px 16px; }
+#hubCanvas { image-rendering:pixelated; flex-shrink:0; }
+.hub-hero-info { display:flex; flex-direction:column; gap:5px; flex:1; }
+.hub-hero-lvnum { font-family:var(--fm); font-size:10px; color:var(--muted2); letter-spacing:3px; font-weight:700; }
+.hub-hero-name { font-family:var(--fm); font-size:20px; font-weight:800; color:var(--text); letter-spacing:2px; line-height:1; }
+.hub-hero-xp { font-family:var(--fm); font-size:10px; color:var(--gold); letter-spacing:1px; }
+.hub-xp-track { height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-top:2px; overflow:hidden; }
+.hub-xp-fill { height:100%; border-radius:2px; transition:width .6s cubic-bezier(.4,0,.2,1); }
 
 /* ── KANBAN ── */
 .kanban-wrap {
@@ -1736,20 +1746,20 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="chip" id="dash-day-chip">Día 1/66</div>
   </div>
 
-  <!-- Stats strip — 4 métricas clave -->
+  <!-- Stats strip — RACHA / RÉCORD / DÍA / HOY -->
   <div class="stats-strip">
     <div class="ss-item">
-      <div class="ss-val purple" id="d-xp">0</div>
-      <div class="ss-key">XP</div>
-    </div>
-    <div class="ss-sep"></div>
-    <div class="ss-item">
       <div class="ss-val green" id="d-streak">0</div>
-      <div class="ss-key">STREAK</div>
+      <div class="ss-key">RACHA</div>
     </div>
     <div class="ss-sep"></div>
     <div class="ss-item">
-      <div class="ss-val gold" id="d-day">1</div>
+      <div class="ss-val gold" id="d-streak-record">0</div>
+      <div class="ss-key">RÉCORD</div>
+    </div>
+    <div class="ss-sep"></div>
+    <div class="ss-item">
+      <div class="ss-val cyan" id="d-day">1</div>
       <div class="ss-key">DÍA/66</div>
     </div>
     <div class="ss-sep"></div>
@@ -1759,14 +1769,14 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     </div>
   </div>
 
-  <!-- Level bar -->
-  <div class="lvl-strip">
-    <div class="lvl-strip-left">
-      <span class="lvl-strip-name" id="dash-lvl-lbl">LVL 1 — Creative Initiate</span>
-      <span class="lvl-strip-xp" id="dash-xp-val">0 / 100 XP</span>
-    </div>
-    <div class="bar-wrap" style="flex:1;max-width:160px">
-      <div class="bar-fill" id="dash-xp-bar" style="width:0%"></div>
+  <!-- Hero card: pixel knight + circular XP arc -->
+  <div class="hub-hero-card card">
+    <canvas id="hubCanvas" width="120" height="120"></canvas>
+    <div class="hub-hero-info">
+      <div class="hub-hero-lvnum" id="hub-lvl-num">LVL 1</div>
+      <div class="hub-hero-name" id="hub-lvl-name">WANDERER</div>
+      <div class="hub-hero-xp" id="hub-xp-text">0 / 100 XP</div>
+      <div class="hub-xp-track"><div class="hub-xp-fill" id="hub-xp-fill" style="width:0%"></div></div>
     </div>
   </div>
 
@@ -2229,118 +2239,143 @@ const SCHEDULE = [
 // ══════════════════════════════════
 // PIXEL CHARACTER
 // ══════════════════════════════════
+// PIXEL KNIGHT — shared data
+// ══════════════════════════════════
+const _KS = [
+  // Lv1 Wanderer — simple tunic, no armor
+  ['   OOO   ','  OOOOO  ','   OOO   ','  OOOOO  ','  OOOOO  ','  OOOOO  ','  OOOOO  ','   O O   ','   O O   ','  OO OO  '],
+  // Lv2 Scout — leather cap, padded vest
+  ['   OOO   ','  OOOOO  ',' OOOOOOO ',' OOOOOOO ',' OOOOOOO ','  OOOOO  ','  OOOOO  ','   O O   ','   O O   ','  OO OO  '],
+  // Lv3 Knight — chainmail, round helm with visor slit
+  ['  OOOOO  ',' OOOOOOO ',' OO   OO ',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO',' OOOOOOO ','  OO OO  ','  O   O  ',' OO   OO '],
+  // Lv4 Commander — full plate, closed visor, massive pauldrons
+  ['  OOOOO  ',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOOOOOO ','  OOO OO ','  O   O  ',' OO   OO '],
+  // Lv5 Champion — horned helm, glowing plate
+  ['O OOOOO  ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOO OOO ','OO     OO','O       O'],
+  // Lv6 Paladin — winged helm, golden plate, aura
+  ['O OOOOO O','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOO OOO ','OOO   OOO','O       O'],
+  // Lv7 Legend — crown spikes, rainbow, full coverage
+  ['O O O O O',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOO   OOO','O       O'],
+];
+const _KC = ['#7a6340','#9e7249','#7a96aa','#4a7fc1','#00e882','#ffd700','#ffcc00'];
+const _KG = [0, 14, 26, 40, 60, 76, 92];
+const _KL = ['WANDERER','SCOUT','KNIGHT','COMMANDER','CHAMPION','PALADIN','LEGEND'];
+
+function _drawKnightSprite(ctx, stage, ox, oy, S) {
+  const char = _KS[stage];
+  const col = stage === 6 ? null : _KC[stage];
+  const t = Date.now();
+  char.forEach((row, ry) => {
+    row.split('').forEach((px, rx) => {
+      if(px !== 'O') return;
+      if(stage === 6) {
+        ctx.fillStyle = `hsl(${(rx*28+ry*14+t/25)%360},100%,65%)`;
+      } else if(stage >= 4) {
+        ctx.fillStyle = col;
+        ctx.globalAlpha = 0.72 + Math.sin(t/180 + rx*0.8 + ry*0.6) * 0.28;
+      } else {
+        ctx.fillStyle = col;
+      }
+      ctx.fillRect(ox + rx*S, oy + ry*S, S-1, S-1);
+      ctx.globalAlpha = 1;
+    });
+  });
+}
+
 function drawPixelChar(lvl, pct) {
   const canvas = document.getElementById('pixelCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
-  const S = 5; // pixel size
-
+  const S = 5;
   ctx.clearRect(0, 0, W, H);
-
-  // Stage 0-6 maps to Level 1-7
   const stage = Math.max(0, Math.min(6, (lvl||1) - 1));
+  const col = _KC[stage];
+  const charW = 9*S, charH = 10*S;
+  const ox = Math.floor((W-charW)/2);
+  const oy = Math.floor((H-charH)/2) - 4;
 
-  // 7 roguelike sprites (9 wide × 10 tall)
-  const SPRITES = [
-    // Lv1 — Initiate (hooded, hunched)
-    ['   OOO   ','  OOOOO  ',' OOOOOOO ',' O     O ','  OOOOO  ','  OOOOO  ','   O O   ','   O O   ','  OO OO  ','         '],
-    // Lv2 — Focused Maker (upright, simple staff)
-    ['   OOO   ','  OOOOO  ',' OOOOOOO ',' O  O  O ',' OOOOOOO ',' OOOOOOO ','  OO OO  ','  O   O  ',' OO   OO ','         '],
-    // Lv3 — Disciplined Artist (staff + tool glow)
-    ['   OOO   ','  OOOOO  ','OOOOOOOOO','OO  O  OO','OOOOOOOOO',' OOOOOOO ','  OOOOO  ','  OO OO  ',' OO   OO ','  O   O  '],
-    // Lv4 — Creative Warrior (armor + sword)
-    ['  OOOOO  ',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','O OOOOOOO','OOOOOOOOO',' OOOOOOO ','  OOO OO ','  O   O  ',' OO   OO '],
-    // Lv5 — Master of Flow (cape, aura)
-    [' O OOO O ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOO OOO ','OO     OO','O       O'],
-    // Lv6 — Vision Architect (dual aura, floating)
-    ['O  OOO  O','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOO   OOO','O       O'],
-    // Lv7 — Legendary Creator (crown, full glow)
-    ['O O O O O',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOO   OOO'],
-  ];
-
-  const COLORS  = ['#4a4a6a','#5b7fff','#7b6fff','#ff9f43','#00f5a0','#00d4ff','#ffcc00'];
-  const GLOWS   = [0, 20, 35, 45, 60, 70, 85];
-  const LABELS  = ['INITIATE','MAKER','ARTIST','WARRIOR','MASTER','ARCHITECT','LEGEND'];
-
-  const char = SPRITES[stage];
-  const col  = COLORS[stage];
-  const charW = char[0].length * S;
-  const charH = char.length * S;
-  const ox = Math.floor((W - charW) / 2);
-  const oy = Math.floor((H - charH) / 2) - 5;
-
-  // Radial glow background
   if(stage >= 1) {
-    const r = GLOWS[stage];
-    const grad = ctx.createRadialGradient(W/2, oy + charH/2, 0, W/2, oy + charH/2, r);
-    grad.addColorStop(0, col + '28');
-    grad.addColorStop(1, 'transparent');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
+    const r = _KG[stage];
+    const g = ctx.createRadialGradient(W/2, oy+charH/2, 0, W/2, oy+charH/2, r);
+    g.addColorStop(0, col+'2a'); g.addColorStop(1,'transparent');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
-
-  // Floating particles for Lv5+
   if(stage >= 4) {
-    const t = Date.now() / 900;
-    const n = (stage - 3) * 5;
-    for(let p = 0; p < n; p++) {
-      const px = ox + charW/2 + Math.sin(t * 1.1 + p * 2.4) * (charW * 0.7);
-      const py = oy + charH/2 + Math.cos(t * 0.8 + p * 1.9) * (charH * 0.65);
-      ctx.globalAlpha = 0.25 + Math.sin(t * 2.2 + p) * 0.18;
-      ctx.fillStyle = col;
-      ctx.fillRect(Math.round(px), Math.round(py), 2, 2);
+    const t = Date.now()/900, n = (stage-3)*5;
+    for(let p=0;p<n;p++) {
+      ctx.globalAlpha = 0.22+Math.sin(t*2.2+p)*0.18;
+      ctx.fillStyle = stage===6?`hsl(${(p*55+t*60)%360},100%,65%)`:col;
+      ctx.fillRect(Math.round(ox+charW/2+Math.sin(t*1.1+p*2.4)*charW*0.7),
+                   Math.round(oy+charH/2+Math.cos(t*0.8+p*1.9)*charH*0.65), 2, 2);
     }
     ctx.globalAlpha = 1;
   }
+  _drawKnightSprite(ctx, stage, ox, oy, S);
 
-  // Draw sprite pixels
-  char.forEach((row, ry) => {
-    row.split('').forEach((px, rx) => {
-      if(px === 'O') {
-        if(stage === 6) {
-          // Rainbow animated for Lv7
-          const hue = (rx * 28 + ry * 14 + Date.now() / 25) % 360;
-          ctx.fillStyle = `hsl(${hue},100%,65%)`;
-        } else if(stage >= 4) {
-          // Shimmer for Lv5+
-          const sh = 0.75 + Math.sin(Date.now()/180 + rx * 0.8 + ry * 0.6) * 0.25;
-          ctx.fillStyle = col;
-          ctx.globalAlpha = sh;
-        } else {
-          ctx.fillStyle = col;
-        }
-        ctx.fillRect(ox + rx * S, oy + ry * S, S - 1, S - 1);
-        ctx.globalAlpha = 1;
-      }
-    });
-  });
+  ctx.fillStyle = (col||'#fff')+'30';
+  ctx.fillRect(ox+4, oy+charH+2, charW-8, 2);
 
-  // Ground shadow
-  ctx.fillStyle = col + '30';
-  ctx.fillRect(ox + 4, oy + charH + 2, charW - 8, 2);
+  const barY = H-7, barW = W-28;
+  ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(14,barY,barW,3);
+  ctx.fillStyle=col||'#fff'; ctx.fillRect(14,barY,Math.round(barW*Math.min(100,pct||0)/100),3);
 
-  // Daily progress bar
-  const barY = H - 7;
-  const barW = W - 28;
-  ctx.fillStyle = 'rgba(255,255,255,0.06)';
-  ctx.fillRect(14, barY, barW, 3);
-  ctx.fillStyle = col;
-  ctx.fillRect(14, barY, Math.round(barW * Math.min(100, pct||0) / 100), 3);
+  ctx.fillStyle=col||'#fff'; ctx.globalAlpha=0.7;
+  ctx.font='bold 8px monospace'; ctx.textAlign='center';
+  ctx.fillText(_KL[stage], W/2, barY-4);
+  ctx.globalAlpha=1; ctx.textAlign='left';
 
-  // Level label
-  ctx.fillStyle = col;
-  ctx.globalAlpha = 0.75;
-  ctx.font = 'bold 8px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText(LABELS[stage], W / 2, barY - 4);
-  ctx.globalAlpha = 1;
-  ctx.textAlign = 'left';
+  if(stage>=4||(pct>0&&pct<100)) requestAnimationFrame(()=>drawPixelChar(lvl,pct));
+}
 
-  // Animate for Lv5+ or while bar is live
-  if(stage >= 4 || (pct > 0 && pct < 100)) {
-    requestAnimationFrame(() => drawPixelChar(lvl, pct));
+function drawHubChar(lvl, xpPct) {
+  const canvas = document.getElementById('hubCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const S = 4;
+  ctx.clearRect(0, 0, W, H);
+  const stage = Math.max(0, Math.min(6, (lvl||1) - 1));
+  const col = stage===6 ? '#ffcc00' : _KC[stage];
+  const charW = 9*S, charH = 10*S;
+  const ox = Math.floor((W-charW)/2);
+  const oy = Math.floor((H-charH)/2);
+
+  // Radial glow
+  if(stage >= 1) {
+    const r = _KG[stage] * 0.9;
+    const g = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,r);
+    g.addColorStop(0, col+'22'); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   }
+
+  // Circular XP arc
+  const cx=W/2, cy=H/2, arcR=W/2-5;
+  ctx.beginPath(); ctx.arc(cx,cy,arcR,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=5; ctx.stroke();
+  if((xpPct||0)>0) {
+    const end = -Math.PI/2 + (Math.PI*2*(Math.min(100,xpPct)/100));
+    ctx.beginPath(); ctx.arc(cx,cy,arcR,-Math.PI/2,end);
+    ctx.strokeStyle=col; ctx.lineWidth=5; ctx.lineCap='round';
+    ctx.shadowBlur=10; ctx.shadowColor=col; ctx.stroke();
+    ctx.shadowBlur=0; ctx.lineCap='butt';
+  }
+
+  // Floating particles Lv5+
+  if(stage >= 4) {
+    const t=Date.now()/900, n=(stage-3)*4;
+    for(let p=0;p<n;p++) {
+      ctx.globalAlpha=0.2+Math.sin(t*2.2+p)*0.15;
+      ctx.fillStyle=stage===6?`hsl(${(p*55+t*60)%360},100%,65%)`:col;
+      ctx.fillRect(Math.round(cx+Math.sin(t*1.1+p*2.4)*(charW*0.8)),
+                   Math.round(cy+Math.cos(t*0.8+p*1.9)*(charH*0.7)),2,2);
+    }
+    ctx.globalAlpha=1;
+  }
+
+  _drawKnightSprite(ctx, stage, ox, oy, S);
+
+  if(stage>=4) requestAnimationFrame(()=>drawHubChar(lvl,xpPct));
 }
 
 // ══════════════════════════════════
@@ -2390,6 +2425,7 @@ function nextDay() {
   const done = ALL_HABITS.filter(h=>ST.completed[h]).length;
   if(done === ALL_HABITS.length) ST.streak++;
   else if(done === 0) ST.streak = 0;
+  ST.streakRecord = Math.max(ST.streakRecord||0, ST.streak);
 
   ST.history.unshift({
     day: ST.day,
@@ -2417,28 +2453,38 @@ function updateAll() {
   const done = ALL_HABITS.filter(h=>ST.completed[h]).length;
   const pct = Math.round((done/ALL_HABITS.length)*100);
 
-  // Dash
-  document.getElementById('d-xp').textContent = xp;
+  // Streak record
+  ST.streakRecord = Math.max(ST.streakRecord||0, ST.streak||0);
+
+  // Dash stats strip
   document.getElementById('d-streak').textContent = ST.streak;
+  document.getElementById('d-streak-record').textContent = ST.streakRecord;
   document.getElementById('d-day').textContent = ST.day;
   document.getElementById('d-done').textContent = pct+'%';
   document.getElementById('dash-day-chip').textContent = 'Día '+ST.day+'/66';
-  document.getElementById('dash-lvl-lbl').textContent = 'LVL '+lvl+' — '+getLvlName(lvl);
-  document.getElementById('dash-xp-val').textContent = (xp-xpS)+' / '+(xpE-xpS)+' XP';
-  document.getElementById('dash-xp-bar').style.width = barPct+'%';
   renderFocusTasks();
+
+  // Hub hero card
+  const hubLvlNum = document.getElementById('hub-lvl-num');
+  const hubLvlName = document.getElementById('hub-lvl-name');
+  const hubXpText = document.getElementById('hub-xp-text');
+  const hubXpFill = document.getElementById('hub-xp-fill');
+  if(hubLvlNum) hubLvlNum.textContent = 'LVL '+lvl;
+  if(hubLvlName) hubLvlName.textContent = _KL[Math.min(lvl-1,6)];
+  if(hubXpText) hubXpText.textContent = (xp-xpS)+' / '+(xpE-xpS)+' XP';
+  if(hubXpFill) { hubXpFill.style.width=barPct+'%'; hubXpFill.style.background=_KC[Math.min(lvl-1,6)]; }
+  drawHubChar(lvl, barPct);
 
   // Habits page
   document.getElementById('hab-day-sub').textContent = 'Día '+ST.day+' de 66';
   document.getElementById('hab-streak-chip').textContent = '🔥 '+ST.streak+' días';
 
-  // RPG hero card
+  // RPG hero card (habits tab)
   const rpgPct = document.getElementById('ring-pct');
   const rpgSub = document.getElementById('ring-sub');
   const rpgLvl = document.getElementById('rpg-lvl-name');
   const rpgFill = document.getElementById('rpg-xp-fill');
   const rpgXpLbl = document.getElementById('rpg-xp-lbl');
-
   if(rpgPct) rpgPct.textContent = pct+'%';
   if(rpgSub) rpgSub.textContent = done+' / '+ALL_HABITS.length;
   if(rpgLvl) rpgLvl.textContent = getLvlName(lvl).toUpperCase();
@@ -2449,11 +2495,10 @@ function updateAll() {
   renderSchedule();
 
   // Level up check
-  const newLvl = getLevel(xp);
-  if(newLvl > (ST._prevLvl||1)) {
-    ST._prevLvl = newLvl;
+  if(lvl > (ST._prevLvl||1)) {
+    ST._prevLvl = lvl;
     save();
-    setTimeout(()=>showLvlUp(newLvl), 400);
+    setTimeout(()=>showLvlUp(lvl), 400);
   }
 
   renderWeek();
@@ -2672,7 +2717,10 @@ function tdropTask(e, newStatus, el) {
     const wasNotDone = getStatus(t) !== 'done';
     t.status = newStatus;
     t.done = newStatus === 'done';
-    if(t.done && wasNotDone) { ST.xp += 10; showXpPop('+10 XP'); }
+    if(t.done && wasNotDone) {
+      ST.xp += 10; showXpPop('+10 XP');
+      spawnParticles(window.innerWidth/2, window.innerHeight*0.5, AREA_COLORS[t.area]||'#00f5a0');
+    }
     sbUpsertTask(t);
     save(); updateAll(); renderTasks();
   }
@@ -2888,7 +2936,10 @@ function toggleTask(id) {
   if(t) {
     t.done = !t.done;
     t.status = t.done ? 'done' : 'backlog';
-    if(t.done) { ST.xp += 10; showXpPop('+10 XP'); }
+    if(t.done) {
+      ST.xp += 10; showXpPop('+10 XP');
+      spawnParticles(window.innerWidth/2, window.innerHeight*0.6, AREA_COLORS[t.area]||'#00f5a0');
+    }
     sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, created_at: new Date().toISOString() });
     save();
     updateAll();
@@ -3294,10 +3345,34 @@ function showXpPop(text) {
   ],{duration:900,easing:'ease-out'}).onfinish=()=>pop.remove();
 }
 
+function spawnParticles(x, y, color, count) {
+  const n = count || 10;
+  const col = color || '#00f5a0';
+  for(let i=0;i<n;i++) {
+    const angle = (i/n)*Math.PI*2;
+    const dist = 38 + Math.random()*45;
+    const dx = Math.cos(angle)*dist, dy = Math.sin(angle)*dist;
+    const p = document.createElement('div');
+    p.style.cssText = `position:fixed;width:5px;height:5px;border-radius:1px;background:${col};pointer-events:none;z-index:9998;left:${x}px;top:${y}px;`;
+    document.body.appendChild(p);
+    p.animate([
+      {transform:'translate(-50%,-50%) scale(1.3)',opacity:1},
+      {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(0)`,opacity:0}
+    ],{duration:650,easing:'ease-out',delay:i*18}).onfinish=()=>p.remove();
+  }
+}
+
 function showLvlUp(lvl) {
-  document.getElementById('lvlNum').textContent = lvl;
-  document.getElementById('lvlTitle').textContent = getLvlName(lvl);
-  document.getElementById('lvlup').classList.add('show');
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:fixed;inset:0;background:#fff;pointer-events:none;z-index:9997;';
+  document.body.appendChild(flash);
+  flash.animate([{opacity:0},{opacity:0.65},{opacity:0}],{duration:380,easing:'ease-out'}).onfinish=()=>flash.remove();
+  spawnParticles(window.innerWidth/2, window.innerHeight/2, '#ffcc00', 18);
+  setTimeout(()=>{
+    document.getElementById('lvlNum').textContent = lvl;
+    document.getElementById('lvlTitle').textContent = getLvlName(lvl);
+    document.getElementById('lvlup').classList.add('show');
+  }, 320);
 }
 
 function closeLvl() { document.getElementById('lvlup').classList.remove('show'); }
