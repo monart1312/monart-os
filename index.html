@@ -1601,6 +1601,51 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .todo-modal-cancel { padding:8px 16px; border-radius:8px; border:1px solid var(--border2); background:transparent; color:var(--muted2); font-family:var(--fm); font-size:11px; cursor:pointer; }
 .todo-modal-confirm { padding:8px 20px; border-radius:8px; border:none; background:var(--accent); color:white; font-family:var(--fm); font-size:11px; cursor:pointer; font-weight:700; }
 
+/* ── SEMANA INTERACTIVA (HUB) ── */
+.week-day { cursor:pointer; transition:all .15s; }
+.week-day.selected { border-color:var(--accent) !important; background:rgba(123,111,255,.18) !important; transform:translateY(-2px); }
+.hub-day-panel { background:var(--s2); border:1px solid var(--border2); border-radius:12px; padding:12px 14px; margin-top:10px; animation:fadeIn .2s ease; }
+.hub-dp-title { font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:2px; color:var(--muted2); text-transform:uppercase; margin-bottom:8px; }
+.hub-dp-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.hub-dp-row:last-child { border-bottom:none; }
+.hub-dp-empty { font-family:var(--fm); font-size:10px; color:var(--muted); padding:3px 0; }
+
+/* ── 5 MISIONES SEMANALES ── */
+.mission-item { display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--border); cursor:pointer; transition:opacity .15s; }
+.mission-item:last-child { border-bottom:none; }
+.mission-item.done-m { opacity:.45; }
+.mission-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .2s; }
+.mission-item.done-m .mission-check { background:var(--gold); border-color:var(--gold); color:#000; }
+.mission-slot-add { width:22px; height:22px; border-radius:6px; border:1px dashed var(--border2); background:transparent; color:var(--muted); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.mission-slot-add:hover { border-color:var(--gold); color:var(--gold); }
+.mission-name { flex:1; font-size:12px; font-weight:600; }
+.mission-area-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.mission-xp-tag { font-family:var(--fm); font-size:9px; color:var(--gold); background:rgba(255,204,0,.1); border:1px solid rgba(255,204,0,.2); border-radius:6px; padding:1px 5px; }
+.mission-edit-btn { background:transparent; border:none; color:var(--muted); font-size:11px; cursor:pointer; padding:2px 6px; border-radius:4px; transition:color .15s; }
+.mission-edit-btn:hover { color:var(--text); }
+.missions-footer { display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-top:8px; border-top:1px solid var(--border); }
+.missions-prog { display:flex; align-items:center; gap:8px; }
+.missions-prog-track { width:80px; height:4px; background:var(--s3); border-radius:2px; overflow:hidden; }
+.missions-prog-fill { height:100%; background:var(--gold); border-radius:2px; transition:width .3s; }
+.missions-prog-lbl { font-family:var(--fm); font-size:9px; color:var(--muted2); }
+.missions-xp-earned { font-family:var(--fm); font-size:9px; color:var(--gold); font-weight:700; }
+
+/* ── AREA STATS ── */
+.area-stat-row { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+.area-stat-row:last-child { margin-bottom:0; }
+.area-stat-label { font-family:var(--fm); font-size:9px; font-weight:700; width:68px; flex-shrink:0; letter-spacing:1px; }
+.area-stat-track { flex:1; height:7px; background:var(--s3); border-radius:4px; overflow:hidden; }
+.area-stat-fill { height:100%; border-radius:4px; transition:width .5s ease; min-width:2px; }
+.area-stat-count { font-family:var(--fm); font-size:9px; color:var(--muted2); width:28px; text-align:right; flex-shrink:0; }
+
+/* ── MISSION MODAL ── */
+.mission-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:500; backdrop-filter:blur(6px); }
+.mission-modal-box { background:var(--s2); border:1px solid rgba(255,204,0,.3); border-radius:16px; padding:24px; width:320px; max-width:90vw; display:flex; flex-direction:column; gap:12px; box-shadow:0 0 40px rgba(255,204,0,.1); }
+.mission-modal-title { font-family:var(--fm); font-size:11px; font-weight:700; letter-spacing:2px; color:var(--gold); text-transform:uppercase; }
+.mission-modal-box input,.mission-modal-box select { background:var(--s3); border:1px solid var(--border2); border-radius:8px; padding:10px 12px; color:var(--text); font-family:var(--ff); font-size:13px; outline:none; width:100%; }
+.mission-modal-box input:focus,.mission-modal-box select:focus { border-color:var(--gold); }
+.mission-modal-box select option { background:var(--s3); }
+
 /* ── CALENDAR DAY PANEL ── */
 .cal-day-panel {
   background: var(--s1);
@@ -1691,7 +1736,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="chip" id="dash-day-chip">Día 1/66</div>
   </div>
 
-  <!-- Compact stats strip -->
+  <!-- Stats strip — 4 métricas clave -->
   <div class="stats-strip">
     <div class="ss-item">
       <div class="ss-val purple" id="d-xp">0</div>
@@ -1700,21 +1745,21 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="ss-sep"></div>
     <div class="ss-item">
       <div class="ss-val green" id="d-streak">0</div>
-      <div class="ss-key">Racha</div>
+      <div class="ss-key">STREAK</div>
     </div>
     <div class="ss-sep"></div>
     <div class="ss-item">
       <div class="ss-val gold" id="d-day">1</div>
-      <div class="ss-key">Día</div>
+      <div class="ss-key">DÍA/66</div>
     </div>
     <div class="ss-sep"></div>
     <div class="ss-item">
       <div class="ss-val pink" id="d-done">0%</div>
-      <div class="ss-key">Hoy</div>
+      <div class="ss-key">HOY</div>
     </div>
   </div>
 
-  <!-- Level bar compact -->
+  <!-- Level bar -->
   <div class="lvl-strip">
     <div class="lvl-strip-left">
       <span class="lvl-strip-name" id="dash-lvl-lbl">LVL 1 — Creative Initiate</span>
@@ -1725,16 +1770,36 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     </div>
   </div>
 
-  <div class="card" id="focus-card">
-    <div class="card-title">🎯 Foco de hoy</div>
-    <div id="focus-tasks"></div>
+  <!-- 5 Misiones semanales -->
+  <div class="card">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span>⚔️ Misiones de la semana</span>
+      <span id="missions-count-badge" style="font-family:var(--fm);font-size:10px;color:var(--gold)">0/5</span>
+    </div>
+    <div id="missions-list"></div>
+    <div class="missions-footer">
+      <div class="missions-prog">
+        <div class="missions-prog-track"><div class="missions-prog-fill" id="missions-prog-fill" style="width:0%"></div></div>
+        <span class="missions-prog-lbl" id="missions-prog-lbl">0 completadas</span>
+      </div>
+      <span class="missions-xp-earned" id="missions-xp-earned">+0 XP</span>
+    </div>
   </div>
 
+  <!-- Semana interactiva -->
   <div class="card">
     <div class="card-title">Esta semana</div>
     <div class="week-row" id="weekRow"></div>
+    <div id="hub-day-panel" style="display:none"></div>
   </div>
 
+  <!-- Actividad por área -->
+  <div class="card">
+    <div class="card-title">Actividad por área</div>
+    <div id="area-stats" style="margin-top:8px"></div>
+  </div>
+
+  <!-- Próximos eventos -->
   <div class="card">
     <div class="card-title">Próximos eventos</div>
     <div id="upcoming-events"></div>
@@ -1921,6 +1986,8 @@ const LEVELS = [
   {min:1500, name:'Vision Architect'},
   {min:2200, name:'Legendary Creator'},
 ];
+
+const AREA_COLORS = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
 
 const ALL_HABITS = ['notion','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4','windown','dormir'];
 const XP_MAP = {'notion':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5,'windown':15,'dormir':20};
@@ -2160,119 +2227,117 @@ const SCHEDULE = [
 // ══════════════════════════════════
 // PIXEL CHARACTER
 // ══════════════════════════════════
-function drawPixelChar(pct) {
+function drawPixelChar(lvl, pct) {
   const canvas = document.getElementById('pixelCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
-  const S = 4; // pixel size
+  const S = 5; // pixel size
 
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(0, 0, W, H);
 
-  // Background grid subtle
-  ctx.fillStyle = 'rgba(123,111,255,0.03)';
-  for(let x=0;x<W;x+=S*2) for(let y=0;y<H;y+=S*2) ctx.fillRect(x,y,S,S);
+  // Stage 0-6 maps to Level 1-7
+  const stage = Math.max(0, Math.min(6, (lvl||1) - 1));
 
-  // Character evolves with progress
-  // 0-25%: egg/seed, 25-50%: sprout, 50-75%: warrior, 75-100%: master
-  const stage = pct >= 100 ? 3 : pct >= 75 ? 3 : pct >= 50 ? 2 : pct >= 25 ? 1 : 0;
-
-  const CHARS = [
-    // Stage 0: sleeping blob
-    [
-      '  OOO  ',
-      ' OOOOO ',
-      'OOOOOOO',
-      ' O   O ',
-      '  OOO  ',
-      '   O   ',
-      '  O O  ',
-    ],
-    // Stage 1: awake, standing
-    [
-      '  OOO  ',
-      ' OOOOO ',
-      'O OOOOO',
-      'OO O O ',
-      ' OOOOO ',
-      '  O O  ',
-      ' O   O ',
-    ],
-    // Stage 2: warrior with weapon
-    [
-      ' OOOOO ',
-      'OOOOOOO',
-      'O OOOOO',
-      'OOOOOOO',
-      ' OOOOO ',
-      ' O   O ',
-      'OO   OO',
-    ],
-    // Stage 3: master glowing
-    [
-      'OOOOOOO',
-      'OOOOOOO',
-      'OOOOOOO',
-      'OOOOOOO',
-      'OOOOOOO',
-      ' OOOOO ',
-      'OO   OO',
-    ],
+  // 7 roguelike sprites (9 wide × 10 tall)
+  const SPRITES = [
+    // Lv1 — Initiate (hooded, hunched)
+    ['   OOO   ','  OOOOO  ',' OOOOOOO ',' O     O ','  OOOOO  ','  OOOOO  ','   O O   ','   O O   ','  OO OO  ','         '],
+    // Lv2 — Focused Maker (upright, simple staff)
+    ['   OOO   ','  OOOOO  ',' OOOOOOO ',' O  O  O ',' OOOOOOO ',' OOOOOOO ','  OO OO  ','  O   O  ',' OO   OO ','         '],
+    // Lv3 — Disciplined Artist (staff + tool glow)
+    ['   OOO   ','  OOOOO  ','OOOOOOOOO','OO  O  OO','OOOOOOOOO',' OOOOOOO ','  OOOOO  ','  OO OO  ',' OO   OO ','  O   O  '],
+    // Lv4 — Creative Warrior (armor + sword)
+    ['  OOOOO  ',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','O OOOOOOO','OOOOOOOOO',' OOOOOOO ','  OOO OO ','  O   O  ',' OO   OO '],
+    // Lv5 — Master of Flow (cape, aura)
+    [' O OOO O ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOO OOO ','OO     OO','O       O'],
+    // Lv6 — Vision Architect (dual aura, floating)
+    ['O  OOO  O','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOO   OOO','O       O'],
+    // Lv7 — Legendary Creator (crown, full glow)
+    ['O O O O O',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOO   OOO'],
   ];
 
-  const colors = ['#4a4a6a','#7b6fff','#00d4ff','#00f5a0'];
-  const glowColors = ['rgba(74,74,106,0)','rgba(123,111,255,0.3)','rgba(0,212,255,0.3)','rgba(0,245,160,0.4)'];
+  const COLORS  = ['#4a4a6a','#5b7fff','#7b6fff','#ff9f43','#00f5a0','#00d4ff','#ffcc00'];
+  const GLOWS   = [0, 20, 35, 45, 60, 70, 85];
+  const LABELS  = ['INITIATE','MAKER','ARTIST','WARRIOR','MASTER','ARCHITECT','LEGEND'];
 
-  const char = CHARS[stage];
-  const col = colors[stage];
-  const glow = glowColors[stage];
+  const char = SPRITES[stage];
+  const col  = COLORS[stage];
   const charW = char[0].length * S;
   const charH = char.length * S;
-  const offsetX = Math.floor((W/2 - charW/2));
-  const offsetY = Math.floor((H - charH)/2);
+  const ox = Math.floor((W - charW) / 2);
+  const oy = Math.floor((H - charH) / 2) - 5;
 
-  // Glow effect for higher stages
-  if(stage >= 2) {
-    const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 50);
-    gradient.addColorStop(0, glow);
-    gradient.addColorStop(1, 'transparent');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0,0,W,H);
+  // Radial glow background
+  if(stage >= 1) {
+    const r = GLOWS[stage];
+    const grad = ctx.createRadialGradient(W/2, oy + charH/2, 0, W/2, oy + charH/2, r);
+    grad.addColorStop(0, col + '28');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
   }
 
-  // Draw character
+  // Floating particles for Lv5+
+  if(stage >= 4) {
+    const t = Date.now() / 900;
+    const n = (stage - 3) * 5;
+    for(let p = 0; p < n; p++) {
+      const px = ox + charW/2 + Math.sin(t * 1.1 + p * 2.4) * (charW * 0.7);
+      const py = oy + charH/2 + Math.cos(t * 0.8 + p * 1.9) * (charH * 0.65);
+      ctx.globalAlpha = 0.25 + Math.sin(t * 2.2 + p) * 0.18;
+      ctx.fillStyle = col;
+      ctx.fillRect(Math.round(px), Math.round(py), 2, 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw sprite pixels
   char.forEach((row, ry) => {
     row.split('').forEach((px, rx) => {
-      if(px !== ' ') {
-        // Slight shimmer on completed chars
-        const shimmer = stage >= 2 ? (Math.sin(Date.now()/300 + rx + ry) * 0.1 + 0.9) : 1;
-        ctx.fillStyle = col;
-        ctx.globalAlpha = shimmer;
-        ctx.fillRect(offsetX + rx*S, offsetY + ry*S, S-1, S-1);
+      if(px === 'O') {
+        if(stage === 6) {
+          // Rainbow animated for Lv7
+          const hue = (rx * 28 + ry * 14 + Date.now() / 25) % 360;
+          ctx.fillStyle = `hsl(${hue},100%,65%)`;
+        } else if(stage >= 4) {
+          // Shimmer for Lv5+
+          const sh = 0.75 + Math.sin(Date.now()/180 + rx * 0.8 + ry * 0.6) * 0.25;
+          ctx.fillStyle = col;
+          ctx.globalAlpha = sh;
+        } else {
+          ctx.fillStyle = col;
+        }
+        ctx.fillRect(ox + rx * S, oy + ry * S, S - 1, S - 1);
         ctx.globalAlpha = 1;
       }
     });
   });
 
-  // Progress bar below character
-  const barY = H - 8;
-  const barW = W - 24;
-  ctx.fillStyle = '#0e0e1e';
-  ctx.fillRect(12, barY, barW, 4);
-  ctx.fillStyle = col;
-  ctx.fillRect(12, barY, Math.round(barW * pct/100), 4);
+  // Ground shadow
+  ctx.fillStyle = col + '30';
+  ctx.fillRect(ox + 4, oy + charH + 2, charW - 8, 2);
 
-  // Stage label
-  const labels = ['DORMIDO','DESPIERTO','GUERRERO','MAESTRO'];
+  // Daily progress bar
+  const barY = H - 7;
+  const barW = W - 28;
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(14, barY, barW, 3);
   ctx.fillStyle = col;
-  ctx.font = `bold ${S*2}px monospace`;
+  ctx.fillRect(14, barY, Math.round(barW * Math.min(100, pct||0) / 100), 3);
+
+  // Level label
+  ctx.fillStyle = col;
+  ctx.globalAlpha = 0.75;
+  ctx.font = 'bold 8px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText(labels[stage], W/2, barY - 4);
+  ctx.fillText(LABELS[stage], W / 2, barY - 4);
+  ctx.globalAlpha = 1;
   ctx.textAlign = 'left';
 
-  // Animate if active
-  if(pct > 0 && pct < 100) {
-    requestAnimationFrame(() => drawPixelChar(pct));
+  // Animate for Lv5+ or while bar is live
+  if(stage >= 4 || (pct > 0 && pct < 100)) {
+    requestAnimationFrame(() => drawPixelChar(lvl, pct));
   }
 }
 
@@ -2378,7 +2443,7 @@ function updateAll() {
   if(rpgFill) rpgFill.style.width = barPct+'%';
   if(rpgXpLbl) rpgXpLbl.textContent = xp+' XP';
 
-  drawPixelChar(pct);
+  drawPixelChar(lvl, pct);
   renderSchedule();
 
   // Level up check
@@ -2391,26 +2456,111 @@ function updateAll() {
 
   renderWeek();
   renderUpcoming();
+  renderMissions();
+  renderAreaStats();
 }
 
 // ══════════════════════════════════
-// FOCUS TASKS (HUB)
+// 5 MISIONES SEMANALES
 // ══════════════════════════════════
-function renderFocusTasks() {
-  const el = document.getElementById('focus-tasks');
-  if(!el) return;
-  const p1 = TASKS.filter(t => !t.done && t.prio === 'alta').slice(0,3);
-  if(!p1.length) {
-    el.innerHTML = '<div style="font-family:var(--fm);font-size:11px;color:var(--green);letter-spacing:1px;padding:4px 0">✓ Sin urgencias hoy</div>';
-    return;
-  }
-  el.innerHTML = p1.map(t => `
-    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
-      <span class="prio-badge pb-p1">P1</span>
-      <span style="font-size:13px;font-weight:600;flex:1">${t.name}</span>
-      <span style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${areaLabel(t.area).split(' ')[1]||''}</span>
-    </div>`).join('');
+function getMissionWeek() {
+  const d = new Date();
+  const dow = d.getDay() === 0 ? 7 : d.getDay();
+  const mon = new Date(d); mon.setDate(d.getDate() - dow + 1);
+  return mon.toISOString().split('T')[0];
 }
+
+function initMissions() {
+  const week = getMissionWeek();
+  if(!ST.missions || !Array.isArray(ST.missions) || ST.missions.length !== 5) {
+    ST.missions = Array(5).fill(null).map(() => ({name:null,area:null,done:false}));
+    ST.missionsWeek = week;
+  } else if(ST.missionsWeek !== week) {
+    ST.missions = ST.missions.map(m => ({...m, done:false}));
+    ST.missionsWeek = week;
+  }
+}
+
+let _editMissionIdx = null;
+
+function openMissionSlot(idx) {
+  _editMissionIdx = idx;
+  const m = ST.missions[idx] || {};
+  document.getElementById('missionNameInput').value = m.name || '';
+  document.getElementById('missionAreaSelect').value = m.area || 'trabajo';
+  document.getElementById('missionModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('missionNameInput').focus(), 60);
+}
+
+function closeMissionModal() {
+  document.getElementById('missionModal').style.display = 'none';
+  _editMissionIdx = null;
+}
+
+function saveMission() {
+  if(_editMissionIdx === null) return;
+  const name = document.getElementById('missionNameInput').value.trim();
+  const area = document.getElementById('missionAreaSelect').value;
+  if(!name) return;
+  const prev = ST.missions[_editMissionIdx] || {};
+  ST.missions[_editMissionIdx] = { name, area, done: prev.done || false };
+  save(); renderMissions(); closeMissionModal();
+}
+
+function clearMissionSlot() {
+  if(_editMissionIdx === null) return;
+  ST.missions[_editMissionIdx] = { name:null, area:null, done:false };
+  save(); renderMissions(); closeMissionModal();
+}
+
+function toggleMission(idx) {
+  const m = ST.missions[idx];
+  if(!m || !m.name) return;
+  const wasDone = m.done;
+  m.done = !m.done;
+  if(m.done && !wasDone) { ST.xp += 30; showXpPop('+30 XP ⚔️'); }
+  else if(!m.done && wasDone) { ST.xp = Math.max(0, ST.xp - 30); }
+  save(); updateAll(); renderMissions();
+}
+
+function renderMissions() {
+  const el = document.getElementById('missions-list');
+  const badge = document.getElementById('missions-count-badge');
+  const fill = document.getElementById('missions-prog-fill');
+  const lbl = document.getElementById('missions-prog-lbl');
+  const earned = document.getElementById('missions-xp-earned');
+  if(!el) return;
+  if(!ST.missions) initMissions();
+
+  const defined = ST.missions.filter(m => m && m.name);
+  const done = ST.missions.filter(m => m && m.name && m.done);
+  const pct = defined.length ? Math.round((done.length / 5) * 100) : 0;
+
+  if(badge) badge.textContent = done.length + '/5';
+  if(fill) fill.style.width = pct + '%';
+  if(lbl) lbl.textContent = done.length + ' completada' + (done.length !== 1 ? 's' : '');
+  if(earned) earned.textContent = '+' + (done.length * 30) + ' XP';
+
+  el.innerHTML = ST.missions.map((m, i) => {
+    if(!m || !m.name) {
+      return `<div class="mission-item" onclick="openMissionSlot(${i})">
+        <button class="mission-slot-add">+</button>
+        <span style="font-family:var(--fm);font-size:10px;color:var(--muted);flex:1">Slot ${i+1} — pulsa para definir misión</span>
+      </div>`;
+    }
+    const col = AREA_COLORS[m.area] || '#7b6fff';
+    return `<div class="mission-item${m.done?' done-m':''}" onclick="toggleMission(${i})">
+      <div class="mission-check">${m.done ? '✓' : ''}</div>
+      <div class="mission-area-dot" style="background:${col}"></div>
+      <div class="mission-name">${m.name}</div>
+      <span class="mission-xp-tag">+30 XP</span>
+      <button class="mission-edit-btn" onclick="event.stopPropagation();openMissionSlot(${i})">✎</button>
+    </div>`;
+  }).join('');
+}
+
+// kept as stub so old calls don't break (updateAll references it)
+function renderFocusTasks() { renderMissions(); }
 
 // ══════════════════════════════════
 // TASKS
@@ -2527,7 +2677,6 @@ function confirmAddTask() {
 
 function renderTodoAll() {
   const list = document.getElementById('task-list');
-  const AREA_COLORS = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
   const AREAS = ['trabajo','marca','despinsage','casa','yo','estudios'];
   const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
 
@@ -2931,6 +3080,8 @@ function renderEventList() {
 // ══════════════════════════════════
 // DASHBOARD EXTRAS
 // ══════════════════════════════════
+let _selectedWeekDay = null;
+
 function renderWeek() {
   const today = new Date();
   const dow = today.getDay()===0?6:today.getDay()-1;
@@ -2940,19 +3091,73 @@ function renderWeek() {
   if(!row) return;
 
   const eventsByDate = {};
-  EVENTS.forEach(ev => { eventsByDate[ev.d] = true; });
+  EVENTS.forEach(ev => {
+    if(!eventsByDate[ev.d]) eventsByDate[ev.d] = [];
+    eventsByDate[ev.d].push(ev);
+  });
 
-  row.innerHTML = days.map((d,i)=>{
+  row.innerHTML = days.map((d,i) => {
     const dt = new Date(monday); dt.setDate(monday.getDate()+i);
     const isToday = dt.toDateString()===today.toDateString();
     const dateStr = dt.toISOString().split('T')[0];
-    const hasEv = eventsByDate[dateStr];
-    return `<div class="week-day${isToday?' today':''}${hasEv?' has-event':''}">
+    const evs = eventsByDate[dateStr] || [];
+    const isSelected = _selectedWeekDay === dateStr;
+    return `<div class="week-day${isToday?' today':''}${evs.length?' has-event':''}${isSelected?' selected':''}"
+      onclick="selectWeekDay('${dateStr}')">
       <div class="wd-name">${d}</div>
       <div class="wd-num">${dt.getDate()}</div>
-      ${hasEv?'<div class="wd-dot"></div>':'<div style="height:4px"></div>'}
+      ${evs.length?'<div class="wd-dot"></div>':'<div style="height:4px"></div>'}
     </div>`;
   }).join('');
+}
+
+function selectWeekDay(dateStr) {
+  const panel = document.getElementById('hub-day-panel');
+  if(!panel) return;
+
+  if(_selectedWeekDay === dateStr) {
+    _selectedWeekDay = null;
+    panel.style.display = 'none';
+    renderWeek();
+    return;
+  }
+  _selectedWeekDay = dateStr;
+  renderWeek();
+
+  const dt = new Date(dateStr + 'T12:00:00');
+  const dayLabel = dt.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+  const dayEvs = EVENTS.filter(e => e.d === dateStr);
+  const dayTasks = TASKS.filter(t => !t.done && t.prio === 'alta').slice(0, 4);
+  const tagColors = {despinsage:'#00d4ff', personal:'#00f5a0', cumple:'#ff6eb4', work:'#ffcc00'};
+
+  let html = `<div class="hub-dp-title">${dayLabel.charAt(0).toUpperCase()+dayLabel.slice(1)}</div>`;
+
+  if(dayEvs.length) {
+    html += dayEvs.map(ev => `
+      <div class="hub-dp-row">
+        <div style="width:3px;height:20px;border-radius:2px;background:${tagColors[ev.t]||'#7b6fff'};flex-shrink:0"></div>
+        <span style="font-size:12px;font-weight:600;flex:1">${ev.n}</span>
+        <span style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${ev.t.toUpperCase()}</span>
+      </div>`).join('');
+  }
+
+  if(!dayEvs.length && !dayTasks.length) {
+    html += '<div class="hub-dp-empty">Sin eventos ni urgencias este día</div>';
+  } else if(dayTasks.length && !dayEvs.length) {
+    html += '<div class="hub-dp-empty" style="margin-bottom:4px">Sin eventos · Tareas P1 activas:</div>';
+  }
+
+  if(dayTasks.length) {
+    html += dayTasks.map(t => `
+      <div class="hub-dp-row">
+        <span class="prio-badge pb-p1" style="font-size:8px">P1</span>
+        <span style="font-size:12px;font-weight:600;flex:1">${t.name}</span>
+        <span style="font-family:var(--fm);font-size:9px;color:${AREA_COLORS[t.area]||'#7b6fff'}">${(t.area||'').toUpperCase()}</span>
+      </div>`).join('');
+  }
+
+  panel.innerHTML = `<div class="hub-day-panel">${html}</div>`;
+  panel.style.display = 'block';
 }
 
 function renderUpcoming() {
@@ -2969,6 +3174,40 @@ function renderUpcoming() {
       <div class="ev-date">${label}</div>
       <div class="ev-name">${ev.n}</div>
       <div class="ev-tag">${tagLabels[ev.t]||ev.t}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════
+// AREA STATS (HUB)
+// ══════════════════════════════════
+function renderAreaStats() {
+  const el = document.getElementById('area-stats');
+  if(!el) return;
+
+  const AREAS_LIST = [
+    {key:'trabajo',  label:'TRABAJO',  color:'#7b6fff'},
+    {key:'marca',    label:'MARCA',    color:'#b57aff'},
+    {key:'yo',       label:'YO',       color:'#ff6eb4'},
+    {key:'despinsage',label:'DESPINS', color:'#00d4ff'},
+    {key:'casa',     label:'CASA',     color:'#00f5a0'},
+    {key:'estudios', label:'ESTUDIOS', color:'#f5a623'},
+  ];
+
+  const doneTasks = TASKS.filter(t => t.done || getStatus(t) === 'done');
+  const counts = {};
+  AREAS_LIST.forEach(a => { counts[a.key] = doneTasks.filter(t => t.area === a.key).length; });
+  const maxCount = Math.max(1, ...Object.values(counts));
+
+  el.innerHTML = AREAS_LIST.map(a => {
+    const c = counts[a.key];
+    const pct = Math.round((c / maxCount) * 100);
+    return `<div class="area-stat-row">
+      <span class="area-stat-label" style="color:${a.color}">${a.label}</span>
+      <div class="area-stat-track">
+        <div class="area-stat-fill" style="width:${pct}%;background:${a.color}"></div>
+      </div>
+      <span class="area-stat-count">${c}</span>
     </div>`;
   }).join('');
 }
@@ -3081,10 +3320,6 @@ function switchRpgTab(tab) {
 // ══════════════════════════════════
 // WEEK PLAN
 // ══════════════════════════════════
-const AREA_COLORS = {
-  trabajo:'#7b6fff', marca:'#b57aff', despinsage:'#00d4ff',
-  casa:'#00f5a0', yo:'#ff6eb4', estudios:'#f5a623'
-};
 
 function getWeekDates() {
   const today = new Date();
@@ -3494,11 +3729,12 @@ async function init() {
   const now = new Date();
   const dateStr = now.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('dash-date').textContent = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
-  const qi = now.getDate() % QUOTES.length;
-  // Quote display removed from HUB (quote card removed in redesign)
   document.getElementById('cal-month-sub').textContent = now.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
 
   ST._prevLvl = ST._prevLvl || getLevel(ST.xp);
+
+  // Inicializar misiones (reset semanal si cambió la semana)
+  initMissions();
 
   // Cargar local primero (instantáneo)
   updateAll();
@@ -3527,6 +3763,26 @@ setInterval(() => loadFromCloud(true), 30000);
     <button onclick="startListening()" id="listenBtn" style="flex:1;padding:10px;border-radius:10px;background:var(--accent);border:none;color:white;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">● ESCUCHAR</button>
     <button onclick="confirmVoiceAction()" id="confirmBtn" style="display:none;flex:1;padding:10px;border-radius:10px;background:var(--green);border:none;color:#000;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">✓ CONFIRMAR</button>
     <button onclick="closeVoice()" style="padding:10px 14px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-family:var(--fm);font-size:10px;cursor:pointer">✕</button>
+  </div>
+</div>
+
+<!-- ══ MISSION EDIT MODAL ══ -->
+<div class="mission-modal-overlay" id="missionModal" style="display:none" onclick="if(event.target===this)closeMissionModal()">
+  <div class="mission-modal-box">
+    <div class="mission-modal-title">&#9876; Misión semanal</div>
+    <input id="missionNameInput" placeholder="Nombre de la misión..." onkeydown="if(event.key==='Enter')saveMission()" />
+    <select id="missionAreaSelect">
+      <option value="trabajo">&#128188; Trabajo</option>
+      <option value="marca">&#11088; Marca</option>
+      <option value="despinsage">&#129309; Despinsage</option>
+      <option value="casa">&#127968; Casa</option>
+      <option value="yo">&#129504; Yo</option>
+      <option value="estudios">&#9651; Estudios</option>
+    </select>
+    <div class="todo-modal-btns">
+      <button class="todo-modal-cancel" onclick="clearMissionSlot()">Vaciar slot</button>
+      <button class="todo-modal-confirm" style="background:var(--gold);color:#000" onclick="saveMission()">Guardar &#9876;</button>
+    </div>
   </div>
 </div>
 
