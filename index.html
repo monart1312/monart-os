@@ -2545,8 +2545,7 @@ async function syncToCloud() {
     day: ST.day,
     prev_lvl: ST._prevLvl || 1,
     history: ST.history,
-    missions: ST.missions || [],
-    missions_week: ST.missionsWeek || null,
+    missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
     updated_at: ST.updated_at
   });
 }
@@ -2563,9 +2562,11 @@ async function loadFromCloud(silent = false) {
       ST.streak = Math.max(ST.streak || 0, remote.streak || 0);
       ST.day = Math.max(ST.day || 1, remote.day || 1);
       if((remote.history||[]).length > (ST.history||[]).length) ST.history = remote.history;
-      if(remote.missions && Array.isArray(remote.missions) && remote.missions.length) {
-        ST.missions = remote.missions;
-        ST.missionsWeek = remote.missions_week || ST.missionsWeek;
+      const rmd = remote.missions || {};
+      const rmItems = rmd.items || (Array.isArray(rmd) ? rmd : []);
+      if(rmItems.some(m=>m&&m.name)) {
+        ST.missions = rmItems;
+        ST.missionsWeek = rmd.week || remote.missions_week || ST.missionsWeek;
       }
       await syncToCloud();
     } else {
@@ -2575,8 +2576,8 @@ async function loadFromCloud(silent = false) {
         ST = { xp: remote.xp||0, streak: remote.streak||0, day: remote.day||1,
                completed: remote.completed||{}, history: remote.history||[],
                _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at,
-               missions: (remote.missions && Array.isArray(remote.missions) && remote.missions.some(m=>m&&m.name)) ? remote.missions : (ST.missions||[]),
-               missionsWeek: remote.missions_week||ST.missionsWeek||null };
+               missions: (()=>{ const d=remote.missions||{}; const it=d.items||(Array.isArray(d)?d:[]); return it.some(m=>m&&m.name)?it:(ST.missions||[]); })(),
+               missionsWeek: (()=>{ const d=remote.missions||{}; return d.week||remote.missions_week||ST.missionsWeek||null; })() };
         localStorage.setItem('monart-os', JSON.stringify(ST));
       }
     }
