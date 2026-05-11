@@ -1520,7 +1520,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   image-rendering:pixelated; background-repeat:no-repeat; background-position:0 0;
 }
 #arena-knight { left:8%; }
-#arena-boss   { right:8%; transform:scaleX(-1); }
+#arena-boss   { right:8%; }
 .arena-hud {
   position:absolute; bottom:0; left:0; right:0; z-index:20;
   display:flex; align-items:flex-end; justify-content:space-between;
@@ -1791,6 +1791,28 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="chip" id="dash-day-chip">Día 1/66</div>
   </div>
 
+  <!-- Hub arena compacta -->
+  <div class="hub-arena" id="hubArena">
+    <div class="arena-bg" id="hub-arena-bg1" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/back.png');z-index:1"></div>
+    <div class="arena-bg" id="hub-arena-bg2" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/middle.png');z-index:2"></div>
+    <div class="arena-bg" id="hub-arena-fg" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/foreground-empty.png');z-index:3"></div>
+    <div class="arena-sprite" id="hub-knight" style="left:8%;z-index:10"></div>
+    <div class="arena-sprite" id="hub-boss" style="right:8%;z-index:10"></div>
+    <div class="arena-hud">
+      <div class="arena-hp-block">
+        <div class="arena-hp-label">LVL <span id="hub-lvl-num">1</span> — <span id="hub-lvl-name">WANDERER</span></div>
+        <div class="arena-hp-track"><div class="arena-hp-fill hp-green" id="hub-xp-fill" style="width:0%"></div></div>
+        <div class="arena-hp-num" id="hub-xp-text">0 XP</div>
+      </div>
+      <div class="arena-vs">⚔</div>
+      <div class="arena-hp-block right">
+        <div class="arena-hp-label" id="hub-boss-name">BOSS</div>
+        <div class="arena-hp-track"><div class="arena-hp-fill hp-red" id="hub-boss-hp-fill" style="width:100%"></div></div>
+        <div class="arena-hp-num" id="hub-boss-hp-num">—</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Stats strip — RACHA / RÉCORD / DÍA / HOY -->
   <div class="stats-strip">
     <div class="ss-item">
@@ -1814,26 +1836,17 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     </div>
   </div>
 
-  <!-- Hub arena compacta -->
-  <div class="hub-arena" id="hubArena">
-    <div class="arena-bg" id="hub-arena-bg1" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/back.png');z-index:1"></div>
-    <div class="arena-bg" id="hub-arena-bg2" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/middle.png');z-index:2"></div>
-    <div class="arena-bg" id="hub-arena-fg" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/foreground-empty.png');z-index:3"></div>
-    <div class="arena-sprite" id="hub-knight" style="left:8%;z-index:10"></div>
-    <div class="arena-sprite" id="hub-boss" style="right:8%;transform:scaleX(-1);z-index:10"></div>
-    <div class="arena-hud">
-      <div class="arena-hp-block">
-        <div class="arena-hp-label">LVL <span id="hub-lvl-num">1</span> — <span id="hub-lvl-name">WANDERER</span></div>
-        <div class="arena-hp-track"><div class="arena-hp-fill hp-green" id="hub-xp-fill" style="width:0%"></div></div>
-        <div class="arena-hp-num" id="hub-xp-text">0 XP</div>
-      </div>
-      <div class="arena-vs">⚔</div>
-      <div class="arena-hp-block right">
-        <div class="arena-hp-label" id="hub-boss-name">BOSS</div>
-        <div class="arena-hp-track"><div class="arena-hp-fill hp-red" id="hub-boss-hp-fill" style="width:100%"></div></div>
-        <div class="arena-hp-num" id="hub-boss-hp-num">—</div>
-      </div>
-    </div>
+  <!-- Semana interactiva -->
+  <div class="card">
+    <div class="card-title">Esta semana</div>
+    <div class="week-row" id="weekRow"></div>
+    <div id="hub-day-panel" style="display:none"></div>
+  </div>
+
+  <!-- Próximos eventos -->
+  <div class="card">
+    <div class="card-title">Próximos eventos</div>
+    <div id="upcoming-events"></div>
   </div>
 
   <!-- 5 Misiones semanales -->
@@ -1852,23 +1865,10 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     </div>
   </div>
 
-  <!-- Semana interactiva -->
-  <div class="card">
-    <div class="card-title">Esta semana</div>
-    <div class="week-row" id="weekRow"></div>
-    <div id="hub-day-panel" style="display:none"></div>
-  </div>
-
   <!-- Actividad por área -->
   <div class="card">
     <div class="card-title">Actividad por área</div>
     <div id="area-stats" style="margin-top:8px"></div>
-  </div>
-
-  <!-- Próximos eventos -->
-  <div class="card">
-    <div class="card-title">Próximos eventos</div>
-    <div id="upcoming-events"></div>
   </div>
 </div>
 
@@ -2202,7 +2202,16 @@ function _playSprite(el, animDef, loop, onFinish) {
     let fi=0;
     el._wint = setInterval(()=>{
       fi++;
-      if(fi>=files.length){ if(loop){fi=0;}else{clearInterval(el._wint);el._wint=null;if(onFinish)onFinish();return;} }
+      if(fi>=files.length){
+        if(loop){fi=0;}
+        else{
+          clearInterval(el._wint);
+          el._wint=-1; // keep truthy so renderArena doesn't restart idle
+          el.style.backgroundImage=`url('${files[files.length-1]}')`;
+          if(onFinish)onFinish();
+          return;
+        }
+      }
       el.style.backgroundImage=`url('${files[fi]}')`;
     }, 1000/(animDef.fps||8));
     return;
@@ -2220,7 +2229,7 @@ function _playSprite(el, animDef, loop, onFinish) {
   const fullW=animDef.fw*sc*(animDef.rowY!==undefined?10:animDef.frames);
   el._wanim=el.animate(
     [{backgroundPosition:`0px ${-rowY}px`},{backgroundPosition:`-${animDef.fw*animDef.frames*sc}px ${-rowY}px`}],
-    {duration:dur, iterations:loop?Infinity:1, easing:`steps(${animDef.frames},end)`}
+    {duration:dur, iterations:loop?Infinity:1, easing:`steps(${animDef.frames},end)`, fill:loop?'auto':'forwards'}
   );
   if(onFinish) el._wanim.onfinish=onFinish;
 }
@@ -2287,7 +2296,11 @@ function renderArena() {
   const kEl=document.getElementById('arena-knight');
   if(kEl && !kEl._wanim) setKnightAnim('idle');
   const bEl=document.getElementById('arena-boss');
-  if(bEl && !bEl._wanim && !bEl._wint) setBossAnim('idle');
+  if(bEl) {
+    bEl.style.transform='scaleX(-1)';
+    bEl.style.opacity = _bossState.bossHpCurrent <= 0 ? '0.3' : '1';
+    if(!bEl._wanim && !bEl._wint) setBossAnim('idle');
+  }
 }
 
 function renderHubArena() {
@@ -2310,7 +2323,10 @@ function renderHubArena() {
   const hk=el('hub-knight');
   if(hk && !hk._wanim) setHubKnightAnim('idle');
   const hb=el('hub-boss');
-  if(hb && !hb._wanim && !hb._wint) setHubBossAnim('idle');
+  if(hb) {
+    hb.style.transform='scaleX(-1)';
+    if(!hb._wanim && !hb._wint) setHubBossAnim('idle');
+  }
 }
 
 // ══════════════════════════════════
@@ -2366,6 +2382,11 @@ function animateAttack(prio) {
 function onBossDie() {
   _combatAnimating = true;
   setBossAnim('die', false, ()=>{
+    // Tras die: volver a idle con escala normal pero dimmed (evita frame enorme congelado)
+    setBossAnim('idle');
+    const bEl = document.getElementById('arena-boss');
+    if(bEl) bEl.style.opacity='0.3';
+
     const xpGained = Math.floor((_bossState.damageDone||0) / 2);
     ST.xp += xpGained;
     showXpPop('+'+xpGained+' XP');
@@ -3080,6 +3101,7 @@ function getStatus(t) {
 
 let _dragId = null;
 let _dragSourceEl = null;
+let _dragActiveTimer = null;
 
 function tdragStart(e, id) {
   _dragId = id;
@@ -3095,7 +3117,8 @@ function _dragCleanup() {
   document.querySelectorAll('.drop-placeholder').forEach(p => p.remove());
   document.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
   document.querySelectorAll('.dragging').forEach(c => c.classList.remove('dragging'));
-  document.body.classList.remove('drag-active');
+  clearTimeout(_dragActiveTimer);
+  _dragActiveTimer = setTimeout(() => document.body.classList.remove('drag-active'), 5000);
   _dragId = null;
   _dragSourceEl = null;
 }
