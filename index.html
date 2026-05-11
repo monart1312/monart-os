@@ -2575,7 +2575,7 @@ async function loadFromCloud(silent = false) {
         ST = { xp: remote.xp||0, streak: remote.streak||0, day: remote.day||1,
                completed: remote.completed||{}, history: remote.history||[],
                _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at,
-               missions: remote.missions||ST.missions||[],
+               missions: (remote.missions && Array.isArray(remote.missions) && remote.missions.some(m=>m&&m.name)) ? remote.missions : (ST.missions||[]),
                missionsWeek: remote.missions_week||ST.missionsWeek||null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
       }
@@ -2933,12 +2933,16 @@ function getMissionWeek() {
 
 function initMissions() {
   const week = getMissionWeek();
-  if(!ST.missions || !Array.isArray(ST.missions) || ST.missions.length !== 5) {
+  if(!ST.missions || !Array.isArray(ST.missions)) {
     ST.missions = Array(5).fill(null).map(() => ({name:null,area:null,done:false}));
     ST.missionsWeek = week;
-  } else if(ST.missionsWeek !== week) {
-    ST.missions = ST.missions.map(m => ({...m, done:false}));
-    ST.missionsWeek = week;
+  } else {
+    while(ST.missions.length < 5) ST.missions.push({name:null,area:null,done:false});
+    ST.missions = ST.missions.slice(0, 5);
+    if(ST.missionsWeek !== week) {
+      ST.missions = ST.missions.map(m => ({...m, done:false}));
+      ST.missionsWeek = week;
+    }
   }
 }
 
@@ -4135,7 +4139,9 @@ function autoplanWeek() {
 
   // Convertir tareas a formato misión y escribir en ST.missions (unificado con HUB)
   const week = getMissionWeek();
-  ST.missions = priorities.map(t => ({ name: t.name, area: t.area, done: false }));
+  ST.missions = Array(5).fill(null).map((_,i) =>
+    priorities[i] ? { name: priorities[i].name, area: priorities[i].area, done: false }
+                  : { name: null, area: null, done: false });
   ST.missionsWeek = week;
   if(!ST.weekPlan) ST.weekPlan = {};
   ST.weekPlan.generatedAt = new Date().toISOString();
