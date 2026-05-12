@@ -1814,7 +1814,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="arena-bg" id="hub-arena-bg2" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/middle.png');z-index:2"></div>
     <div class="arena-bg" id="hub-arena-fg" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/foreground-empty.png');z-index:3"></div>
     <div class="arena-sprite" id="hub-knight" style="left:8%;z-index:10"></div>
-    <div class="arena-sprite" id="hub-boss" style="right:8%;z-index:10"></div>
+    <div class="arena-sprite" id="hub-boss" style="right:8%;z-index:10;transform:scaleX(-1)"></div>
     <div class="arena-hud">
       <div class="arena-hp-block">
         <div class="arena-hp-label">LVL <span id="hub-lvl-num">1</span> — <span id="hub-lvl-name">WANDERER</span></div>
@@ -1914,7 +1914,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="arena-bg" id="arena-bg2"></div>
     <div class="arena-bg" id="arena-fg"></div>
     <div class="arena-sprite" id="arena-knight"></div>
-    <div class="arena-sprite" id="arena-boss"></div>
+    <div class="arena-sprite" id="arena-boss" style="transform:scaleX(-1)"></div>
     <div class="arena-hud">
       <div class="arena-hp-block">
         <div class="arena-hp-label">KNIGHT</div>
@@ -3366,7 +3366,7 @@ function sendToRiding(id) {
 let _addWiz = null;
 
 function openAddPanel() {
-  _addWiz = { step:1, name:'', area:'trabajo', prio:'media', hasDate:false, dueDate:'', dueTime:'', hasReminder:false, reminderTime:'' };
+  _addWiz = { step:1, name:'', area:'trabajo', prio:'media', hasDate:false, dueDate:'', dueTime:'', dueHour:'', dueMinute:'' };
   document.getElementById('todoAddModal').style.display = 'flex';
   renderAddStep();
 }
@@ -3386,13 +3386,10 @@ function goAddStep(n) {
   }
   if(_addWiz.step === 4) {
     const dd = document.getElementById('wiz-date-input');
-    const dt = document.getElementById('wiz-time-input');
+    const hh = document.getElementById('wiz-hour-input');
     if(dd) _addWiz.dueDate = dd.value;
-    if(dt) _addWiz.dueTime = dt.value;
-  }
-  if(_addWiz.step === 5) {
-    const rt = document.getElementById('wiz-reminder-input');
-    if(rt) _addWiz.reminderTime = rt.value;
+    if(hh && hh.value !== '') _addWiz.dueHour = hh.value;
+    _addWiz.dueTime = _addWiz.dueHour !== '' ? String(_addWiz.dueHour).padStart(2,'0') + ':' + (_addWiz.dueMinute||'00') : '';
   }
   _addWiz.step = n;
   renderAddStep();
@@ -3408,7 +3405,7 @@ function renderAddStep() {
   ];
 
   let dots = '<div class="wiz-step-indicator">';
-  for(let i=1;i<=6;i++) dots += `<div class="wiz-dot${i<s?' done':i===s?' active':''}"></div>`;
+  for(let i=1;i<=5;i++) dots += `<div class="wiz-dot${i<s?' done':i===s?' active':''}"></div>`;
   dots += '</div>';
 
   let html = '';
@@ -3450,45 +3447,36 @@ function renderAddStep() {
         <button class="todo-modal-cancel" onclick="goAddStep(2)">← Atrás</button>
       </div>`;
   } else if(s === 4) {
+    const hourOpts = Array.from({length:24},(_,i)=>`<option value="${i}"${_addWiz.dueHour==i?' selected':''}>` + String(i).padStart(2,'0') + 'h</option>').join('');
+    const minBtns = ['00','15','30','45'].map(m=>`<button onclick="_addWiz.dueMinute='${m}';renderAddStep();" style="background:${_addWiz.dueMinute===m?'var(--accent)':'var(--s3)'};border:1px solid var(--border2);border-radius:6px;padding:8px 7px;color:var(--text);font-size:12px;font-family:var(--fm);cursor:pointer;flex:1">:${m}</button>`).join('');
     html = `
       <div class="todo-modal-title">¿Tiene fecha?</div>
       ${dots}
       <div class="wiz-yesno">
         <button class="wiz-btn${_addWiz.hasDate?' selected':''}" onclick="_addWiz.hasDate=true;renderAddStep();">Sí</button>
-        <button class="wiz-btn${!_addWiz.hasDate?' selected':''}" onclick="_addWiz.hasDate=false;_addWiz.dueDate='';_addWiz.dueTime='';goAddStep(5);">No</button>
+        <button class="wiz-btn${!_addWiz.hasDate?' selected':''}" onclick="_addWiz.hasDate=false;_addWiz.dueDate='';_addWiz.dueTime='';_addWiz.dueHour='';_addWiz.dueMinute='';goAddStep(5);">No</button>
       </div>
       ${_addWiz.hasDate ? `
         <input type="date" id="wiz-date-input" value="${_addWiz.dueDate}"
           style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box;"
           onchange="_addWiz.dueDate=this.value" />
-        <input type="time" id="wiz-time-input" value="${_addWiz.dueTime}" placeholder="Hora (opcional)"
-          style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box;"
-          onchange="_addWiz.dueTime=this.value" />
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+          <select id="wiz-hour-input" onchange="_addWiz.dueHour=this.value"
+            style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 8px;color:var(--text);font-size:13px;outline:none;flex:1">
+            <option value="">-- hora --</option>
+            ${hourOpts}
+          </select>
+          <div style="display:flex;gap:4px;flex:1">${minBtns}</div>
+        </div>
       ` : ''}
       <div class="todo-modal-btns">
         <button class="todo-modal-cancel" onclick="goAddStep(3)">← Atrás</button>
-        ${_addWiz.hasDate ? `<button class="todo-modal-confirm" onclick="const dd=document.getElementById('wiz-date-input'),dt=document.getElementById('wiz-time-input');_addWiz.dueDate=dd?dd.value:'';_addWiz.dueTime=dt?dt.value:'';goAddStep(5);">Siguiente →</button>` : ''}
+        ${_addWiz.hasDate ? `<button class="todo-modal-confirm" onclick="goAddStep(5);">Siguiente →</button>` : ''}
       </div>`;
   } else if(s === 5) {
-    html = `
-      <div class="todo-modal-title">¿Recordatorio?</div>
-      ${dots}
-      <div class="wiz-yesno">
-        <button class="wiz-btn${_addWiz.hasReminder?' selected':''}" onclick="_addWiz.hasReminder=true;renderAddStep();">Sí</button>
-        <button class="wiz-btn${!_addWiz.hasReminder?' selected':''}" onclick="_addWiz.hasReminder=false;_addWiz.reminderTime='';goAddStep(6);">No</button>
-      </div>
-      ${_addWiz.hasReminder ? `
-        <input type="time" id="wiz-reminder-input" value="${_addWiz.reminderTime}"
-          style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box;"
-          onchange="_addWiz.reminderTime=this.value" />
-      ` : ''}
-      <div class="todo-modal-btns">
-        <button class="todo-modal-cancel" onclick="goAddStep(4)">← Atrás</button>
-        ${_addWiz.hasReminder ? `<button class="todo-modal-confirm" onclick="const rt=document.getElementById('wiz-reminder-input');_addWiz.reminderTime=rt?rt.value:'';goAddStep(6);">Siguiente →</button>` : ''}
-      </div>`;
-  } else if(s === 6) {
     const aL = {trabajo:'💼 Trabajo',marca:'✦ Marca',despinsage:'◈ Despinsage',casa:'⌂ Casa',yo:'◉ Yo',estudios:'◭ Estudios'};
     const pL = {alta:'🔥 Alta',media:'⚡ Media',baja:'🌱 Baja'};
+    const autoReminder = _addWiz.hasDate && _addWiz.dueDate && _addWiz.dueTime;
     html = `
       <div class="todo-modal-title">✓ Confirmar</div>
       ${dots}
@@ -3497,11 +3485,11 @@ function renderAddStep() {
         <div class="wiz-summary-row"><span class="wiz-summary-label">ÁREA</span><span>${aL[_addWiz.area]||_addWiz.area}</span></div>
         <div class="wiz-summary-row"><span class="wiz-summary-label">PRIORIDAD</span><span>${pL[_addWiz.prio]||_addWiz.prio}</span></div>
         ${_addWiz.hasDate&&_addWiz.dueDate?`<div class="wiz-summary-row"><span class="wiz-summary-label">FECHA</span><span>${_addWiz.dueDate}${_addWiz.dueTime?' '+_addWiz.dueTime:''}</span></div>`:''}
-        ${_addWiz.hasReminder&&_addWiz.reminderTime?`<div class="wiz-summary-row"><span class="wiz-summary-label">RECORDATORIO</span><span>${_addWiz.reminderTime}</span></div>`:''}
+        ${autoReminder?`<div class="wiz-summary-row"><span class="wiz-summary-label">RECORDATORIO</span><span style="color:var(--muted2)">1h antes (auto)</span></div>`:''}
         <div class="wiz-summary-row"><span class="wiz-summary-label">DESTINO</span><span style="color:var(--green)">${_addWiz.hasDate&&_addWiz.dueDate?'TODO + CAL':'TODO'}</span></div>
       </div>
       <div class="todo-modal-btns">
-        <button class="todo-modal-cancel" onclick="goAddStep(5)">← Atrás</button>
+        <button class="todo-modal-cancel" onclick="goAddStep(4)">← Atrás</button>
         <button class="todo-modal-confirm" onclick="confirmAdd()">Añadir →</button>
       </div>`;
   }
@@ -3512,11 +3500,14 @@ function renderAddStep() {
 
 function confirmAdd() {
   if(!_addWiz || !_addWiz.name) return;
-  const { name, area, prio, hasDate, dueDate, dueTime, hasReminder, reminderTime } = _addWiz;
+  const { name, area, prio, hasDate, dueDate, dueTime } = _addWiz;
 
   const task = { id:'t'+Date.now(), name, area: area||'trabajo', prio: prio||'media', done:false, status:'backlog' };
   if(hasDate && dueDate) { task.due = dueDate; task.dueDate = dueDate; }
-  if(hasReminder && reminderTime) task.reminderTime = reminderTime;
+  if(hasDate && dueDate && dueTime) {
+    const [h, m] = dueTime.split(':');
+    task.reminderTime = String((parseInt(h) + 23) % 24).padStart(2, '0') + ':' + m;
+  }
   TASKS.unshift(task);
   sbUpsertTask({...task, created_at: new Date().toISOString()});
   save();
