@@ -1445,6 +1445,12 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   opacity: 0.15;
 }
 
+/* ── DELETE BUTTON ── */
+.t-del { opacity:0; background:transparent; border:none; color:var(--accent2); font-size:13px; cursor:pointer; padding:4px 7px; border-radius:6px; transition:opacity .15s,background .15s; flex-shrink:0; line-height:1; }
+.task-item:hover .t-del, .r-card:hover .t-del, .kanban-card:hover .t-del, .mc-pill:hover .t-del { opacity:1; }
+.t-del:hover { background:rgba(255,77,109,.15); }
+@media (max-width:600px) { .t-del { opacity:1 !important; } }
+
 /* ── PRIORITY SYSTEM P1/P2/P3 ── */
 .task-item[data-prio="alta"] { border-left: 3px solid #ff4d6d; }
 .task-item[data-prio="media"] { border-left: 3px solid #ffcc00; }
@@ -2307,6 +2313,7 @@ function setHubKnightAnim(name) {
 function setBossAnim(name, loop=true, onFinish=null) {
   const el=document.getElementById('arena-boss');
   if(!el) return;
+  el.style.transform = 'scaleX(-1)';
   const boss=getBossOfDay();
   const sc=boss.scale||3;
   el._scale=sc;
@@ -2318,6 +2325,7 @@ function setBossAnim(name, loop=true, onFinish=null) {
 function setHubBossAnim(name) {
   const el=document.getElementById('hub-boss');
   if(!el) return;
+  el.style.transform = 'scaleX(-1)';
   const boss=getBossOfDay();
   const sc=Math.max(1,(boss.scale||3)*0.7);
   el._scale=sc;
@@ -2325,6 +2333,20 @@ function setHubBossAnim(name) {
   el._displayH=boss.anims.idle.fh*sc;
   _playSprite(el, boss.anims[name]||boss.anims.idle, true, null);
 }
+
+const BG_FILTERS = [
+  '',
+  'hue-rotate(30deg)',
+  'hue-rotate(60deg)',
+  'hue-rotate(180deg)',
+  'hue-rotate(220deg)',
+  'sepia(0.3)',
+  'hue-rotate(270deg)',
+  'brightness(0.7)',
+  'hue-rotate(320deg)',
+  'saturate(0.5)',
+  'hue-rotate(150deg)',
+];
 
 // ══════════════════════════════════
 // ARENA RENDER
@@ -2347,6 +2369,11 @@ function renderArena() {
   const knightHp=Math.round((done/ALL_HABITS.length)*100);
   const kHp=document.getElementById('knight-hp-fill');
   if(kHp) kHp.style.width=Math.max(5,knightHp)+'%';
+
+  // Background filter per boss index
+  const bgF = BG_FILTERS[_bossState.bossIndex % BG_FILTERS.length] || '';
+  const bg1 = document.getElementById('arena-bg1');
+  if(bg1) bg1.style.filter = bgF;
 
   // Init sprites only if not already running
   const kEl=document.getElementById('arena-knight');
@@ -2378,6 +2405,11 @@ function renderHubArena() {
   if(el('hub-boss-name')) el('hub-boss-name').textContent=boss.name+(boss.isBoss?' ⭐':'');
   if(el('hub-boss-hp-fill')) el('hub-boss-hp-fill').style.width=hpPct+'%';
   if(el('hub-boss-hp-num')) el('hub-boss-hp-num').textContent=_bossState.bossHpCurrent+'/'+_bossState.bossHpMax;
+
+  // Background filter per boss index
+  const hbgF = BG_FILTERS[_bossState.bossIndex % BG_FILTERS.length] || '';
+  const hbg1 = document.getElementById('hub-arena-bg1');
+  if(hbg1) hbg1.style.filter = hbgF;
 
   const hk=el('hub-knight');
   if(hk && !hk._wanim) setHubKnightAnim('idle');
@@ -2594,6 +2626,25 @@ async function sbUpsertTask(task) {
       body: JSON.stringify(task)
     });
   } catch(e) {}
+}
+
+async function sbDeleteTask(id) {
+  try {
+    await fetch(`${SB_URL}/rest/v1/tasks?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    });
+  } catch(e) {}
+}
+
+function deleteTask(id) {
+  if(!confirm('¿Borrar esta tarea?')) return;
+  TASKS = TASKS.filter(t => t.id !== id);
+  sbDeleteTask(id);
+  save();
+  updateAll();
+  renderTasks();
+  showToast('🗑 Tarea borrada');
 }
 
 // ══════════════════════════════════
@@ -3153,6 +3204,7 @@ function renderTasks() {
         <div class="t-meta">${areaLabel(t.area)}</div>
       </div>
       <div class="prio-badge ${prioBadgeClass(t.prio)}">${prioLabel(t.prio)}</div>
+      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar tarea">✕</button>
     </div>
   `).join('');
 }
@@ -3463,7 +3515,7 @@ function confirmAdd() {
   const { name, area, prio, hasDate, dueDate, dueTime, hasReminder, reminderTime } = _addWiz;
 
   const task = { id:'t'+Date.now(), name, area: area||'trabajo', prio: prio||'media', done:false, status:'backlog' };
-  if(hasDate && dueDate) task.due = dueDate;
+  if(hasDate && dueDate) { task.due = dueDate; task.dueDate = dueDate; }
   if(hasReminder && reminderTime) task.reminderTime = reminderTime;
   TASKS.unshift(task);
   sbUpsertTask({...task, created_at: new Date().toISOString()});
@@ -3474,6 +3526,7 @@ function confirmAdd() {
     const ev = { d: dueDate, n: name, t: evTypeMap[area]||'personal' };
     if(dueTime) ev.time = dueTime;
     const evs = getUserEvents(); evs.push(ev); saveUserEvents(evs);
+    renderCal();
   }
 
   closeAddPanel();
@@ -3505,6 +3558,7 @@ function renderTodoAll() {
       <div class="r-card-meta">
         <span style="font-family:var(--fm);font-size:8px;color:${col}">${AREA_NAMES[t.area]||t.area}</span>
         ${dueTxt}
+        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
       </div>
     </div>`;
   }
@@ -3521,6 +3575,7 @@ function renderTodoAll() {
         ${dueTxt}
       </div>
       <button class="mc-send-btn" onclick="event.stopPropagation();sendToRiding('${t.id}')" title="Enviar a Riding">&#8594;</button>
+      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
     </div>`;
   }
 
@@ -3633,6 +3688,7 @@ function renderKanban() {
         <div class="kanban-area-dot" style="background:${dot}"></div>
         <span style="font-family:var(--fm);font-size:8px;color:var(--muted2)">${areaLabel(t.area).split(' ')[1]||t.area}</span>
         ${t.prio !== 'prog' ? `<span class="prio-badge ${badgeClass}" style="margin-left:auto">${label}</span>` : '<span class="prio-badge pb-prog" style="margin-left:auto">▶</span>'}
+        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
       </div>
     </div>`;
   }
@@ -3731,7 +3787,7 @@ function renderCal() {
 
   // Eventos por fecha
   const eventsByDate = {};
-  EVENTS.forEach(ev => {
+  allEvents().forEach(ev => {
     if(!eventsByDate[ev.d]) eventsByDate[ev.d] = [];
     eventsByDate[ev.d].push(ev);
   });
@@ -3813,7 +3869,7 @@ function selectDay(dateStr) {
     return;
   }
 
-  const dayEvents = EVENTS.filter(e => e.d === selectedDateStr);
+  const dayEvents = allEvents().filter(e => e.d === selectedDateStr);
   const p1Tasks = TASKS.filter(t => !t.done && t.prio === 'alta');
   const tagLabels = {despinsage:'Despinsage',personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
   const tagColors = {despinsage:'var(--cyan)',personal:'var(--green)',cumple:'var(--pink)',work:'var(--gold)'};
@@ -3862,7 +3918,7 @@ function renderEventList() {
   let eventsToShow, titleText;
 
   if(selectedDateStr) {
-    eventsToShow = EVENTS.filter(e => e.d === selectedDateStr);
+    eventsToShow = allEvents().filter(e => e.d === selectedDateStr);
     const dt = new Date(selectedDateStr + 'T12:00:00');
     const label = dt.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
     titleText = label.charAt(0).toUpperCase() + label.slice(1);
@@ -3873,7 +3929,7 @@ function renderEventList() {
     }
   } else {
     const todayStr = new Date().toISOString().split('T')[0];
-    eventsToShow = EVENTS.filter(e => e.d >= todayStr).sort((a,b) => a.d.localeCompare(b.d)).slice(0,8);
+    eventsToShow = allEvents().filter(e => e.d >= todayStr).sort((a,b) => a.d.localeCompare(b.d)).slice(0,8);
     titleText = 'Próximos eventos';
   }
 
