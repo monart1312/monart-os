@@ -1403,13 +1403,27 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .week-ev-tag { font-family: var(--fm); font-size: 8px; padding: 2px 6px; border-radius: 5px; }
 
 
-/* ── VOICE ── */
-@keyframes pulse {
-  0%,100% { transform: scale(1); opacity:1; }
-  50% { transform: scale(1.4); opacity:.6; }
-}
-.listening #voicePulse { animation: pulse .8s infinite; background: var(--accent2) !important; }
-.nav-btn.voice-active { background: rgba(255,77,109,.15) !important; color: var(--accent2) !important; border-color: var(--accent2) !important; }
+/* ── FAB + BUTTON ── */
+.fab-universal { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:var(--accent); border:none; color:white; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(123,111,255,.5); z-index:200; transition:transform .15s,box-shadow .15s; line-height:1; }
+.fab-universal:hover { transform:scale(1.08); box-shadow:0 6px 28px rgba(123,111,255,.7); }
+
+/* ── ADD WIZARD ── */
+.wiz-step-indicator { display:flex; gap:4px; justify-content:center; margin-bottom:4px; }
+.wiz-dot { width:6px; height:6px; border-radius:50%; background:var(--border2); transition:background .2s; }
+.wiz-dot.active { background:var(--accent); }
+.wiz-dot.done { background:var(--green); }
+.wiz-area-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.wiz-btn { padding:10px 6px; border-radius:10px; border:1px solid var(--border2); background:var(--s3); color:var(--muted2); font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:1px; cursor:pointer; text-align:center; transition:all .15s; }
+.wiz-btn:hover { border-color:var(--accent); color:var(--accent); }
+.wiz-btn.selected { background:rgba(123,111,255,.15); border-color:var(--accent); color:var(--accent); }
+.wiz-btn.sel-alta { background:rgba(255,77,109,.15); border-color:#ff4d6d; color:#ff4d6d; }
+.wiz-btn.sel-media { background:rgba(255,204,0,.12); border-color:#ffcc00; color:#ffcc00; }
+.wiz-btn.sel-baja { background:rgba(0,245,160,.1); border-color:var(--green); color:var(--green); }
+.wiz-yesno { display:flex; gap:8px; }
+.wiz-yesno .wiz-btn { flex:1; font-size:11px; letter-spacing:0; }
+.wiz-summary-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border2); font-size:12px; }
+.wiz-summary-row:last-child { border-bottom:none; }
+.wiz-summary-label { font-family:var(--fm); font-size:9px; color:var(--muted2); letter-spacing:1px; width:80px; flex-shrink:0; }
 
 /* ── SCHEDULE SECTION HEADERS ── */
 .sched-section-header {
@@ -1520,7 +1534,8 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   image-rendering:pixelated; background-repeat:no-repeat; background-position:0 0;
 }
 #arena-knight { left:8%; }
-#arena-boss   { right:8%; }
+#arena-boss   { right:8%; transform: scaleX(-1); }
+#hub-boss     { transform: scaleX(-1); }
 .arena-hud {
   position:absolute; bottom:0; left:0; right:0; z-index:20;
   display:flex; align-items:flex-end; justify-content:space-between;
@@ -1765,10 +1780,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <span class="nav-label">LOG</span>
   </button>
   <div class="nav-spacer"></div>
-  <button class="nav-btn" id="voiceBtn" onclick="toggleVoice()" title="Voz">
-    <span class="nav-icon" style="font-family:var(--fm);font-size:14px;font-weight:700" id="voiceIcon">🎤</span>
-    <span class="nav-label">VOZ</span>
-  </button>
   <button class="nav-btn" onclick="loadFromCloud()" title="Sincronizar">
     <span class="nav-icon" style="font-family:var(--fm);font-size:12px;font-weight:700">↑↓</span>
     <span class="nav-label">SYNC</span>
@@ -2146,6 +2157,7 @@ const BOSSES = [
 // ══════════════════════════════════
 let _bossState = null;
 let _combatAnimating = false;
+let _bossDeathTimer = null;
 
 function getDayOfYear() {
   const n = new Date(); const s = new Date(n.getFullYear(),0,0);
@@ -2167,16 +2179,55 @@ function loadBossState() {
 }
 
 function _calcTodayDamage() {
-  // Estimate damage from currently done tasks (cross-device consistency)
-  return TASKS.filter(t=>t.done||getStatus(t)==='done').reduce((acc,t)=>{
+  const taskDmg = TASKS.filter(t=>t.done||getStatus(t)==='done').reduce((acc,t)=>{
     if(t.prio==='alta') return acc+30;
     if(t.prio==='media') return acc+20;
     return acc+10;
-  },0);
+  }, 0);
+  const habitDmg = ALL_HABITS.filter(h=>ST.completed[h]).reduce((acc,h)=>acc+(XP_MAP[h]||10), 0);
+  return taskDmg + habitDmg;
 }
 
 function _saveBossState() {
   localStorage.setItem('monart-boss', JSON.stringify(_bossState));
+}
+
+function recalcBossHp() {
+  if(!_bossState) return;
+  const wasAtZero = _bossState.bossHpCurrent <= 0;
+  const dmg = _calcTodayDamage();
+  _bossState.bossHpCurrent = Math.max(0, _bossState.bossHpMax - dmg);
+  _bossState.damageDone = dmg;
+  _saveBossState();
+  _updateHpBarsNow();
+  if(_bossState.bossHpCurrent <= 0 && !wasAtZero) {
+    _bossDeathTimer = setTimeout(()=>onBossDie(), 800);
+  } else if(_bossState.bossHpCurrent > 0 && wasAtZero) {
+    clearTimeout(_bossDeathTimer); _bossDeathTimer = null;
+    _reviveBoss();
+  }
+}
+
+function _reviveBoss() {
+  _combatAnimating = false;
+  const ov = document.querySelector('.arena-boss-defeated');
+  if(ov) ov.remove();
+  const bEl = document.getElementById('arena-boss');
+  if(bEl) {
+    bEl.style.opacity = '1';
+    if(bEl._wint && bEl._wint !== -1) clearInterval(bEl._wint);
+    bEl._wint = null;
+    if(bEl._wanim) { try{bEl._wanim.cancel();}catch(e){} bEl._wanim = null; }
+    setBossAnim('idle');
+  }
+  const hb = document.getElementById('hub-boss');
+  if(hb) {
+    hb.style.opacity = '1';
+    if(hb._wint && hb._wint !== -1) clearInterval(hb._wint);
+    hb._wint = null;
+    if(hb._wanim) { try{hb._wanim.cancel();}catch(e){} hb._wanim = null; }
+    setHubBossAnim('idle');
+  }
 }
 
 function getBossOfDay() {
@@ -2195,7 +2246,8 @@ function _playSprite(el, animDef, loop, onFinish) {
   // Frame-cycling (SHAIA, special cases)
   if(animDef.frameFiles) {
     const files = animDef.frameFiles;
-    const w = animDef.fw*((el._scale)||2), h = animDef.fh*((el._scale)||2);
+    const sc=(el._scale)||2;
+    const w = el._displayW || animDef.fw*sc, h = el._displayH || animDef.fh*sc;
     el.style.width=w+'px'; el.style.height=h+'px';
     el.style.backgroundSize='100% 100%'; el.style.backgroundPosition='0 0';
     el.style.backgroundImage=`url('${files[0]}')`;
@@ -2256,8 +2308,10 @@ function setBossAnim(name, loop=true, onFinish=null) {
   const el=document.getElementById('arena-boss');
   if(!el) return;
   const boss=getBossOfDay();
-  el._scale=boss.scale||3;
-  el.style.transform='scaleX(-1)';
+  const sc=boss.scale||3;
+  el._scale=sc;
+  el._displayW=boss.anims.idle.fw*sc;
+  el._displayH=boss.anims.idle.fh*sc;
   _playSprite(el, boss.anims[name]||boss.anims.idle, loop, onFinish);
 }
 
@@ -2265,8 +2319,10 @@ function setHubBossAnim(name) {
   const el=document.getElementById('hub-boss');
   if(!el) return;
   const boss=getBossOfDay();
-  el._scale=Math.max(1,(boss.scale||3)*0.7);
-  el.style.transform='scaleX(-1)';
+  const sc=Math.max(1,(boss.scale||3)*0.7);
+  el._scale=sc;
+  el._displayW=boss.anims.idle.fw*sc;
+  el._displayH=boss.anims.idle.fh*sc;
   _playSprite(el, boss.anims[name]||boss.anims.idle, true, null);
 }
 
@@ -2297,9 +2353,12 @@ function renderArena() {
   if(kEl && !kEl._wanim) setKnightAnim('idle');
   const bEl=document.getElementById('arena-boss');
   if(bEl) {
-    bEl.style.transform='scaleX(-1)';
     bEl.style.opacity = _bossState.bossHpCurrent <= 0 ? '0.3' : '1';
-    if(!bEl._wanim && !bEl._wint) setBossAnim('idle');
+    if(_bossState.bossHpCurrent <= 0) {
+      if(!bEl._wanim && !bEl._wint) setBossAnim('die', false, null);
+    } else {
+      if(!bEl._wanim && !bEl._wint) setBossAnim('idle');
+    }
   }
 }
 
@@ -2324,8 +2383,12 @@ function renderHubArena() {
   if(hk && !hk._wanim) setHubKnightAnim('idle');
   const hb=el('hub-boss');
   if(hb) {
-    hb.style.transform='scaleX(-1)';
-    if(!hb._wanim && !hb._wint) setHubBossAnim('idle');
+    hb.style.opacity = _bossState.bossHpCurrent <= 0 ? '0.3' : '1';
+    if(_bossState.bossHpCurrent <= 0) {
+      if(!hb._wanim && !hb._wint) setHubBossAnim('die');
+    } else {
+      if(!hb._wanim && !hb._wint) setHubBossAnim('idle');
+    }
   }
 }
 
@@ -2382,10 +2445,11 @@ function animateAttack(prio) {
 function onBossDie() {
   _combatAnimating = true;
   setBossAnim('die', false, ()=>{
-    // Tras die: volver a idle con escala normal pero dimmed (evita frame enorme congelado)
-    setBossAnim('idle');
+    // Congelar en último frame de die (no reiniciar idle)
     const bEl = document.getElementById('arena-boss');
     if(bEl) bEl.style.opacity='0.3';
+    const hbEl = document.getElementById('hub-boss');
+    if(hbEl) hbEl.style.opacity='0.3';
 
     const xpGained = Math.floor((_bossState.damageDone||0) / 2);
     ST.xp += xpGained;
@@ -2821,11 +2885,12 @@ function toggleH(id, xpVal) {
     ST.completed[id] = true;
     ST.xp += xp;
     showXpPop('+'+xp+' XP');
-    dealDamageToBoss(xp);
+    recalcBossHp();
     animateAttack('alta');
   } else {
     ST.completed[id] = false;
     ST.xp = Math.max(0, ST.xp - xp);
+    recalcBossHp();
   }
   save();
   updateAll();
@@ -3178,7 +3243,7 @@ function ttouchEnd(e) {
     task.done = newStatus === 'done';
     if(task.done && wasNotDone) {
       spawnParticles(t.clientX, t.clientY, AREA_COLORS[task.area]||'#00f5a0');
-      dealDamageToBoss(task.prio==='alta'?30:task.prio==='media'?20:10);
+      recalcBossHp();
       animateAttack(task.prio||'media');
     }
     sbUpsertTask(task);
@@ -3225,9 +3290,8 @@ function tdropTask(e, newStatus, el) {
     t.status = newStatus;
     t.done = newStatus === 'done';
     if(t.done && wasNotDone) {
-      const dmg = t.prio==='alta' ? 30 : t.prio==='media' ? 20 : 10;
       spawnParticles(window.innerWidth/2, window.innerHeight*0.5, AREA_COLORS[t.area]||'#00f5a0');
-      dealDamageToBoss(dmg);
+      recalcBossHp();
       animateAttack(t.prio||'media');
     }
     sbUpsertTask(t);
@@ -3244,20 +3308,177 @@ function sendToRiding(id) {
   showToast('→ En Riding: On the Line');
 }
 
-function openAddModal() { document.getElementById('todoAddModal').style.display = 'flex'; }
-function closeAddModal() { document.getElementById('todoAddModal').style.display = 'none'; }
-function confirmAddTask() {
-  const name = document.getElementById('modalName').value.trim();
-  const area = document.getElementById('modalArea').value;
-  const due  = document.getElementById('modalDue').value;
-  if(!name) return;
-  const t = { id:'t'+Date.now(), name, area, prio:'media', done:false, status:'backlog', due: due||null };
-  TASKS.unshift(t);
-  sbUpsertTask({...t, created_at: new Date().toISOString()});
-  document.getElementById('modalName').value = '';
-  document.getElementById('modalDue').value = '';
-  save(); renderTasks(); closeAddModal();
-  showToast('✅ Tarea añadida');
+// ══════════════════════════════════
+// ADD WIZARD (+ button)
+// ══════════════════════════════════
+let _addWiz = null;
+
+function openAddPanel() {
+  _addWiz = { step:1, name:'', area:'trabajo', prio:'media', hasDate:false, dueDate:'', dueTime:'', hasReminder:false, reminderTime:'' };
+  document.getElementById('todoAddModal').style.display = 'flex';
+  renderAddStep();
+}
+function openAddModal() { openAddPanel(); }
+
+function closeAddPanel() {
+  document.getElementById('todoAddModal').style.display = 'none';
+  _addWiz = null;
+}
+function closeAddModal() { closeAddPanel(); }
+
+function goAddStep(n) {
+  if(_addWiz.step === 1) {
+    const v = document.getElementById('wiz-name-input');
+    if(v) _addWiz.name = v.value.trim();
+    if(n > 1 && !_addWiz.name) { if(v) v.focus(); return; }
+  }
+  if(_addWiz.step === 4) {
+    const dd = document.getElementById('wiz-date-input');
+    const dt = document.getElementById('wiz-time-input');
+    if(dd) _addWiz.dueDate = dd.value;
+    if(dt) _addWiz.dueTime = dt.value;
+  }
+  if(_addWiz.step === 5) {
+    const rt = document.getElementById('wiz-reminder-input');
+    if(rt) _addWiz.reminderTime = rt.value;
+  }
+  _addWiz.step = n;
+  renderAddStep();
+}
+
+function renderAddStep() {
+  const box = document.getElementById('addWizBox');
+  if(!box) return;
+  const s = _addWiz.step;
+  const AREAS = [
+    {v:'trabajo',l:'💼 Trabajo'},{v:'marca',l:'✦ Marca'},{v:'despinsage',l:'◈ Despins'},
+    {v:'casa',l:'⌂ Casa'},{v:'yo',l:'◉ Yo'},{v:'estudios',l:'◭ Estudios'}
+  ];
+
+  let dots = '<div class="wiz-step-indicator">';
+  for(let i=1;i<=6;i++) dots += `<div class="wiz-dot${i<s?' done':i===s?' active':''}"></div>`;
+  dots += '</div>';
+
+  let html = '';
+  if(s === 1) {
+    html = `
+      <div class="todo-modal-title">⊕ ¿Qué tienes en mente?</div>
+      ${dots}
+      <input id="wiz-name-input" placeholder="Nombre de la tarea..."
+        style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--ff);font-size:13px;outline:none;width:100%;box-sizing:border-box;"
+        value="${_addWiz.name.replace(/"/g,'&quot;')}"
+        onkeydown="if(event.key==='Enter'){_addWiz.name=this.value.trim();if(_addWiz.name)goAddStep(2);}" />
+      <div class="todo-modal-btns">
+        <button class="todo-modal-cancel" onclick="closeAddPanel()">Cancelar</button>
+        <button class="todo-modal-confirm" onclick="_addWiz.name=(document.getElementById('wiz-name-input').value||'').trim();if(_addWiz.name)goAddStep(2);">Siguiente →</button>
+      </div>`;
+  } else if(s === 2) {
+    const areaButtons = AREAS.map(a =>
+      `<button class="wiz-btn${_addWiz.area===a.v?' selected':''}" onclick="_addWiz.area='${a.v}';goAddStep(3);">${a.l}</button>`
+    ).join('');
+    html = `
+      <div class="todo-modal-title">¿En qué área?</div>
+      ${dots}
+      <div class="wiz-area-grid">${areaButtons}</div>
+      <div class="todo-modal-btns">
+        <button class="todo-modal-cancel" onclick="goAddStep(1)">← Atrás</button>
+      </div>`;
+  } else if(s === 3) {
+    const prios = [
+      {v:'alta',l:'🔥 Alta',cls:'sel-alta'},{v:'media',l:'⚡ Media',cls:'sel-media'},{v:'baja',l:'🌱 Baja',cls:'sel-baja'}
+    ];
+    const prioButtons = prios.map(p =>
+      `<button class="wiz-btn${_addWiz.prio===p.v?' '+p.cls:''}" onclick="_addWiz.prio='${p.v}';goAddStep(4);">${p.l}</button>`
+    ).join('');
+    html = `
+      <div class="todo-modal-title">¿Prioridad?</div>
+      ${dots}
+      <div class="wiz-yesno">${prioButtons}</div>
+      <div class="todo-modal-btns">
+        <button class="todo-modal-cancel" onclick="goAddStep(2)">← Atrás</button>
+      </div>`;
+  } else if(s === 4) {
+    html = `
+      <div class="todo-modal-title">¿Tiene fecha?</div>
+      ${dots}
+      <div class="wiz-yesno">
+        <button class="wiz-btn${_addWiz.hasDate?' selected':''}" onclick="_addWiz.hasDate=true;renderAddStep();">Sí</button>
+        <button class="wiz-btn${!_addWiz.hasDate?' selected':''}" onclick="_addWiz.hasDate=false;_addWiz.dueDate='';_addWiz.dueTime='';goAddStep(5);">No</button>
+      </div>
+      ${_addWiz.hasDate ? `
+        <input type="date" id="wiz-date-input" value="${_addWiz.dueDate}"
+          style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box;"
+          onchange="_addWiz.dueDate=this.value" />
+        <input type="time" id="wiz-time-input" value="${_addWiz.dueTime}" placeholder="Hora (opcional)"
+          style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box;"
+          onchange="_addWiz.dueTime=this.value" />
+      ` : ''}
+      <div class="todo-modal-btns">
+        <button class="todo-modal-cancel" onclick="goAddStep(3)">← Atrás</button>
+        ${_addWiz.hasDate ? `<button class="todo-modal-confirm" onclick="const dd=document.getElementById('wiz-date-input'),dt=document.getElementById('wiz-time-input');_addWiz.dueDate=dd?dd.value:'';_addWiz.dueTime=dt?dt.value:'';goAddStep(5);">Siguiente →</button>` : ''}
+      </div>`;
+  } else if(s === 5) {
+    html = `
+      <div class="todo-modal-title">¿Recordatorio?</div>
+      ${dots}
+      <div class="wiz-yesno">
+        <button class="wiz-btn${_addWiz.hasReminder?' selected':''}" onclick="_addWiz.hasReminder=true;renderAddStep();">Sí</button>
+        <button class="wiz-btn${!_addWiz.hasReminder?' selected':''}" onclick="_addWiz.hasReminder=false;_addWiz.reminderTime='';goAddStep(6);">No</button>
+      </div>
+      ${_addWiz.hasReminder ? `
+        <input type="time" id="wiz-reminder-input" value="${_addWiz.reminderTime}"
+          style="background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box;"
+          onchange="_addWiz.reminderTime=this.value" />
+      ` : ''}
+      <div class="todo-modal-btns">
+        <button class="todo-modal-cancel" onclick="goAddStep(4)">← Atrás</button>
+        ${_addWiz.hasReminder ? `<button class="todo-modal-confirm" onclick="const rt=document.getElementById('wiz-reminder-input');_addWiz.reminderTime=rt?rt.value:'';goAddStep(6);">Siguiente →</button>` : ''}
+      </div>`;
+  } else if(s === 6) {
+    const aL = {trabajo:'💼 Trabajo',marca:'✦ Marca',despinsage:'◈ Despinsage',casa:'⌂ Casa',yo:'◉ Yo',estudios:'◭ Estudios'};
+    const pL = {alta:'🔥 Alta',media:'⚡ Media',baja:'🌱 Baja'};
+    html = `
+      <div class="todo-modal-title">✓ Confirmar</div>
+      ${dots}
+      <div style="background:var(--s3);border-radius:10px;padding:12px">
+        <div class="wiz-summary-row"><span class="wiz-summary-label">NOMBRE</span><span style="font-weight:600">${_addWiz.name}</span></div>
+        <div class="wiz-summary-row"><span class="wiz-summary-label">ÁREA</span><span>${aL[_addWiz.area]||_addWiz.area}</span></div>
+        <div class="wiz-summary-row"><span class="wiz-summary-label">PRIORIDAD</span><span>${pL[_addWiz.prio]||_addWiz.prio}</span></div>
+        ${_addWiz.hasDate&&_addWiz.dueDate?`<div class="wiz-summary-row"><span class="wiz-summary-label">FECHA</span><span>${_addWiz.dueDate}${_addWiz.dueTime?' '+_addWiz.dueTime:''}</span></div>`:''}
+        ${_addWiz.hasReminder&&_addWiz.reminderTime?`<div class="wiz-summary-row"><span class="wiz-summary-label">RECORDATORIO</span><span>${_addWiz.reminderTime}</span></div>`:''}
+        <div class="wiz-summary-row"><span class="wiz-summary-label">DESTINO</span><span style="color:var(--green)">${_addWiz.hasDate&&_addWiz.dueDate?'TODO + CAL':'TODO'}</span></div>
+      </div>
+      <div class="todo-modal-btns">
+        <button class="todo-modal-cancel" onclick="goAddStep(5)">← Atrás</button>
+        <button class="todo-modal-confirm" onclick="confirmAdd()">Añadir →</button>
+      </div>`;
+  }
+
+  box.innerHTML = html;
+  if(s === 1) { const inp = document.getElementById('wiz-name-input'); if(inp) setTimeout(()=>inp.focus(), 50); }
+}
+
+function confirmAdd() {
+  if(!_addWiz || !_addWiz.name) return;
+  const { name, area, prio, hasDate, dueDate, dueTime, hasReminder, reminderTime } = _addWiz;
+
+  const task = { id:'t'+Date.now(), name, area: area||'trabajo', prio: prio||'media', done:false, status:'backlog' };
+  if(hasDate && dueDate) task.due = dueDate;
+  if(hasReminder && reminderTime) task.reminderTime = reminderTime;
+  TASKS.unshift(task);
+  sbUpsertTask({...task, created_at: new Date().toISOString()});
+  save();
+
+  if(hasDate && dueDate) {
+    const evTypeMap = {trabajo:'work',marca:'work',despinsage:'despinsage',casa:'personal',yo:'personal',estudios:'personal'};
+    const ev = { d: dueDate, n: name, t: evTypeMap[area]||'personal' };
+    if(dueTime) ev.time = dueTime;
+    const evs = getUserEvents(); evs.push(ev); saveUserEvents(evs);
+  }
+
+  closeAddPanel();
+  updateAll();
+  showToast(hasDate && dueDate ? '✅ Tarea + evento añadidos' : '✅ Tarea añadida');
 }
 
 function renderTodoAll() {
@@ -3449,10 +3670,11 @@ function toggleTask(id) {
     t.done = !t.done;
     t.status = t.done ? 'done' : 'backlog';
     if(t.done) {
-      const dmg = t.prio==='alta' ? 30 : t.prio==='media' ? 20 : 10;
       spawnParticles(window.innerWidth/2, window.innerHeight*0.6, AREA_COLORS[t.area]||'#00f5a0');
-      dealDamageToBoss(dmg);
+      recalcBossHp();
       animateAttack(t.prio||'media');
+    } else {
+      recalcBossHp();
     }
     sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, created_at: new Date().toISOString() });
     save();
@@ -3684,7 +3906,7 @@ function renderWeek() {
   if(!row) return;
 
   const eventsByDate = {};
-  EVENTS.forEach(ev => {
+  allEvents().forEach(ev => {
     if(!eventsByDate[ev.d]) eventsByDate[ev.d] = [];
     eventsByDate[ev.d].push(ev);
   });
@@ -3719,8 +3941,8 @@ function selectWeekDay(dateStr) {
 
   const dt = new Date(dateStr + 'T12:00:00');
   const dayLabel = dt.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
-  const dayEvs = EVENTS.filter(e => e.d === dateStr);
-  const dayTasks = TASKS.filter(t => !t.done && t.prio === 'alta').slice(0, 4);
+  const dayEvs = allEvents().filter(e => e.d === dateStr);
+  const dayTasks = TASKS.filter(t => !t.done && t.dueDate === dateStr);
   const tagColors = {despinsage:'#00d4ff', personal:'#00f5a0', cumple:'#ff6eb4', work:'#ffcc00'};
 
   let html = `<div class="hub-dp-title">${dayLabel.charAt(0).toUpperCase()+dayLabel.slice(1)}</div>`;
@@ -3729,24 +3951,23 @@ function selectWeekDay(dateStr) {
     html += dayEvs.map(ev => `
       <div class="hub-dp-row">
         <div style="width:3px;height:20px;border-radius:2px;background:${tagColors[ev.t]||'#7b6fff'};flex-shrink:0"></div>
-        <span style="font-size:12px;font-weight:600;flex:1">${ev.n}</span>
+        <span style="font-size:12px;font-weight:600;flex:1">${ev.n}${ev.time?` <span style="color:var(--muted2);font-size:10px">· ${ev.time}</span>`:''}</span>
         <span style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${ev.t.toUpperCase()}</span>
       </div>`).join('');
   }
 
-  if(!dayEvs.length && !dayTasks.length) {
-    html += '<div class="hub-dp-empty">Sin eventos ni urgencias este día</div>';
-  } else if(dayTasks.length && !dayEvs.length) {
-    html += '<div class="hub-dp-empty" style="margin-bottom:4px">Sin eventos · Tareas P1 activas:</div>';
-  }
-
   if(dayTasks.length) {
+    const prioColors = {alta:'var(--accent2)',media:'var(--gold)',baja:'var(--green)'};
     html += dayTasks.map(t => `
       <div class="hub-dp-row">
-        <span class="prio-badge pb-p1" style="font-size:8px">P1</span>
+        <div style="width:3px;height:20px;border-radius:2px;background:${prioColors[t.prio]||'var(--accent)'};flex-shrink:0"></div>
         <span style="font-size:12px;font-weight:600;flex:1">${t.name}</span>
         <span style="font-family:var(--fm);font-size:9px;color:${AREA_COLORS[t.area]||'#7b6fff'}">${(t.area||'').toUpperCase()}</span>
       </div>`).join('');
+  }
+
+  if(!dayEvs.length && !dayTasks.length) {
+    html += '<div class="hub-dp-empty">Sin eventos ni tareas para este día</div>';
   }
 
   panel.innerHTML = `<div class="hub-day-panel">${html}</div>`;
@@ -3755,7 +3976,7 @@ function selectWeekDay(dateStr) {
 
 function renderUpcoming() {
   const todayStr = new Date().toISOString().split('T')[0];
-  const upcoming = EVENTS.filter(e=>e.d>=todayStr).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,3);
+  const upcoming = allEvents().filter(e=>e.d>=todayStr).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,3);
   const el = document.getElementById('upcoming-events');
   if(!el) return;
   const tagColors = {despinsage:' ev-despinsage',personal:' ev-personal',cumple:' ev-cumple',work:' ev-work'};
@@ -3966,7 +4187,8 @@ function renderWeekPlan() {
   // Events this week
   const weekStart = days[0].toISOString().split('T')[0];
   const weekEnd = days[6].toISOString().split('T')[0];
-  const weekEvents = EVENTS.filter(e => e.d >= weekStart && e.d <= weekEnd);
+  const weekEvents = allEvents().filter(e => e.d >= weekStart && e.d <= weekEnd);
+  const weekTaskEvents = TASKS.filter(t => !t.done && t.dueDate && t.dueDate >= weekStart && t.dueDate <= weekEnd);
 
   // Week events section
   const evEl = document.getElementById('weekEvents');
@@ -4070,10 +4292,15 @@ function renderWeekPlan() {
     const isToday = d.toDateString()===today.toDateString();
     const dateStr = d.toISOString().split('T')[0];
     const dayEv = weekEvents.filter(e=>e.d===dateStr);
+    const dayTaskEv = weekTaskEvents.filter(t=>t.dueDate===dateStr);
     html += `<div class="wg-cell${isToday?' today-col':''}">`;
     dayEv.forEach(ev => {
       const cls = ev.t==='despinsage'?'despins':'event';
       html += `<div class="wg-block ${cls}">${ev.n.replace('🎂','').substring(0,16)}</div>`;
+    });
+    dayTaskEv.forEach(t => {
+      const cls = {alta:'work',media:'gold',baja:'green'}[t.prio]||'work';
+      html += `<div class="wg-block ${cls}" style="opacity:.85">${t.name.substring(0,16)}</div>`;
     });
     html += '</div>';
   });
@@ -4184,168 +4411,14 @@ function getWeekNum(d) {
 
 
 // ══════════════════════════════════
-// VOICE ASSISTANT
+// USER EVENTS (voice-added, localStorage)
 // ══════════════════════════════════
-let recognition = null;
-let voiceAction = null;
-
-function toggleVoice() {
-  const panel = document.getElementById('voicePanel');
-  const isOpen = panel.style.display !== 'none';
-  if(isOpen) {
-    closeVoice();
-  } else {
-    panel.style.display = 'block';
-    document.getElementById('voiceBtn').classList.add('voice-active');
-  }
+function getUserEvents() {
+  try { return JSON.parse(localStorage.getItem('monart-events-user')||'[]'); } catch(e){ return []; }
 }
+function saveUserEvents(evs) { localStorage.setItem('monart-events-user', JSON.stringify(evs)); }
+function allEvents() { return [...EVENTS, ...getUserEvents()]; }
 
-function closeVoice() {
-  document.getElementById('voicePanel').style.display = 'none';
-  document.getElementById('voiceBtn').classList.remove('voice-active');
-  if(recognition) recognition.stop();
-  voiceAction = null;
-  document.getElementById('voiceResult').style.display = 'none';
-  document.getElementById('confirmBtn').style.display = 'none';
-  document.getElementById('voiceTranscript').textContent = 'Di algo como: "Añade llamar a cliente en trabajo" o "Qué tengo hoy"';
-}
-
-function startListening() {
-  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    showToast('⚠️ Tu navegador no soporta voz — usa Safari en iPhone');
-    return;
-  }
-
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.lang = 'es-ES';
-  recognition.continuous = false;
-  recognition.interimResults = true;
-
-  const panel = document.getElementById('voicePanel');
-  const status = document.getElementById('voiceStatus');
-  const transcript = document.getElementById('voiceTranscript');
-
-  panel.classList.add('listening');
-  status.textContent = 'ESCUCHANDO...';
-  document.getElementById('listenBtn').textContent = '⏹ PARAR';
-  document.getElementById('listenBtn').onclick = () => recognition.stop();
-
-  recognition.onresult = (e) => {
-    const text = Array.from(e.results).map(r=>r[0].transcript).join('');
-    transcript.textContent = '"' + text + '"';
-    transcript.style.color = 'var(--text)';
-  };
-
-  recognition.onend = () => {
-    panel.classList.remove('listening');
-    status.textContent = 'PROCESANDO...';
-    document.getElementById('listenBtn').textContent = '● ESCUCHAR';
-    document.getElementById('listenBtn').onclick = startListening;
-
-    const text = transcript.textContent.replace(/"/g,'').trim();
-    if(text) parseVoiceCommand(text);
-    else {
-      status.textContent = 'LISTO · HABLA';
-      transcript.textContent = 'No te he escuchado. Inténtalo de nuevo.';
-    }
-  };
-
-  recognition.onerror = () => {
-    panel.classList.remove('listening');
-    status.textContent = 'LISTO · HABLA';
-    showToast('Error al escuchar — intenta de nuevo');
-  };
-
-  recognition.start();
-}
-
-function parseVoiceCommand(text) {
-  const lower = text.toLowerCase();
-  const status = document.getElementById('voiceStatus');
-  const result = document.getElementById('voiceResult');
-  const resultText = document.getElementById('voiceResultText');
-  const confirmBtn = document.getElementById('confirmBtn');
-
-  // Detectar área
-  const areaMap = {
-    'trabajo': 'trabajo', 'curro': 'trabajo', 'work': 'trabajo',
-    'marca': 'marca', 'monart': 'marca', 'contenido': 'marca',
-    'despinsage': 'despinsage', 'despins': 'despinsage', 'nucli': 'despinsage',
-    'casa': 'casa', 'hogar': 'casa', 'home': 'casa',
-    'yo': 'yo', 'personal': 'yo', 'salud': 'yo',
-    'estudios': 'estudios', 'estudio': 'estudios', 'aprender': 'estudios',
-  };
-
-  let detectedArea = 'trabajo';
-  for(const [kw, area] of Object.entries(areaMap)) {
-    if(lower.includes(kw)) { detectedArea = area; break; }
-  }
-
-  // Detectar prioridad
-  let prio = 'media';
-  if(lower.includes('urgent') || lower.includes('important') || lower.includes('priorit') || lower.includes('hoy')) prio = 'alta';
-  if(lower.includes('baja') || lower.includes('cuando pueda') || lower.includes('algún día')) prio = 'baja';
-
-  // Detectar tipo de comando
-  if(lower.includes('qué tengo') || lower.includes('que tengo') || lower.includes('mis tareas') || lower.includes('tareas de hoy')) {
-    // Consulta
-    const pending = TASKS.filter(t=>!t.done).slice(0,5);
-    voiceAction = {type:'query', data: pending};
-    resultText.innerHTML = '<div style="font-family:var(--fm);font-size:10px;color:var(--muted2);margin-bottom:6px">TAREAS PENDIENTES</div>' +
-      pending.map(t=>`<div style="padding:3px 0;font-size:12px">· ${t.name} <span style="color:var(--muted2);font-size:10px">(${t.area})</span></div>`).join('');
-    result.style.display = 'block';
-    confirmBtn.style.display = 'none';
-    status.textContent = 'CONSULTA ✓';
-    return;
-  }
-
-  if(lower.includes('añade') || lower.includes('agrega') || lower.includes('apunta') || lower.includes('crea') || lower.includes('nueva tarea')) {
-    // Limpiar comando de la tarea
-    let taskName = text
-      .replace(/añade?|agrega?|apunta?|crea?|nueva tarea|en trabajo|en marca|en casa|en yo|en estudios|en despinsage|urgente|importante|prioridad/gi, '')
-      .replace(/\s+/g,' ').trim();
-
-    if(!taskName) taskName = text;
-
-    voiceAction = {
-      type: 'add_task',
-      data: { name: taskName, area: detectedArea, prio, done: false, id: 't'+Date.now() }
-    };
-
-    const areaLabels = {trabajo:'💼 TRABAJO',marca:'🌟 MARCA',despinsage:'🤝 DESPINSAGE',casa:'🏠 CASA',yo:'🧠 YO',estudios:'◭ ESTUDIOS'};
-    const prioLabels = {alta:'🔥 Alta',media:'⚡ Media',baja:'🌱 Baja'};
-
-    resultText.innerHTML = `
-      <div style="font-size:14px;margin-bottom:6px">${taskName}</div>
-      <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${areaLabels[detectedArea]} · ${prioLabels[prio]}</div>
-    `;
-    result.style.display = 'block';
-    confirmBtn.style.display = 'block';
-    status.textContent = '¿CONFIRMAR?';
-    return;
-  }
-
-  // No detectado
-  voiceAction = null;
-  resultText.innerHTML = `<div style="color:var(--muted2)">No entendí el comando. Prueba: "Añade [tarea] en [área]"</div>`;
-  result.style.display = 'block';
-  confirmBtn.style.display = 'none';
-  status.textContent = 'NO ENTENDIDO';
-}
-
-function confirmVoiceAction() {
-  if(!voiceAction) return;
-
-  if(voiceAction.type === 'add_task') {
-    TASKS.unshift(voiceAction.data);
-    sbUpsertTask({...voiceAction.data, created_at: new Date().toISOString()});
-    save();
-    renderTasks();
-    showToast('✅ Tarea añadida por voz');
-    closeVoice();
-  }
-}
 
 // ══════════════════════════════════
 // INIT
@@ -4376,24 +4449,6 @@ init();
 setInterval(() => loadFromCloud(true), 30000);
 </script>
 
-<!-- ══ VOICE PANEL ══ -->
-<div id="voicePanel" style="display:none;position:fixed;bottom:0;left:var(--nav-w);right:0;background:var(--s1);border-top:1px solid var(--border2);padding:16px;z-index:50;">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-    <div id="voicePulse" style="width:12px;height:12px;border-radius:50%;background:var(--accent2);flex-shrink:0"></div>
-    <div style="font-family:var(--fm);font-size:10px;color:var(--muted2);letter-spacing:2px" id="voiceStatus">LISTO · HABLA</div>
-  </div>
-  <div id="voiceTranscript" style="font-size:13px;color:var(--text);min-height:20px;margin-bottom:10px;font-style:italic;color:var(--muted2)">Di algo como: "Añade llamar a cliente en trabajo" o "Qué tengo hoy"</div>
-  <div id="voiceResult" style="display:none;background:var(--s2);border-radius:10px;padding:12px;margin-bottom:10px">
-    <div style="font-family:var(--fm);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">ACCIÓN DETECTADA</div>
-    <div id="voiceResultText" style="font-size:13px;font-weight:600"></div>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button onclick="startListening()" id="listenBtn" style="flex:1;padding:10px;border-radius:10px;background:var(--accent);border:none;color:white;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">● ESCUCHAR</button>
-    <button onclick="confirmVoiceAction()" id="confirmBtn" style="display:none;flex:1;padding:10px;border-radius:10px;background:var(--green);border:none;color:#000;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer">✓ CONFIRMAR</button>
-    <button onclick="closeVoice()" style="padding:10px 14px;border-radius:10px;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-family:var(--fm);font-size:10px;cursor:pointer">✕</button>
-  </div>
-</div>
-
 <!-- ══ MISSION EDIT MODAL ══ -->
 <div class="mission-modal-overlay" id="missionModal" style="display:none" onclick="if(event.target===this)closeMissionModal()">
   <div class="mission-modal-box">
@@ -4414,26 +4469,13 @@ setInterval(() => loadFromCloud(true), 30000);
   </div>
 </div>
 
-<!-- ══ ADD TASK MODAL ══ -->
-<div class="todo-modal-overlay" id="todoAddModal" style="display:none" onclick="if(event.target===this)closeAddModal()">
-  <div class="todo-modal-box">
-    <div class="todo-modal-title">&#8853; Nueva Tarea</div>
-    <input id="modalName" placeholder="Nombre de la tarea..." onkeydown="if(event.key==='Enter')confirmAddTask()" />
-    <select id="modalArea">
-      <option value="trabajo">&#128188; Trabajo</option>
-      <option value="marca">&#11088; Marca</option>
-      <option value="despinsage">&#129309; Despinsage</option>
-      <option value="casa">&#127968; Casa</option>
-      <option value="yo">&#129504; Yo</option>
-      <option value="estudios">&#9651; Estudios</option>
-    </select>
-    <input type="date" id="modalDue" />
-    <div class="todo-modal-btns">
-      <button class="todo-modal-cancel" onclick="closeAddModal()">Cancelar</button>
-      <button class="todo-modal-confirm" onclick="confirmAddTask()">A&#241;adir &#8594;</button>
-    </div>
-  </div>
+<!-- ══ ADD WIZARD MODAL ══ -->
+<div class="todo-modal-overlay" id="todoAddModal" style="display:none" onclick="if(event.target===this)closeAddPanel()">
+  <div class="todo-modal-box" id="addWizBox"></div>
 </div>
+
+<!-- ══ FAB + BUTTON ══ -->
+<button class="fab-universal" onclick="openAddPanel()" title="Nueva tarea o evento">&#xFF0B;</button>
 
 </body>
 </html>
