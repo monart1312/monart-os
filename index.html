@@ -1446,10 +1446,17 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 }
 
 /* ── DELETE BUTTON ── */
-.t-del { opacity:0; background:transparent; border:none; color:var(--accent2); font-size:13px; cursor:pointer; padding:4px 7px; border-radius:6px; transition:opacity .15s,background .15s; flex-shrink:0; line-height:1; }
+.t-del { opacity:0; background:transparent; border:none; color:var(--accent2); font-size:13px; cursor:pointer; padding:10px 8px; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:opacity .15s,background .15s; flex-shrink:0; line-height:1; touch-action:manipulation; }
 .task-item:hover .t-del, .r-card:hover .t-del, .kanban-card:hover .t-del, .mc-pill:hover .t-del { opacity:1; }
 .t-del:hover { background:rgba(255,77,109,.15); }
 @media (max-width:600px) { .t-del { opacity:1 !important; } }
+
+/* ── DELETE CONFIRM MODAL ── */
+.del-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.82); display:flex; align-items:center; justify-content:center; z-index:600; backdrop-filter:blur(8px); }
+.del-modal-box { background:var(--s2); border-radius:16px; padding:24px; width:300px; max-width:90vw; display:flex; flex-direction:column; gap:14px; }
+.del-modal-title { font-family:var(--fm); font-size:10px; font-weight:700; letter-spacing:2px; color:var(--accent2); text-transform:uppercase; }
+.del-modal-name { font-size:14px; font-weight:700; line-height:1.4; color:var(--text); }
+.del-modal-sub { font-family:var(--fm); font-size:10px; color:var(--muted2); letter-spacing:1px; margin-top:2px; }
 
 /* ── PRIORITY SYSTEM P1/P2/P3 ── */
 .task-item[data-prio="alta"] { border-left: 3px solid #ff4d6d; }
@@ -2637,14 +2644,41 @@ async function sbDeleteTask(id) {
   } catch(e) {}
 }
 
-function deleteTask(id) {
-  if(!confirm('¿Borrar esta tarea?')) return;
+let _deleteTarget = null;
+
+function openDeleteModal(id) {
+  const t = TASKS.find(x => x.id === id);
+  if(!t) return;
+  _deleteTarget = id;
+  const col = AREA_COLORS[t.area] || '#7b6fff';
+  const box = document.getElementById('deleteModalBox');
+  if(box) box.style.border = `1px solid ${col}55`;
+  const nameEl = document.getElementById('deleteModalName');
+  const subEl = document.getElementById('deleteModalSub');
+  if(nameEl) nameEl.textContent = t.name;
+  if(subEl) subEl.textContent = (t.area||'').toUpperCase() + ' · ' + (t.prio==='alta'?'P1':t.prio==='media'?'P2':t.prio==='baja'?'P3':'▶');
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+  _deleteTarget = null;
+}
+
+function confirmDelete() {
+  if(!_deleteTarget) return;
+  const id = _deleteTarget;
+  closeDeleteModal();
   TASKS = TASKS.filter(t => t.id !== id);
   sbDeleteTask(id);
   save();
   updateAll();
   renderTasks();
   showToast('🗑 Tarea borrada');
+}
+
+function deleteTask(id) {
+  openDeleteModal(id);
 }
 
 // ══════════════════════════════════
@@ -2723,7 +2757,12 @@ async function loadFromCloud(silent = false) {
   if(!document.body.classList.contains('drag-active')) {
     const remoteTasks = await sbGetAllTasks();
     if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
-      TASKS = remoteTasks;
+      TASKS = remoteTasks.map(rt => {
+        const local = TASKS.find(t => t.id === rt.id);
+        // Si Supabase no tiene columna status, preservar estado local
+        if(local && local.status && !rt.status) return {...rt, status: local.status, done: local.done};
+        return rt;
+      });
       localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
     }
   }
@@ -2952,6 +2991,15 @@ function renderSchedule() {
   const list = document.getElementById('scheduleList');
   if(!list) return;
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const areaToCat = {trabajo:'purple',marca:'purple',despinsage:'cyan',casa:'green',yo:'pink',estudios:'gold'};
+  const areaNames  = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
+
+  function toMins(t) {
+    const [h, m] = t.split(':').map(Number);
+    return (h < 6 ? h + 24 : h) * 60 + m;
+  }
+
   function schedItemHTML(item) {
     const done = ST.completed[item.id] ? 'done' : '';
     return `
@@ -2967,7 +3015,31 @@ function renderSchedule() {
       </div>`;
   }
 
-  list.innerHTML = SCHEDULE.map(item => schedItemHTML(item)).join('');
+  function taskItemHTML(t) {
+    const cat = areaToCat[t.area] || 'purple';
+    const done = t.done ? 'done' : '';
+    return `
+      <div class="sched-item cat-${cat} ${done}" onclick="toggleTask('${t.id}')" style="border-left-style:dashed">
+        <div class="sched-time">${t.dueTime}</div>
+        <div class="sched-tag" style="font-size:7px;letter-spacing:0">TODO</div>
+        <div class="sched-info">
+          <div class="sched-name">${t.name}</div>
+          <div class="sched-sub">${areaNames[t.area]||t.area}</div>
+        </div>
+        <div class="sched-xp">${done ? '✓' : ''}</div>
+        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
+      </div>`;
+  }
+
+  const todayTasks = TASKS.filter(t => t.dueDate === todayStr && t.dueTime);
+  const combined = [
+    ...SCHEDULE.map(s => ({type:'habit', mins: toMins(s.time), data: s})),
+    ...todayTasks.map(t => ({type:'task', mins: toMins(t.dueTime), data: t}))
+  ].sort((a, b) => a.mins - b.mins);
+
+  list.innerHTML = combined.map(item =>
+    item.type === 'habit' ? schedItemHTML(item.data) : taskItemHTML(item.data)
+  ).join('');
 }
 
 function nextDay() {
@@ -3204,7 +3276,7 @@ function renderTasks() {
         <div class="t-meta">${areaLabel(t.area)}</div>
       </div>
       <div class="prio-badge ${prioBadgeClass(t.prio)}">${prioLabel(t.prio)}</div>
-      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar tarea">✕</button>
+      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar tarea">✕</button>
     </div>
   `).join('');
 }
@@ -3235,7 +3307,7 @@ function _dragCleanup() {
   document.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
   document.querySelectorAll('.dragging').forEach(c => c.classList.remove('dragging'));
   clearTimeout(_dragActiveTimer);
-  _dragActiveTimer = setTimeout(() => document.body.classList.remove('drag-active'), 5000);
+  _dragActiveTimer = setTimeout(() => document.body.classList.remove('drag-active'), 15000);
   _dragId = null;
   _dragSourceEl = null;
 }
@@ -3549,7 +3621,7 @@ function renderTodoAll() {
       <div class="r-card-meta">
         <span style="font-family:var(--fm);font-size:8px;color:${col}">${AREA_NAMES[t.area]||t.area}</span>
         ${dueTxt}
-        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
+        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
       </div>
     </div>`;
   }
@@ -3566,7 +3638,7 @@ function renderTodoAll() {
         ${dueTxt}
       </div>
       <button class="mc-send-btn" onclick="event.stopPropagation();sendToRiding('${t.id}')" title="Enviar a Riding">&#8594;</button>
-      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
+      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
     </div>`;
   }
 
@@ -3679,7 +3751,7 @@ function renderKanban() {
         <div class="kanban-area-dot" style="background:${dot}"></div>
         <span style="font-family:var(--fm);font-size:8px;color:var(--muted2)">${areaLabel(t.area).split(' ')[1]||t.area}</span>
         ${t.prio !== 'prog' ? `<span class="prio-badge ${badgeClass}" style="margin-left:auto">${label}</span>` : '<span class="prio-badge pb-prog" style="margin-left:auto">▶</span>'}
-        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
+        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
       </div>
     </div>`;
   }
@@ -4519,6 +4591,21 @@ setInterval(() => loadFromCloud(true), 30000);
 <!-- ══ ADD WIZARD MODAL ══ -->
 <div class="todo-modal-overlay" id="todoAddModal" style="display:none" onclick="if(event.target===this)closeAddPanel()">
   <div class="todo-modal-box" id="addWizBox"></div>
+</div>
+
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+<div class="del-modal-overlay" id="deleteModal" style="display:none" onclick="if(event.target===this)closeDeleteModal()">
+  <div class="del-modal-box" id="deleteModalBox">
+    <div class="del-modal-title">⚠ Eliminar tarea</div>
+    <div>
+      <div class="del-modal-name" id="deleteModalName"></div>
+      <div class="del-modal-sub" id="deleteModalSub"></div>
+    </div>
+    <div class="todo-modal-btns">
+      <button class="todo-modal-cancel" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="todo-modal-confirm" style="background:var(--accent2)" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══ FAB + BUTTON ══ -->
