@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>MONART OS</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --bg: #04040a;
@@ -3558,7 +3559,7 @@ function renderAddStep() {
         <div class="wiz-summary-row"><span class="wiz-summary-label">PRIORIDAD</span><span>${pL[_addWiz.prio]||_addWiz.prio}</span></div>
         ${_addWiz.hasDate&&_addWiz.dueDate?`<div class="wiz-summary-row"><span class="wiz-summary-label">FECHA</span><span>${_addWiz.dueDate}${_addWiz.dueTime?' '+_addWiz.dueTime:''}</span></div>`:''}
         ${autoReminder?`<div class="wiz-summary-row"><span class="wiz-summary-label">RECORDATORIO</span><span style="color:var(--muted2)">1h antes (auto)</span></div>`:''}
-        <div class="wiz-summary-row"><span class="wiz-summary-label">DESTINO</span><span style="color:var(--green)">${_addWiz.hasDate&&_addWiz.dueDate?'TODO + CAL':'TODO'}</span></div>
+        <div class="wiz-summary-row"><span class="wiz-summary-label">DESTINO</span><span style="color:var(--green)">${_addWiz.hasDate&&_addWiz.dueDate?(_addWiz.dueTime?'TODO + CAL + 📅 GCAL':'TODO + CAL'):'TODO'}</span></div>
       </div>
       <div class="todo-modal-btns">
         <button class="todo-modal-cancel" onclick="goAddStep(4)">← Atrás</button>
@@ -3595,7 +3596,67 @@ function confirmAdd() {
   closeAddPanel();
   updateAll();
   showToast(hasDate && dueDate ? '✅ Tarea + evento añadidos' : '✅ Tarea añadida');
+  if(hasDate && dueDate && dueTime) gcalCreateEvent(task);
 }
+
+// ── GOOGLE CALENDAR ──────────────────────────────────────────
+const _GC_CID   = '1002615306694-db3fffsbbic0qp82eku7n1f2ng95scct.apps.googleusercontent.com';
+const _GC_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+let _gcClient = null, _gcToken = null, _gcPending = null;
+
+function _gcInit() {
+  if(_gcClient || !window.google?.accounts?.oauth2) return false;
+  _gcClient = google.accounts.oauth2.initTokenClient({
+    client_id: _GC_CID,
+    scope: _GC_SCOPE,
+    callback: resp => {
+      if(resp.error) { showToast('⚠ Google Calendar: ' + resp.error); return; }
+      _gcToken = resp.access_token;
+      sessionStorage.setItem('gc-tok', _gcToken);
+      if(_gcPending) { _gcPost(_gcPending); _gcPending = null; }
+    }
+  });
+  return true;
+}
+
+function gcalCreateEvent(task) {
+  if(!task.dueDate || !task.dueTime) return;
+  const cached = sessionStorage.getItem('gc-tok');
+  if(cached) _gcToken = cached;
+  if(_gcToken) { _gcPost(task); return; }
+  _gcPending = task;
+  _gcInit();
+  if(_gcClient) _gcClient.requestAccessToken({ prompt: 'consent' });
+}
+
+async function _gcPost(task) {
+  const tz  = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [h, m] = task.dueTime.split(':').map(Number);
+  const pad = n => String(n).padStart(2, '0');
+  const colorMap = { trabajo:'9', marca:'3', despinsage:'7', casa:'2', yo:'6', estudios:'5' };
+  const body = {
+    summary: task.name,
+    colorId: colorMap[task.area] || '9',
+    start: { dateTime: `${task.dueDate}T${pad(h)}:${pad(m)}:00`, timeZone: tz },
+    end:   { dateTime: `${task.dueDate}T${pad((h+1)%24)}:${pad(m)}:00`, timeZone: tz },
+    reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 30 }] }
+  };
+  try {
+    const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + _gcToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if(r.status === 401) {
+      _gcToken = null; sessionStorage.removeItem('gc-tok');
+      _gcPending = task; _gcInit();
+      if(_gcClient) _gcClient.requestAccessToken({ prompt: '' });
+      return;
+    }
+    showToast(r.ok ? '📅 Evento en Google Calendar' : '⚠ Error Google Calendar');
+  } catch(e) { console.warn('gcal', e); }
+}
+// ─────────────────────────────────────────────────────────────
 
 function renderTodoAll() {
   const list = document.getElementById('task-list');
