@@ -3323,6 +3323,7 @@ let _touchOffX = 0, _touchOffY = 0;
 
 function ttouchStart(e, id) {
   if(e.touches.length !== 1) return;
+  if(e.target.closest('button')) return;
   _dragId = id;
   _dragSourceEl = e.currentTarget;
   document.body.classList.add('drag-active');
