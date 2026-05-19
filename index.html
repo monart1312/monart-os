@@ -533,40 +533,6 @@ body::after {
 .prio-baja { background: rgba(6,214,160,.1); color: var(--green); border: 1px solid rgba(6,214,160,.2); }
 .prio-prog { background: rgba(108,99,255,.1); color: var(--accent); border: 1px solid rgba(108,99,255,.2); }
 
-.add-task-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.add-input {
-  flex: 1;
-  background: var(--s2);
-  border: 1px solid var(--border2);
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: var(--text);
-  font-family: var(--ff);
-  font-size: 13px;
-  outline: none;
-}
-
-.add-input:focus { border-color: var(--accent); }
-.add-input::placeholder { color: var(--muted); }
-
-.add-btn {
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: var(--accent);
-  border: none;
-  color: white;
-  font-family: var(--fm);
-  font-size: 12px;
-  cursor: pointer;
-  transition: opacity .2s;
-}
-
-.add-btn:hover { opacity: .85; }
 
 /* ═══════════════════════════════════════
    PAGE 4 — CALENDARIO
@@ -1013,91 +979,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 }
 
 
-/* ── RPG HERO CARD ── */
-.rpg-hero-card {
-  background: var(--s1);
-  border: 1px solid var(--border2);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  position: relative;
-}
-
-.rpg-hero-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #7b6fff, #00f5a0);
-}
-
-.rpg-scene {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-#pixelCanvas {
-  image-rendering: pixelated;
-  flex-shrink: 0;
-  border-radius: 8px;
-  background: #04040a;
-}
-
-.rpg-stats-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.rpg-pct {
-  font-family: var(--fm);
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-}
-
-.rpg-done {
-  font-family: var(--fm);
-  font-size: 10px;
-  color: var(--muted2);
-  letter-spacing: 2px;
-}
-
-.rpg-lvl-name {
-  font-family: var(--fm);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 3px;
-  margin-top: 4px;
-}
-
-.rpg-xp-wrap {
-  background: var(--s3);
-  border-radius: 3px;
-  height: 6px;
-  overflow: hidden;
-  margin-top: 4px;
-}
-
-.rpg-xp-bar {
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--green));
-  transition: width .6s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 0 6px rgba(123,111,255,.5);
-}
-
-.rpg-xp-lbl {
-  font-family: var(--fm);
-  font-size: 9px;
-  color: var(--gold);
-  letter-spacing: 1px;
-}
 
 /* ── SCHEDULE LIST ── */
 .schedule-list {
@@ -1483,6 +1364,21 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .del-modal-box { background:var(--s2); border-radius:16px; padding:24px; width:300px; max-width:90vw; display:flex; flex-direction:column; gap:14px; }
 .del-modal-title { font-family:var(--fm); font-size:10px; font-weight:700; letter-spacing:2px; color:var(--accent2); text-transform:uppercase; }
 .del-modal-name { font-size:14px; font-weight:700; line-height:1.4; color:var(--text); }
+
+/* ── EVENT EDIT MODAL ── */
+.ev-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); display:flex; align-items:center; justify-content:center; z-index:700; backdrop-filter:blur(10px); }
+.ev-modal-box { background:var(--s2); border-radius:18px; padding:24px; width:360px; max-width:94vw; display:flex; flex-direction:column; gap:14px; border:1px solid var(--border2); }
+.ev-modal-header { display:flex; align-items:center; justify-content:space-between; }
+.ev-modal-close { background:none; border:none; color:var(--muted2); font-size:20px; cursor:pointer; line-height:1; padding:0; }
+.ev-modal-label { font-family:var(--fm); font-size:9px; letter-spacing:2px; color:var(--muted2); text-transform:uppercase; margin-bottom:5px; }
+.ev-modal-input { background:var(--s3); border:1px solid var(--border2); border-radius:9px; padding:9px 12px; color:var(--text); font-family:var(--ff); font-size:13px; width:100%; outline:none; }
+.ev-modal-input:focus { border-color:var(--accent); }
+.ev-modal-input:read-only, .ev-modal-input:disabled { opacity:.45; cursor:default; }
+.ev-modal-input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(.5); }
+.ev-modal-textarea { background:var(--s3); border:1px solid var(--border2); border-radius:9px; padding:9px 12px; color:var(--text); font-family:var(--fm); font-size:11px; width:100%; outline:none; min-height:76px; resize:vertical; line-height:1.6; }
+.ev-modal-textarea:focus { border-color:var(--accent); }
+.ev-modal-row { display:flex; gap:10px; }
+.ev-modal-row > div { flex:1; }
 .del-modal-sub { font-family:var(--fm); font-size:10px; color:var(--muted2); letter-spacing:1px; margin-top:2px; }
 
 /* ── PRIORITY SYSTEM P1/P2/P3 ── */
@@ -1546,60 +1442,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .lvl-strip-name { font-family: var(--fm); font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 1px; display: block; }
 .lvl-strip-xp { font-family: var(--fm); font-size: 9px; color: var(--gold); }
 
-.hub-hero-card { display:flex; align-items:center; gap:20px; padding:16px 16px; }
-#hubCanvas { image-rendering:pixelated; flex-shrink:0; }
-.hub-hero-info { display:flex; flex-direction:column; gap:5px; flex:1; }
-.hub-hero-lvnum { font-family:var(--fm); font-size:10px; color:var(--muted2); letter-spacing:3px; font-weight:700; }
-.hub-hero-name { font-family:var(--fm); font-size:20px; font-weight:800; color:var(--text); letter-spacing:2px; line-height:1; }
-.hub-hero-xp { font-family:var(--fm); font-size:10px; color:var(--gold); letter-spacing:1px; }
-.hub-xp-track { height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-top:2px; overflow:hidden; }
-.hub-xp-fill { height:100%; border-radius:2px; transition:width .6s cubic-bezier(.4,0,.2,1); }
-
-/* ── BATTLE ARENA ── */
-.battle-arena {
-  position:relative; width:100%; height:220px;
-  overflow:hidden; border-radius:12px; margin-bottom:16px;
-  background:#04040a;
-}
-.battle-arena.desktop { height:280px; }
-.arena-bg {
-  position:absolute; inset:0;
-  background-repeat:repeat-x; background-size:auto 100%; background-position:bottom;
-}
-#arena-bg1 { background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/back.png'); z-index:1; }
-#arena-bg2 { background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/middle.png'); z-index:2; }
-#arena-fg  { background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/foreground-empty.png'); z-index:3; }
-.arena-sprite {
-  position:absolute; bottom:0; z-index:10;
-  image-rendering:pixelated; background-repeat:no-repeat; background-position:0 0;
-}
-#arena-knight { left:8%; }
-#arena-boss   { right:8%; transform: scaleX(-1); }
-#hub-boss     { transform: scaleX(-1); }
-.arena-hud {
-  position:absolute; bottom:0; left:0; right:0; z-index:20;
-  display:flex; align-items:flex-end; justify-content:space-between;
-  padding:6px 10px; background:linear-gradient(transparent, rgba(4,4,10,.85));
-}
-.arena-hp-block { display:flex; flex-direction:column; gap:2px; width:42%; }
-.arena-hp-block.right { align-items:flex-end; }
-.arena-hp-label { font-family:var(--fm); font-size:8px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,.6); }
-.arena-hp-track { width:100%; height:5px; background:rgba(255,255,255,.1); border-radius:3px; overflow:hidden; }
-.arena-hp-fill  { height:100%; border-radius:3px; transition:width .4s ease; }
-.hp-green { background:linear-gradient(90deg,#00e882,#00f5a0); }
-.hp-red   { background:linear-gradient(90deg,#ff4d6d,#ff9f43); }
-.arena-vs { font-family:var(--fm); font-size:14px; color:rgba(255,255,255,.3); }
-.arena-hp-num { font-family:var(--fm); font-size:8px; color:var(--gold); }
-.arena-boss-defeated { position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; background:rgba(4,4,10,.8); animation:fadeIn .4s ease; }
-.arena-victory-box { text-align:center; }
-.arena-victory-title { font-family:var(--fm); font-size:22px; font-weight:900; color:var(--gold); letter-spacing:4px; text-shadow:0 0 20px #ffcc0088; }
-.arena-victory-xp { font-family:var(--fm); font-size:14px; color:var(--green); margin-top:6px; }
-.arena-victory-btn { margin-top:14px; padding:10px 28px; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--gold)); border:none; color:#000; font-family:var(--ff); font-weight:800; font-size:13px; cursor:pointer; }
-.hub-arena { position:relative; width:100%; height:150px; overflow:hidden; border-radius:12px; background:#04040a; margin-bottom:10px; }
-.hub-arena .arena-bg { background-size:auto 100%; }
-.hub-arena .arena-sprite { bottom:0; }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-@keyframes dmgFlash { 0%{filter:brightness(3)} 100%{filter:brightness(1)} }
 
 /* ── KANBAN ── */
 .kanban-wrap {
@@ -1779,6 +1621,27 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .cal-panel-title:first-child { margin-top: 0; }
 .cal-panel-empty { font-family: var(--fm); font-size: 11px; color: var(--green); letter-spacing: 1px; }
 
+/* ── DAILY PROGRESS CHART ── */
+.dprog-wrap { background:var(--s1); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px; }
+.dprog-scroll { display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:4px; }
+.dprog-scroll::-webkit-scrollbar { height:3px; }
+.dprog-scroll::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+.dprog-bar-row { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; width:28px; }
+.dprog-bar { width:100%; height:40px; background:var(--s3); border-radius:4px 4px 0 0; overflow:hidden; display:flex; flex-direction:column-reverse; align-items:stretch; }
+.dprog-today .dprog-bar { outline:1px solid var(--accent); }
+.dprog-segment { width:100%; flex-shrink:0; }
+.dprog-label { font-family:var(--fm); font-size:6px; color:var(--muted); text-align:center; white-space:nowrap; }
+
+/* ── DAILY MISSIONS ── */
+.dmission-card { margin-bottom:12px; }
+.dmission-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.dmission-item:last-child { border-bottom:none; }
+.dmission-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer; transition:all .2s; }
+.dmission-done .dmission-check { background:var(--green); border-color:var(--green); color:#000; }
+.dmission-name { flex:1; font-size:13px; font-weight:600; }
+.dmission-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--ff); font-size:13px; }
+.dmission-input::placeholder { color:var(--muted); }
+
 </style>
 </head>
 <body>
@@ -1842,27 +1705,11 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="chip" id="dash-day-chip">Día 1/66</div>
   </div>
 
-  <!-- Hub arena compacta -->
-  <div class="hub-arena" id="hubArena">
-    <div class="arena-bg" id="hub-arena-bg1" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/back.png');z-index:1"></div>
-    <div class="arena-bg" id="hub-arena-bg2" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/middle.png');z-index:2"></div>
-    <div class="arena-bg" id="hub-arena-fg" style="background-image:url('assets/background/SynthCitiesGodot/SynthCitiesGodot/CityLayers/foreground-empty.png');z-index:3"></div>
-    <div class="arena-sprite" id="hub-knight" style="left:8%;z-index:10"></div>
-    <div class="arena-sprite" id="hub-boss" style="right:8%;z-index:10;transform:scaleX(-1)"></div>
-    <div class="arena-hud">
-      <div class="arena-hp-block">
-        <div class="arena-hp-label">LVL <span id="hub-lvl-num">1</span> — <span id="hub-lvl-name">WANDERER</span></div>
-        <div class="arena-hp-track"><div class="arena-hp-fill hp-green" id="hub-xp-fill" style="width:0%"></div></div>
-        <div class="arena-hp-num" id="hub-xp-text">0 XP</div>
-      </div>
-      <div class="arena-vs">⚔</div>
-      <div class="arena-hp-block right">
-        <div class="arena-hp-label" id="hub-boss-name">BOSS</div>
-        <div class="arena-hp-track"><div class="arena-hp-fill hp-red" id="hub-boss-hp-fill" style="width:100%"></div></div>
-        <div class="arena-hp-num" id="hub-boss-hp-num">—</div>
-      </div>
-    </div>
-  </div>
+  <!-- Daily progress chart -->
+  <div id="daily-progress-dash"></div>
+
+  <!-- Daily missions -->
+  <div id="daily-missions-dash"></div>
 
   <!-- Stats strip — RACHA / RÉCORD / DÍA / HOY -->
   <div class="stats-strip">
@@ -1935,6 +1782,9 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div class="chip" id="hab-streak-chip">🔥 0 días</div>
   </div>
 
+  <!-- Daily progress chart -->
+  <div id="daily-progress-habits"></div>
+
   <!-- TABS DÍA / SEMANA -->
   <div class="rpg-tabs">
     <button class="rpg-tab active" id="tab-dia" onclick="switchRpgTab('dia')">DÍA</button>
@@ -1942,33 +1792,15 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   </div>
 
   <div id="rpg-dia-content">
-  <!-- BATTLE ARENA -->
-  <div class="battle-arena" id="battleArena">
-    <div class="arena-bg" id="arena-bg1"></div>
-    <div class="arena-bg" id="arena-bg2"></div>
-    <div class="arena-bg" id="arena-fg"></div>
-    <div class="arena-sprite" id="arena-knight"></div>
-    <div class="arena-sprite" id="arena-boss" style="transform:scaleX(-1)"></div>
-    <div class="arena-hud">
-      <div class="arena-hp-block">
-        <div class="arena-hp-label">KNIGHT</div>
-        <div class="arena-hp-track"><div class="arena-hp-fill hp-green" id="knight-hp-fill" style="width:100%"></div></div>
-      </div>
-      <div class="arena-vs">⚔</div>
-      <div class="arena-hp-block right">
-        <div class="arena-hp-label" id="boss-name-hud">BOSS</div>
-        <div class="arena-hp-track"><div class="arena-hp-fill hp-red" id="boss-hp-fill" style="width:100%"></div></div>
-        <div class="arena-hp-num" id="boss-hp-num">—</div>
-      </div>
-    </div>
-  </div>
-
   <!-- HORARIO DEL DÍA -->
   <div class="schedule-list" id="scheduleList">
     <!-- generado por JS -->
   </div>
 
   <button class="next-day-btn" onclick="nextDay()">⏭ CERRAR DÍA Y PASAR AL SIGUIENTE</button>
+
+  <!-- Daily missions -->
+  <div id="daily-missions-habits" style="margin-top:12px"></div>
   </div><!-- /rpg-dia-content -->
 
   <!-- ══ SEMANA VIEW ══ -->
@@ -2024,11 +1856,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   </div>
 
   <div id="task-list"></div>
-
-  <div class="add-task-row">
-    <input class="add-input" id="newTaskInput" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTask()"/>
-    <button class="add-btn" onclick="addTask()">+ ADD</button>
-  </div>
 </div>
 
 <!-- ══ PAGE: CALENDAR ══ -->
@@ -2111,446 +1938,6 @@ const LEVELS = [
 
 const AREA_COLORS = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
 
-// ══════════════════════════════════
-// BOSS BATTLE — data
-// ══════════════════════════════════
-const _KB = 'assets/main character/Knight 2D Pixel Art/Knight 2D Pixel Art/Sprites/with_outline/';
-const KNIGHT_ANIMS = {
-  idle:    {src:_KB+'IDLE.png',     frames:7,  fw:96, fh:84, fps:8},
-  attack1: {src:_KB+'ATTACK 1.png', frames:6,  fw:96, fh:84, fps:12},
-  attack2: {src:_KB+'ATTACK 2.png', frames:5,  fw:96, fh:84, fps:12},
-  attack3: {src:_KB+'ATTACK 3.png', frames:6,  fw:96, fh:84, fps:12},
-  hurt:    {src:_KB+'HURT.png',     frames:4,  fw:96, fh:84, fps:10},
-  death:   {src:_KB+'DEATH.png',    frames:12, fw:96, fh:84, fps:8},
-};
-const KNIGHT_FILTERS = [
-  '',
-  'brightness(1.2) hue-rotate(180deg)',
-  'brightness(1.3) hue-rotate(60deg)',
-  'sepia(0.5) hue-rotate(320deg)',
-  'hue-rotate(270deg) saturate(2)',
-  'brightness(0.8) contrast(1.5)',
-  'sepia(1) hue-rotate(40deg) brightness(1.5) saturate(3)',
-];
-
-const _BB = 'assets/monsters/';
-const BOSSES = [
-  { name:'Murciélago', hp:80,
-    anims:{ idle:{src:_BB+'DarkFantasyEnemies_FREE/DarkFantasyEnemies_FREE/Bat/Bat without VFX/Bat-IdleFly.png', frames:9,fw:64,fh:64,fps:9},
-            attack:{src:_BB+'DarkFantasyEnemies_FREE/DarkFantasyEnemies_FREE/Bat/Bat without VFX/Bat-Attack1.png', frames:8,fw:64,fh:64,fps:12},
-            hurt:{src:_BB+'DarkFantasyEnemies_FREE/DarkFantasyEnemies_FREE/Bat/Bat without VFX/Bat-Hurt.png', frames:5,fw:64,fh:64,fps:10},
-            die:{src:_BB+'DarkFantasyEnemies_FREE/DarkFantasyEnemies_FREE/Bat/Bat without VFX/Bat-Die.png', frames:12,fw:64,fh:64,fps:8}}, scale:3 },
-  { name:'Seta Maldita', hp:90,
-    anims:{ idle:{src:_BB+'Forest_Monsters_FREE/Forest_Monsters_FREE/Mushroom/Mushroom without VFX/Mushroom-Idle.png', frames:7,fw:80,fh:64,fps:8},
-            attack:{src:_BB+'Forest_Monsters_FREE/Forest_Monsters_FREE/Mushroom/Mushroom without VFX/Mushroom-Attack.png', frames:10,fw:80,fh:64,fps:10},
-            hurt:{src:_BB+'Forest_Monsters_FREE/Forest_Monsters_FREE/Mushroom/Mushroom without VFX/Mushroom-Hit.png', frames:5,fw:80,fh:64,fps:10},
-            die:{src:_BB+'Forest_Monsters_FREE/Forest_Monsters_FREE/Mushroom/Mushroom without VFX/Mushroom-Die.png', frames:15,fw:80,fh:64,fps:8}}, scale:3 },
-  { name:'Demonio', hp:100,
-    anims:{ idle:{src:_BB+'Flying Demon 2D Pixel Art/Flying Demon 2D Pixel Art/Sprites/with_outline/IDLE.png', frames:4,fw:81,fh:71,fps:8},
-            attack:{src:_BB+'Flying Demon 2D Pixel Art/Flying Demon 2D Pixel Art/Sprites/with_outline/ATTACK.png', frames:8,fw:81,fh:71,fps:12},
-            hurt:{src:_BB+'Flying Demon 2D Pixel Art/Flying Demon 2D Pixel Art/Sprites/with_outline/HURT.png', frames:4,fw:81,fh:71,fps:10},
-            die:{src:_BB+'Flying Demon 2D Pixel Art/Flying Demon 2D Pixel Art/Sprites/with_outline/DEATH.png', frames:7,fw:81,fh:71,fps:8}}, scale:3 },
-  { name:'Bestia Élite', hp:110,
-    anims:{ idle:{src:_BB+'FlyingForestEnemies_FREE/FlyingForestEnemies_FREE/Enemy3/Enemy3-No-Movement-In-Animation/Enemy3No-Move-Idle.png', frames:8,fw:64,fh:64,fps:8},
-            attack:{src:_BB+'FlyingForestEnemies_FREE/FlyingForestEnemies_FREE/Enemy3/Enemy3-No-Movement-In-Animation/Enemy3No-Move-AttackSmashLoop.png', frames:3,fw:64,fh:64,fps:10},
-            hurt:{src:_BB+'FlyingForestEnemies_FREE/FlyingForestEnemies_FREE/Enemy3/Enemy3-No-Movement-In-Animation/Enemy3No-Move-Hit-NoVFX.png', frames:2,fw:64,fh:64,fps:10},
-            die:{src:_BB+'FlyingForestEnemies_FREE/FlyingForestEnemies_FREE/Enemy3/Enemy3-No-Movement-In-Animation/Enemy3No-Move-Die.png', frames:5,fw:64,fh:64,fps:8}}, scale:3 },
-  { name:'Gólem Azul', hp:120,
-    anims:{ idle:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Blue/No_Swoosh_VFX/Golem_1_idle.png', frames:8,fw:90,fh:64,fps:8},
-            attack:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Blue/No_Swoosh_VFX/Golem_1_attack.png', frames:11,fw:90,fh:64,fps:10},
-            hurt:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Blue/No_Swoosh_VFX/Golem_1_hurt.png', frames:4,fw:90,fh:64,fps:10},
-            die:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Blue/No_Swoosh_VFX/Golem_1_die.png', frames:13,fw:90,fh:64,fps:8}}, scale:3 },
-  { name:'Gólem Fuego', hp:115,
-    anims:{ idle:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Orange/No_Swoosh_VFX/Golem_1_idle.png', frames:8,fw:90,fh:64,fps:8},
-            attack:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Orange/No_Swoosh_VFX/Golem_1_attack.png', frames:11,fw:90,fh:64,fps:10},
-            hurt:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Orange/No_Swoosh_VFX/Golem_1_hurt.png', frames:4,fw:90,fh:64,fps:10},
-            die:{src:_BB+'Golems_Free_Version/Golems_Free_Version/Golem_1/Orange/No_Swoosh_VFX/Golem_1_die.png', frames:13,fw:90,fh:64,fps:8}}, scale:3 },
-  { name:'Orco Rojo', hp:95,
-    anims:{ idle:{src:_BB+'Orc Monsters 4 Colors/Color A/Orc Spritesheet Color A.png', frames:4,fw:40,fh:45,fps:6,rowY:0},
-            attack:{src:_BB+'Orc Monsters 4 Colors/Color A/Orc Spritesheet Color A.png', frames:4,fw:40,fh:45,fps:10,rowY:45},
-            hurt:{src:_BB+'Orc Monsters 4 Colors/Color A/Orc Spritesheet Color A.png', frames:2,fw:40,fh:45,fps:8,rowY:90},
-            die:{src:_BB+'Orc Monsters 4 Colors/Color A/Orc Spritesheet Color A.png', frames:4,fw:40,fh:45,fps:6,rowY:135}}, scale:4 },
-  { name:'Orco Verde', hp:95,
-    anims:{ idle:{src:_BB+'Orc Monsters 4 Colors/Color B/Orc Spritesheet Color B.png', frames:4,fw:40,fh:45,fps:6,rowY:0},
-            attack:{src:_BB+'Orc Monsters 4 Colors/Color B/Orc Spritesheet Color B.png', frames:4,fw:40,fh:45,fps:10,rowY:45},
-            hurt:{src:_BB+'Orc Monsters 4 Colors/Color B/Orc Spritesheet Color B.png', frames:2,fw:40,fh:45,fps:8,rowY:90},
-            die:{src:_BB+'Orc Monsters 4 Colors/Color B/Orc Spritesheet Color B.png', frames:4,fw:40,fh:45,fps:6,rowY:135}}, scale:4 },
-  { name:'Orco Azul', hp:95,
-    anims:{ idle:{src:_BB+'Orc Monsters 4 Colors/Color C/Orc Spritesheet Color C.png', frames:4,fw:40,fh:45,fps:6,rowY:0},
-            attack:{src:_BB+'Orc Monsters 4 Colors/Color C/Orc Spritesheet Color C.png', frames:4,fw:40,fh:45,fps:10,rowY:45},
-            hurt:{src:_BB+'Orc Monsters 4 Colors/Color C/Orc Spritesheet Color C.png', frames:2,fw:40,fh:45,fps:8,rowY:90},
-            die:{src:_BB+'Orc Monsters 4 Colors/Color C/Orc Spritesheet Color C.png', frames:4,fw:40,fh:45,fps:6,rowY:135}}, scale:4 },
-  { name:'Orco Negro', hp:105,
-    anims:{ idle:{src:_BB+'Orc Monsters 4 Colors/Color D/Orc Spritesheet Color D.png', frames:4,fw:40,fh:45,fps:6,rowY:0},
-            attack:{src:_BB+'Orc Monsters 4 Colors/Color D/Orc Spritesheet Color D.png', frames:4,fw:40,fh:45,fps:10,rowY:45},
-            hurt:{src:_BB+'Orc Monsters 4 Colors/Color D/Orc Spritesheet Color D.png', frames:2,fw:40,fh:45,fps:8,rowY:90},
-            die:{src:_BB+'Orc Monsters 4 Colors/Color D/Orc Spritesheet Color D.png', frames:4,fw:40,fh:45,fps:6,rowY:135}}, scale:4 },
-  { name:'SHAIA', hp:150, isBoss:true,
-    anims:{ idle:{src:_BB+'shaia_ver03_02/shaia_ver03_02/Shaia/shaia_mini.png', frames:1,fw:64,fh:64,fps:1},
-            attack:{frameFiles:[_BB+'shaia_ver03_02/shaia_ver03_02/Shaia/attack_31_strike_pose01.png',_BB+'shaia_ver03_02/shaia_ver03_02/Shaia/attack_31_strike_pose02.png'], fps:4, fw:256,fh:256},
-            hurt:{src:_BB+'shaia_ver03_02/shaia_ver03_02/Shaia/shaia_mini.png', frames:1,fw:64,fh:64,fps:1},
-            die:{frameFiles:Array.from({length:12},(_,i)=>_BB+'shaia_ver03_02/shaia_ver03_02/Shaia/special_05_through'+(i+1).toString().padStart(2,'0')+'.png'), fps:8, fw:256,fh:256}}, scale:2 },
-];
-
-// ══════════════════════════════════
-// BOSS STATE
-// ══════════════════════════════════
-let _bossState = null;
-let _combatAnimating = false;
-let _bossDeathTimer = null;
-
-function getDayOfYear() {
-  const n = new Date(); const s = new Date(n.getFullYear(),0,0);
-  return Math.floor((n-s)/86400000);
-}
-
-function loadBossState() {
-  const today = new Date().toISOString().split('T')[0];
-  try { _bossState = JSON.parse(localStorage.getItem('monart-boss')||'null'); } catch(e){ _bossState=null; }
-  const idx = getDayOfYear() % BOSSES.length;
-  if(!_bossState || _bossState.date !== today) {
-    const rng = Math.round((Math.random()-0.5)*20);
-    const hpMax = BOSSES[idx].hp + rng;
-    // Recalculate damage already done from today's completed tasks
-    const dmg = _calcTodayDamage();
-    _bossState = {date:today, bossIndex:idx, bossHpMax:hpMax, bossHpCurrent:Math.max(0,hpMax-dmg), damageDone:dmg, counterattacked:false};
-    _saveBossState();
-  }
-}
-
-function _calcTodayDamage() {
-  const taskDmg = TASKS.filter(t=>t.done||getStatus(t)==='done').reduce((acc,t)=>{
-    if(t.prio==='alta') return acc+30;
-    if(t.prio==='media') return acc+20;
-    return acc+10;
-  }, 0);
-  const habitDmg = ALL_HABITS.filter(h=>ST.completed[h]).reduce((acc,h)=>acc+(XP_MAP[h]||10), 0);
-  return taskDmg + habitDmg;
-}
-
-function _saveBossState() {
-  localStorage.setItem('monart-boss', JSON.stringify(_bossState));
-}
-
-function recalcBossHp() {
-  if(!_bossState) return;
-  const wasAtZero = _bossState.bossHpCurrent <= 0;
-  const dmg = _calcTodayDamage();
-  _bossState.bossHpCurrent = Math.max(0, _bossState.bossHpMax - dmg);
-  _bossState.damageDone = dmg;
-  _saveBossState();
-  _updateHpBarsNow();
-  if(_bossState.bossHpCurrent <= 0 && !wasAtZero) {
-    _bossDeathTimer = setTimeout(()=>onBossDie(), 800);
-  } else if(_bossState.bossHpCurrent > 0 && wasAtZero) {
-    clearTimeout(_bossDeathTimer); _bossDeathTimer = null;
-    _reviveBoss();
-  }
-}
-
-function _reviveBoss() {
-  _combatAnimating = false;
-  const ov = document.querySelector('.arena-boss-defeated');
-  if(ov) ov.remove();
-  const bEl = document.getElementById('arena-boss');
-  if(bEl) {
-    bEl.style.opacity = '1';
-    if(bEl._wint && bEl._wint !== -1) clearInterval(bEl._wint);
-    bEl._wint = null;
-    if(bEl._wanim) { try{bEl._wanim.cancel();}catch(e){} bEl._wanim = null; }
-    setBossAnim('idle');
-  }
-  const hb = document.getElementById('hub-boss');
-  if(hb) {
-    hb.style.opacity = '1';
-    if(hb._wint && hb._wint !== -1) clearInterval(hb._wint);
-    hb._wint = null;
-    if(hb._wanim) { try{hb._wanim.cancel();}catch(e){} hb._wanim = null; }
-    setHubBossAnim('idle');
-  }
-}
-
-function getBossOfDay() {
-  if(!_bossState) loadBossState();
-  return BOSSES[_bossState.bossIndex];
-}
-
-// ══════════════════════════════════
-// SPRITE ANIMATION ENGINE
-// ══════════════════════════════════
-function _playSprite(el, animDef, loop, onFinish) {
-  if(!el || !animDef) return;
-  if(el._wint) { clearInterval(el._wint); el._wint=null; }
-  if(el._wanim) { try{el._wanim.cancel();}catch(e){} el._wanim=null; }
-
-  // Frame-cycling (SHAIA, special cases)
-  if(animDef.frameFiles) {
-    const files = animDef.frameFiles;
-    const sc=(el._scale)||2;
-    const w = el._displayW || animDef.fw*sc, h = el._displayH || animDef.fh*sc;
-    el.style.width=w+'px'; el.style.height=h+'px';
-    el.style.backgroundSize='100% 100%'; el.style.backgroundPosition='0 0';
-    el.style.backgroundImage=`url('${files[0]}')`;
-    let fi=0;
-    el._wint = setInterval(()=>{
-      fi++;
-      if(fi>=files.length){
-        if(loop){fi=0;}
-        else{
-          clearInterval(el._wint);
-          el._wint=-1; // keep truthy so renderArena doesn't restart idle
-          el.style.backgroundImage=`url('${files[files.length-1]}')`;
-          if(onFinish)onFinish();
-          return;
-        }
-      }
-      el.style.backgroundImage=`url('${files[fi]}')`;
-    }, 1000/(animDef.fps||8));
-    return;
-  }
-
-  // Standard spritesheet
-  const sc = el._scale||2;
-  const W = animDef.fw*animDef.frames*sc, H = animDef.fh*sc;
-  const rowY = animDef.rowY!==undefined ? animDef.rowY*sc : 0;
-  el.style.width=animDef.fw*sc+'px'; el.style.height=animDef.fh*sc+'px';
-  el.style.backgroundImage=`url('${animDef.src}')`;
-  el.style.backgroundSize=`${animDef.fw*sc*(animDef.rowY!==undefined?10:animDef.frames)}px auto`;
-  el.style.backgroundPosition=`0px ${-rowY}px`;
-  const dur=(animDef.frames/animDef.fps)*1000;
-  const fullW=animDef.fw*sc*(animDef.rowY!==undefined?10:animDef.frames);
-  el._wanim=el.animate(
-    [{backgroundPosition:`0px ${-rowY}px`},{backgroundPosition:`-${animDef.fw*animDef.frames*sc}px ${-rowY}px`}],
-    {duration:dur, iterations:loop?Infinity:1, easing:`steps(${animDef.frames},end)`, fill:loop?'auto':'forwards'}
-  );
-  if(onFinish) el._wanim.onfinish=onFinish;
-}
-
-function setKnightAnim(name, loop=true, onFinish=null) {
-  const el=document.getElementById('arena-knight');
-  if(!el) return;
-  const sc=2; el._scale=sc;
-  const lvl=getLevel(ST.xp);
-  el.style.filter=KNIGHT_FILTERS[Math.min(lvl-1,6)]||'';
-  _playSprite(el, KNIGHT_ANIMS[name]||KNIGHT_ANIMS.idle, loop, onFinish);
-}
-
-function setHubKnightAnim(name) {
-  const el=document.getElementById('hub-knight');
-  if(!el) return;
-  const sc=1.2; el._scale=sc;
-  const lvl=getLevel(ST.xp);
-  el.style.filter=KNIGHT_FILTERS[Math.min(lvl-1,6)]||'';
-  _playSprite(el, KNIGHT_ANIMS[name]||KNIGHT_ANIMS.idle, true, null);
-}
-
-function setBossAnim(name, loop=true, onFinish=null) {
-  const el=document.getElementById('arena-boss');
-  if(!el) return;
-  el.style.transform = 'scaleX(-1)';
-  const boss=getBossOfDay();
-  const sc=boss.scale||3;
-  el._scale=sc;
-  el._displayW=boss.anims.idle.fw*sc;
-  el._displayH=boss.anims.idle.fh*sc;
-  _playSprite(el, boss.anims[name]||boss.anims.idle, loop, onFinish);
-}
-
-function setHubBossAnim(name) {
-  const el=document.getElementById('hub-boss');
-  if(!el) return;
-  el.style.transform = 'scaleX(-1)';
-  const boss=getBossOfDay();
-  const sc=Math.max(1,(boss.scale||3)*0.7);
-  el._scale=sc;
-  el._displayW=boss.anims.idle.fw*sc;
-  el._displayH=boss.anims.idle.fh*sc;
-  _playSprite(el, boss.anims[name]||boss.anims.idle, true, null);
-}
-
-const BG_FILTERS = [
-  '',
-  'hue-rotate(30deg)',
-  'hue-rotate(60deg)',
-  'hue-rotate(180deg)',
-  'hue-rotate(220deg)',
-  'sepia(0.3)',
-  'hue-rotate(270deg)',
-  'brightness(0.7)',
-  'hue-rotate(320deg)',
-  'saturate(0.5)',
-  'hue-rotate(150deg)',
-];
-
-// ══════════════════════════════════
-// ARENA RENDER
-// ══════════════════════════════════
-function renderArena() {
-  if(_combatAnimating) return;
-  if(!_bossState) loadBossState();
-  const boss=getBossOfDay();
-  const hpPct=Math.max(0,Math.round((_bossState.bossHpCurrent/_bossState.bossHpMax)*100));
-
-  // HP bars
-  const bHp=document.getElementById('boss-hp-fill');
-  const bNum=document.getElementById('boss-hp-num');
-  const bName=document.getElementById('boss-name-hud');
-  if(bHp) bHp.style.width=hpPct+'%';
-  if(bNum) bNum.textContent=_bossState.bossHpCurrent+'/'+_bossState.bossHpMax;
-  if(bName) bName.textContent=boss.name+(boss.isBoss?' ⭐':'');
-
-  const done=ALL_HABITS.filter(h=>ST.completed[h]).length;
-  const knightHp=Math.round((done/ALL_HABITS.length)*100);
-  const kHp=document.getElementById('knight-hp-fill');
-  if(kHp) kHp.style.width=Math.max(5,knightHp)+'%';
-
-  // Background filter per boss index
-  const bgF = BG_FILTERS[_bossState.bossIndex % BG_FILTERS.length] || '';
-  const bg1 = document.getElementById('arena-bg1');
-  if(bg1) bg1.style.filter = bgF;
-
-  // Init sprites only if not already running
-  const kEl=document.getElementById('arena-knight');
-  if(kEl && !kEl._wanim) setKnightAnim('idle');
-  const bEl=document.getElementById('arena-boss');
-  if(bEl) {
-    bEl.style.opacity = _bossState.bossHpCurrent <= 0 ? '0.3' : '1';
-    if(_bossState.bossHpCurrent <= 0) {
-      if(!bEl._wanim && !bEl._wint) setBossAnim('die', false, null);
-    } else {
-      if(!bEl._wanim && !bEl._wint) setBossAnim('idle');
-    }
-  }
-}
-
-function renderHubArena() {
-  if(!_bossState) loadBossState();
-  const boss=getBossOfDay();
-  const hpPct=Math.max(0,Math.round((_bossState.bossHpCurrent/_bossState.bossHpMax)*100));
-  const lvl=getLevel(ST.xp);
-  const xpS=getXpStart(lvl), xpE=getXpEnd(lvl);
-  const xpPct=Math.min(100,Math.round(((ST.xp-xpS)/(xpE-xpS))*100));
-
-  const el=n=>document.getElementById(n);
-  if(el('hub-lvl-num')) el('hub-lvl-num').textContent=lvl;
-  if(el('hub-lvl-name')) el('hub-lvl-name').textContent=_KL[Math.min(lvl-1,6)];
-  if(el('hub-xp-text')) el('hub-xp-text').textContent=ST.xp+' XP';
-  if(el('hub-xp-fill')) { el('hub-xp-fill').style.width=xpPct+'%'; el('hub-xp-fill').style.background=_KC[Math.min(lvl-1,6)]; }
-  if(el('hub-boss-name')) el('hub-boss-name').textContent=boss.name+(boss.isBoss?' ⭐':'');
-  if(el('hub-boss-hp-fill')) el('hub-boss-hp-fill').style.width=hpPct+'%';
-  if(el('hub-boss-hp-num')) el('hub-boss-hp-num').textContent=_bossState.bossHpCurrent+'/'+_bossState.bossHpMax;
-
-  // Background filter per boss index
-  const hbgF = BG_FILTERS[_bossState.bossIndex % BG_FILTERS.length] || '';
-  const hbg1 = document.getElementById('hub-arena-bg1');
-  if(hbg1) hbg1.style.filter = hbgF;
-
-  const hk=el('hub-knight');
-  if(hk && !hk._wanim) setHubKnightAnim('idle');
-  const hb=el('hub-boss');
-  if(hb) {
-    hb.style.opacity = _bossState.bossHpCurrent <= 0 ? '0.3' : '1';
-    if(_bossState.bossHpCurrent <= 0) {
-      if(!hb._wanim && !hb._wint) setHubBossAnim('die');
-    } else {
-      if(!hb._wanim && !hb._wint) setHubBossAnim('idle');
-    }
-  }
-}
-
-// ══════════════════════════════════
-// COMBAT LOGIC
-// ══════════════════════════════════
-function _updateHpBarsNow() {
-  if(!_bossState) return;
-  const hpPct = Math.max(0, Math.round((_bossState.bossHpCurrent/_bossState.bossHpMax)*100));
-  const boss = getBossOfDay();
-  const bHp=document.getElementById('boss-hp-fill');
-  const bNum=document.getElementById('boss-hp-num');
-  const bName=document.getElementById('boss-name-hud');
-  const hHp=document.getElementById('hub-boss-hp-fill');
-  const hNum=document.getElementById('hub-boss-hp-num');
-  const hName=document.getElementById('hub-boss-name');
-  if(bHp) bHp.style.width=hpPct+'%';
-  if(bNum) bNum.textContent=_bossState.bossHpCurrent+'/'+_bossState.bossHpMax;
-  if(bName) bName.textContent=boss.name+(boss.isBoss?' ⭐':'');
-  if(hHp) hHp.style.width=hpPct+'%';
-  if(hNum) hNum.textContent=_bossState.bossHpCurrent+'/'+_bossState.bossHpMax;
-  if(hName) hName.textContent=boss.name+(boss.isBoss?' ⭐':'');
-}
-
-function dealDamageToBoss(dmg) {
-  if(!_bossState || _bossState.bossHpCurrent <= 0) return;
-  _bossState.bossHpCurrent = Math.max(0, _bossState.bossHpCurrent - dmg);
-  _bossState.damageDone = (_bossState.damageDone||0) + dmg;
-  _saveBossState();
-  _updateHpBarsNow();
-  if(_bossState.bossHpCurrent <= 0) {
-    setTimeout(()=>onBossDie(), 800);
-  }
-}
-
-function animateAttack(prio) {
-  _combatAnimating = true;
-  const attackName = ['attack1','attack2','attack3'][Math.floor(Math.random()*3)];
-  setKnightAnim(attackName, false, ()=>{
-    setKnightAnim('idle');
-    // Boss hurt
-    setBossAnim('hurt', false, ()=>{
-      setBossAnim('idle');
-      _combatAnimating = false;
-      renderArena();
-      renderHubArena();
-    });
-    // Flash boss
-    const bEl=document.getElementById('arena-boss');
-    if(bEl) bEl.animate([{filter:'brightness(4) invert(1)'},{filter:'brightness(1)'}],{duration:300,easing:'ease-out'});
-  });
-}
-
-function onBossDie() {
-  _combatAnimating = true;
-  setBossAnim('die', false, ()=>{
-    // Congelar en último frame de die (no reiniciar idle)
-    const bEl = document.getElementById('arena-boss');
-    if(bEl) bEl.style.opacity='0.3';
-    const hbEl = document.getElementById('hub-boss');
-    if(hbEl) hbEl.style.opacity='0.3';
-
-    const xpGained = Math.floor((_bossState.damageDone||0) / 2);
-    ST.xp += xpGained;
-    showXpPop('+'+xpGained+' XP');
-    spawnParticles(window.innerWidth/2, window.innerHeight*0.4, '#ffcc00', 20);
-    save();
-    // Victory overlay
-    const arena = document.getElementById('battleArena');
-    if(arena) {
-      const ov = document.createElement('div');
-      ov.className = 'arena-boss-defeated';
-      ov.innerHTML = `<div class="arena-victory-box">
-        <div class="arena-victory-title">⚔ BOSS DERROTADO ⚔</div>
-        <div class="arena-victory-xp">+${xpGained} XP ganados</div>
-        <button class="arena-victory-btn" onclick="this.parentElement.parentElement.remove();updateAll()">CONTINUAR</button>
-      </div>`;
-      arena.appendChild(ov);
-    }
-    _bossState.bossHpCurrent = 0;
-    _saveBossState();
-    _combatAnimating = false;
-    updateAll();
-  });
-}
-
-function bossCounterattack() {
-  if(!_bossState || _bossState.counterattacked || _bossState.bossHpCurrent <= 0) return;
-  const penalty = Math.floor(_bossState.bossHpCurrent / 3);
-  if(penalty > 0) {
-    ST.xp = Math.max(0, ST.xp - penalty);
-    showToast('💀 El boss contraatacó: -'+penalty+' XP');
-  }
-  _bossState.counterattacked = true;
-  _saveBossState();
-}
 
 const ALL_HABITS = ['notion','lectura','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4','windown','dormir'];
 const XP_MAP = {'notion':10,'lectura':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5,'windown':15,'dormir':20};
@@ -2712,8 +2099,10 @@ function deleteTask(id) {
 // STATE
 // ══════════════════════════════════
 let ST = JSON.parse(localStorage.getItem('monart-os') || 'null') || {
-  xp: 0, streak: 0, day: 1, completed: {}, history: [], _prevLvl: 1
+  xp: 0, streak: 0, day: 1, completed: {}, history: [], _prevLvl: 1, dailyLog: {}, dailyMissions: null
 };
+if(!ST.dailyLog) ST.dailyLog = {};
+if(ST.dailyMissions === undefined) ST.dailyMissions = null;
 
 if(localStorage.getItem('monart-tasks')) {
   try { TASKS = JSON.parse(localStorage.getItem('monart-tasks')); } catch(e){}
@@ -2822,7 +2211,7 @@ function goPage(id, btn) {
   if(id==='cal') renderCal();
   if(id==='hist') renderHist();
   if(id==='tasks') renderTasks();
-  if(id==='habits') { renderSchedule(); drawPixelChar(Math.round((ALL_HABITS.filter(h=>ST.completed[h]).length/ALL_HABITS.length)*100)); }
+  if(id==='habits') { renderSchedule(); }
 }
 
 // ══════════════════════════════════
@@ -2883,147 +2272,8 @@ function getDaySchedule() {
 // Sync ALL_HABITS con SCHEDULE
 // (ya definido arriba como array de IDs)
 
-// ══════════════════════════════════
-// PIXEL CHARACTER
-// ══════════════════════════════════
-// PIXEL KNIGHT — shared data
-// ══════════════════════════════════
-const _KS = [
-  // Lv1 Wanderer — simple tunic, no armor
-  ['   OOO   ','  OOOOO  ','   OOO   ','  OOOOO  ','  OOOOO  ','  OOOOO  ','  OOOOO  ','   O O   ','   O O   ','  OO OO  '],
-  // Lv2 Scout — leather cap, padded vest
-  ['   OOO   ','  OOOOO  ',' OOOOOOO ',' OOOOOOO ',' OOOOOOO ','  OOOOO  ','  OOOOO  ','   O O   ','   O O   ','  OO OO  '],
-  // Lv3 Knight — chainmail, round helm with visor slit
-  ['  OOOOO  ',' OOOOOOO ',' OO   OO ',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO',' OOOOOOO ','  OO OO  ','  O   O  ',' OO   OO '],
-  // Lv4 Commander — full plate, closed visor, massive pauldrons
-  ['  OOOOO  ',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOOOOOO ','  OOO OO ','  O   O  ',' OO   OO '],
-  // Lv5 Champion — horned helm, glowing plate
-  ['O OOOOO  ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOO OOO ','OO     OO','O       O'],
-  // Lv6 Paladin — winged helm, golden plate, aura
-  ['O OOOOO O','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO',' OOO OOO ','OOO   OOO','O       O'],
-  // Lv7 Legend — crown spikes, rainbow, full coverage
-  ['O O O O O',' OOOOOOO ','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOOOOOOOO','OOO   OOO','O       O'],
-];
-const _KC = ['#7a6340','#9e7249','#7a96aa','#4a7fc1','#00e882','#ffd700','#ffcc00'];
-const _KG = [0, 14, 26, 40, 60, 76, 92];
 const _KL = ['WANDERER','SCOUT','KNIGHT','COMMANDER','CHAMPION','PALADIN','LEGEND'];
-
-function _drawKnightSprite(ctx, stage, ox, oy, S) {
-  const char = _KS[stage];
-  const col = stage === 6 ? null : _KC[stage];
-  const t = Date.now();
-  char.forEach((row, ry) => {
-    row.split('').forEach((px, rx) => {
-      if(px !== 'O') return;
-      if(stage === 6) {
-        ctx.fillStyle = `hsl(${(rx*28+ry*14+t/25)%360},100%,65%)`;
-      } else if(stage >= 4) {
-        ctx.fillStyle = col;
-        ctx.globalAlpha = 0.72 + Math.sin(t/180 + rx*0.8 + ry*0.6) * 0.28;
-      } else {
-        ctx.fillStyle = col;
-      }
-      ctx.fillRect(ox + rx*S, oy + ry*S, S-1, S-1);
-      ctx.globalAlpha = 1;
-    });
-  });
-}
-
-function drawPixelChar(lvl, pct) {
-  const canvas = document.getElementById('pixelCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const S = 5;
-  ctx.clearRect(0, 0, W, H);
-  const stage = Math.max(0, Math.min(6, (lvl||1) - 1));
-  const col = _KC[stage];
-  const charW = 9*S, charH = 10*S;
-  const ox = Math.floor((W-charW)/2);
-  const oy = Math.floor((H-charH)/2) - 4;
-
-  if(stage >= 1) {
-    const r = _KG[stage];
-    const g = ctx.createRadialGradient(W/2, oy+charH/2, 0, W/2, oy+charH/2, r);
-    g.addColorStop(0, col+'2a'); g.addColorStop(1,'transparent');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  }
-  if(stage >= 4) {
-    const t = Date.now()/900, n = (stage-3)*5;
-    for(let p=0;p<n;p++) {
-      ctx.globalAlpha = 0.22+Math.sin(t*2.2+p)*0.18;
-      ctx.fillStyle = stage===6?`hsl(${(p*55+t*60)%360},100%,65%)`:col;
-      ctx.fillRect(Math.round(ox+charW/2+Math.sin(t*1.1+p*2.4)*charW*0.7),
-                   Math.round(oy+charH/2+Math.cos(t*0.8+p*1.9)*charH*0.65), 2, 2);
-    }
-    ctx.globalAlpha = 1;
-  }
-  _drawKnightSprite(ctx, stage, ox, oy, S);
-
-  ctx.fillStyle = (col||'#fff')+'30';
-  ctx.fillRect(ox+4, oy+charH+2, charW-8, 2);
-
-  const barY = H-7, barW = W-28;
-  ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(14,barY,barW,3);
-  ctx.fillStyle=col||'#fff'; ctx.fillRect(14,barY,Math.round(barW*Math.min(100,pct||0)/100),3);
-
-  ctx.fillStyle=col||'#fff'; ctx.globalAlpha=0.7;
-  ctx.font='bold 8px monospace'; ctx.textAlign='center';
-  ctx.fillText(_KL[stage], W/2, barY-4);
-  ctx.globalAlpha=1; ctx.textAlign='left';
-
-  if(stage>=4||(pct>0&&pct<100)) requestAnimationFrame(()=>drawPixelChar(lvl,pct));
-}
-
-function drawHubChar(lvl, xpPct) {
-  const canvas = document.getElementById('hubCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const S = 4;
-  ctx.clearRect(0, 0, W, H);
-  const stage = Math.max(0, Math.min(6, (lvl||1) - 1));
-  const col = stage===6 ? '#ffcc00' : _KC[stage];
-  const charW = 9*S, charH = 10*S;
-  const ox = Math.floor((W-charW)/2);
-  const oy = Math.floor((H-charH)/2);
-
-  // Radial glow
-  if(stage >= 1) {
-    const r = _KG[stage] * 0.9;
-    const g = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,r);
-    g.addColorStop(0, col+'22'); g.addColorStop(1,'transparent');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  }
-
-  // Circular XP arc
-  const cx=W/2, cy=H/2, arcR=W/2-5;
-  ctx.beginPath(); ctx.arc(cx,cy,arcR,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=5; ctx.stroke();
-  if((xpPct||0)>0) {
-    const end = -Math.PI/2 + (Math.PI*2*(Math.min(100,xpPct)/100));
-    ctx.beginPath(); ctx.arc(cx,cy,arcR,-Math.PI/2,end);
-    ctx.strokeStyle=col; ctx.lineWidth=5; ctx.lineCap='round';
-    ctx.shadowBlur=10; ctx.shadowColor=col; ctx.stroke();
-    ctx.shadowBlur=0; ctx.lineCap='butt';
-  }
-
-  // Floating particles Lv5+
-  if(stage >= 4) {
-    const t=Date.now()/900, n=(stage-3)*4;
-    for(let p=0;p<n;p++) {
-      ctx.globalAlpha=0.2+Math.sin(t*2.2+p)*0.15;
-      ctx.fillStyle=stage===6?`hsl(${(p*55+t*60)%360},100%,65%)`:col;
-      ctx.fillRect(Math.round(cx+Math.sin(t*1.1+p*2.4)*(charW*0.8)),
-                   Math.round(cy+Math.cos(t*0.8+p*1.9)*(charH*0.7)),2,2);
-    }
-    ctx.globalAlpha=1;
-  }
-
-  _drawKnightSprite(ctx, stage, ox, oy, S);
-
-  if(stage>=4) requestAnimationFrame(()=>drawHubChar(lvl,xpPct));
-}
+const _KC = ['#7a6340','#9e7249','#7a96aa','#4a7fc1','#00e882','#ffd700','#ffcc00'];
 
 // ══════════════════════════════════
 // HABITS
@@ -3036,12 +2286,11 @@ function toggleH(id, xpVal) {
     ST.completed[id] = true;
     ST.xp += xp;
     showXpPop('+'+xp+' XP');
-    recalcBossHp();
-    animateAttack('alta');
+    updateDailyLog();
   } else {
     ST.completed[id] = false;
     ST.xp = Math.max(0, ST.xp - xp);
-    recalcBossHp();
+    updateDailyLog();
   }
   save();
   updateAll();
@@ -3131,8 +2380,6 @@ function nextDay() {
     date: new Date().toLocaleDateString('es-ES',{day:'numeric',month:'short'})
   });
 
-  bossCounterattack();
-
   ST.day = Math.min(ST.day+1, 66);
   ST.completed = {};
   ST._prevLvl = getLevel(ST.xp);
@@ -3162,18 +2409,6 @@ function updateAll() {
   document.getElementById('dash-day-chip').textContent = 'Día '+ST.day+'/66';
   renderFocusTasks();
 
-  // Hub hero card
-  const hubLvlNum = document.getElementById('hub-lvl-num');
-  const hubLvlName = document.getElementById('hub-lvl-name');
-  const hubXpText = document.getElementById('hub-xp-text');
-  const hubXpFill = document.getElementById('hub-xp-fill');
-  if(hubLvlNum) hubLvlNum.textContent = 'LVL '+lvl;
-  if(hubLvlName) hubLvlName.textContent = _KL[Math.min(lvl-1,6)];
-  if(hubXpText) hubXpText.textContent = (xp-xpS)+' / '+(xpE-xpS)+' XP';
-  if(hubXpFill) { hubXpFill.style.width=barPct+'%'; hubXpFill.style.background=_KC[Math.min(lvl-1,6)]; }
-  renderArena();
-  renderHubArena();
-
   // Habits page
   document.getElementById('hab-day-sub').textContent = 'Día '+ST.day+' de 66';
   document.getElementById('hab-streak-chip').textContent = '🔥 '+ST.streak+' días';
@@ -3190,7 +2425,6 @@ function updateAll() {
   if(rpgFill) rpgFill.style.width = barPct+'%';
   if(rpgXpLbl) rpgXpLbl.textContent = xp+' XP';
 
-  drawPixelChar(lvl, pct);
   renderSchedule();
 
   // Level up check
@@ -3204,6 +2438,9 @@ function updateAll() {
   renderUpcoming();
   renderMissions();
   renderAreaStats();
+  renderTasks();
+  renderDailyProgress();
+  renderDailyMissions();
 }
 
 // ══════════════════════════════════
@@ -3271,8 +2508,6 @@ function toggleMission(idx) {
   if(m.done && !wasDone) {
     ST.xp += 200; showXpPop('+200 XP ⚔️');
     spawnParticles(window.innerWidth/2, window.innerHeight*0.4, '#ffcc00', 14);
-    dealDamageToBoss(50);
-    animateAttack('alta');
   } else if(!m.done && wasDone) {
     ST.xp = Math.max(0, ST.xp - 200);
   }
@@ -3443,8 +2678,7 @@ function ttouchEnd(e) {
     task.done = newStatus === 'done';
     if(task.done && wasNotDone) {
       spawnParticles(t.clientX, t.clientY, AREA_COLORS[task.area]||'#00f5a0');
-      recalcBossHp();
-      animateAttack(task.prio||'media');
+      updateDailyLog();
     }
     sbUpsertTask(task);
     save(); updateAll(); renderTasks();
@@ -3491,8 +2725,7 @@ function tdropTask(e, newStatus, el) {
     t.done = newStatus === 'done';
     if(t.done && wasNotDone) {
       spawnParticles(window.innerWidth/2, window.innerHeight*0.5, AREA_COLORS[t.area]||'#00f5a0');
-      recalcBossHp();
-      animateAttack(t.prio||'media');
+      updateDailyLog();
     }
     sbUpsertTask(t);
     save(); updateAll(); renderTasks();
@@ -3662,7 +2895,7 @@ function confirmAdd() {
 
   if(hasDate && dueDate) {
     const evTypeMap = {trabajo:'work',marca:'work',despinsage:'despinsage',casa:'personal',yo:'personal',estudios:'personal'};
-    const ev = { d: dueDate, n: name, t: evTypeMap[area]||'personal' };
+    const ev = { id: 'ev'+Date.now(), d: dueDate, n: name, t: evTypeMap[area]||'personal', notes:'' };
     if(dueTime) ev.time = dueTime;
     const evs = getUserEvents(); evs.push(ev); saveUserEvents(evs);
     renderCal();
@@ -3670,6 +2903,7 @@ function confirmAdd() {
 
   closeAddPanel();
   updateAll();
+  renderTasks();
   showToast(hasDate && dueDate ? '✅ Tarea + evento añadidos' : '✅ Tarea añadida');
   if(hasDate && dueDate && dueTime) gcalCreateEvent(task);
 }
@@ -3820,7 +3054,6 @@ function renderTodoAll() {
       <div class="kanban-wrap todo-kanban">
         ${AREAS.map(a => mcCol(a)).join('')}
       </div>
-      <button class="fab-add" onclick="openAddModal()" title="Nueva tarea">&#xFF0B;</button>
     </div>
   </div>`;
 }
@@ -3926,36 +3159,13 @@ function toggleTask(id) {
     t.status = t.done ? 'done' : 'backlog';
     if(t.done) {
       spawnParticles(window.innerWidth/2, window.innerHeight*0.6, AREA_COLORS[t.area]||'#00f5a0');
-      recalcBossHp();
-      animateAttack(t.prio||'media');
-    } else {
-      recalcBossHp();
+      updateDailyLog();
     }
     sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, created_at: new Date().toISOString() });
     save();
     updateAll();
     renderTasks();
   }
-}
-
-function addTask() {
-  const inp = document.getElementById('newTaskInput');
-  const name = inp.value.trim();
-  if(!name) return;
-  const areaMap = {all:'trabajo',trabajo:'trabajo',marca:'marca',despinsage:'despinsage',casa:'casa',yo:'yo',estudios:'estudios'};
-  const newTask = {
-    id: 't'+Date.now(),
-    name,
-    area: areaMap[currentArea]||'trabajo',
-    prio: 'media',
-    done: false
-  };
-  TASKS.unshift(newTask);
-  sbUpsertTask({ ...newTask, created_at: new Date().toISOString() });
-  inp.value='';
-  save();
-  renderTasks();
-  showToast('✅ Tarea añadida');
 }
 
 // ══════════════════════════════════
@@ -4078,16 +3288,26 @@ function selectDay(dateStr) {
 
   let html = `<div style="font-size:14px;font-weight:800;margin-bottom:12px">${dateLabel.charAt(0).toUpperCase()+dateLabel.slice(1)}</div>`;
 
+  const calEvNotes = getEventNotes();
   if(dayEvents.length) {
     html += `<div class="cal-panel-title">Eventos</div>`;
-    html += dayEvents.map(ev => `
-      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
-        <div style="width:3px;height:32px;border-radius:2px;background:${tagColors[ev.t]||'var(--accent)'};flex-shrink:0"></div>
-        <div>
+    html += dayEvents.map(ev => {
+      const isUser = !!ev.id;
+      const notes = isUser ? (ev.notes||'') : (calEvNotes[ev.d+':'+ev.n]||'');
+      const onclick = isUser
+        ? `openEventModalById('${ev.id}')`
+        : `openEventModalHardcoded('${ev.d.replace(/'/g,"\\'")}','${ev.n.replace(/'/g,"\\'")}')`;
+      return `
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="${onclick}">
+        <div style="width:3px;height:${notes?'40':'32'}px;border-radius:2px;background:${tagColors[ev.t]||'var(--accent)'};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:600">${ev.n}</div>
-          <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${tagLabels[ev.t]||ev.t}</div>
+          <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">${tagLabels[ev.t]||ev.t}${ev.time?' · '+ev.time:''}</div>
+          ${notes ? `<div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${notes}</div>` : ''}
         </div>
-      </div>`).join('');
+        <div style="font-size:14px;color:var(--muted)">›</div>
+      </div>`;
+    }).join('');
   }
 
   html += `<div class="cal-panel-title">Tareas urgentes (P1)</div>`;
@@ -4134,12 +3354,21 @@ function renderEventList() {
 
   if(listTitle) listTitle.textContent = titleText;
 
+  const evNotes = getEventNotes();
   evList.innerHTML = eventsToShow.map(ev => {
     const dt = new Date(ev.d + 'T12:00:00');
     const label = dt.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
-    return `<div class="event-item ev-${ev.t}">
+    const isUser = !!ev.id;
+    const notes = isUser ? (ev.notes||'') : (evNotes[ev.d+':'+ev.n]||'');
+    const onclick = isUser
+      ? `openEventModalById('${ev.id}')`
+      : `openEventModalHardcoded('${ev.d.replace(/'/g,"\\'")}','${ev.n.replace(/'/g,"\\'")}')`;
+    return `<div class="event-item ev-${ev.t}" style="cursor:pointer" onclick="${onclick}">
       <div class="ev-date">${selectedDateStr ? '' : label}</div>
-      <div class="ev-name">${ev.n}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ev-name">${ev.n}</div>
+        ${notes ? `<div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${notes}</div>` : ''}
+      </div>
       <div class="ev-tag">${tagLabels[ev.t] || ev.t}</div>
     </div>`;
   }).join('');
@@ -4537,6 +3766,19 @@ function renderWeekPlan() {
         html += `<div class="wg-block work" style="margin-top:2px;opacity:.8">${weekPlan[planKey].substring(0,20)}</div>`;
       }
 
+      // Tasks with dueTime matching this slot
+      const slotIdx = TIME_SLOTS.indexOf(slot);
+      const nextSlotTime = slotIdx+1 < TIME_SLOTS.length ? TIME_SLOTS[slotIdx+1].time : '99:99';
+      const slotTasks = weekTaskEvents.filter(t => {
+        if(!t.dueDate || t.dueDate!==dateStr || !t.dueTime) return false;
+        return t.dueTime >= slot.time && t.dueTime < nextSlotTime;
+      });
+      slotTasks.forEach(t => {
+        const cls = {alta:'work',media:'gold',baja:'green',prog:'work'}[t.prio]||'work';
+        const doneStyle = t.done ? 'opacity:.4;text-decoration:line-through;' : '';
+        html += `<div class="wg-block ${cls}" style="cursor:pointer;${doneStyle}" onclick="toggleTask('${t.id}')">${t.dueTime} ${t.name.substring(0,14)}</div>`;
+      });
+
       html += '</div>';
     });
   });
@@ -4611,50 +3853,52 @@ function renderWeekPriorities(weekEvents) {
 }
 
 function autoplanWeek() {
-  const days = getWeekDates();
-  const weekStart = days[0].toISOString().split('T')[0];
-  const weekEnd   = days[6].toISOString().split('T')[0];
-  const weekEvents = EVENTS.filter(e => e.d >= weekStart && e.d <= weekEnd);
+  const missions = ST.missions || Array(5).fill(null).map(()=>({name:null,area:null,done:false}));
+  const AREAS = [{v:'trabajo',l:'💼 Trabajo'},{v:'marca',l:'✦ Marca'},{v:'despinsage',l:'◈ Despinsage'},{v:'casa',l:'⌂ Casa'},{v:'yo',l:'◉ Yo'},{v:'estudios',l:'◭ Estudios'}];
 
-  // Gather urgent tasks: in-progress first, then alta priority, then media
-  const urgentTasks = TASKS.filter(t => !t.done).sort((a,b) => {
-    const order = {prog:0, alta:1, media:2, baja:3};
-    return (order[a.prio]||3) - (order[b.prio]||3);
-  });
+  const inputsHTML = Array.from({length:5},(_,i) => {
+    const m = missions[i] || {name:'',area:'trabajo'};
+    const areaOpts = AREAS.map(a=>`<option value="${a.v}"${(m.area||'trabajo')===a.v?' selected':''}>${a.l}</option>`).join('');
+    return `<div style="margin-bottom:10px">
+      <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);letter-spacing:1px;margin-bottom:4px">MISIÓN ${i+1}</div>
+      <input id="weekplan-name-${i}" value="${(m.name||'').replace(/"/g,'&quot;')}" placeholder="Describe la misión..."
+        style="width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:10px;color:var(--text);font-family:var(--ff);font-size:13px;outline:none;margin-bottom:4px;box-sizing:border-box" />
+      <select id="weekplan-area-${i}" style="width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:8px;padding:8px;color:var(--text);font-family:var(--ff);font-size:12px;outline:none">${areaOpts}</select>
+    </div>`;
+  }).join('');
 
-  // Event-driven urgency: if there's a despinsage event this week, push those tasks first
-  const hasDespinsage = weekEvents.some(e=>e.t==='despinsage');
-  const hasWork = weekEvents.some(e=>e.t==='work');
+  let ov = document.getElementById('weekplan-modal');
+  if(!ov) { ov = document.createElement('div'); ov.id='weekplan-modal'; document.body.appendChild(ov); }
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(8px)';
+  ov.onclick = e => { if(e.target===ov) ov.remove(); };
+  ov.innerHTML = `<div style="background:var(--s2);border:1px solid rgba(255,204,0,.3);border-radius:16px;padding:24px;width:340px;max-width:90vw;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+    <div style="font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:8px">⚡ Planificar Semana</div>
+    ${inputsHTML}
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="todo-modal-cancel" onclick="document.getElementById('weekplan-modal').remove()">Cancelar</button>
+      <button class="todo-modal-confirm" style="background:var(--gold);color:#000" onclick="saveWeekPlan()">Guardar ⚡</button>
+    </div>
+  </div>`;
+}
 
-  let priorities = [];
-
-  // Always add deadline-driven tasks first
-  if(hasDespinsage) {
-    const despTasks = urgentTasks.filter(t=>t.area==='despinsage').slice(0,2);
-    priorities.push(...despTasks);
-  }
-  if(hasWork) {
-    const workTasks = urgentTasks.filter(t=>t.area==='trabajo'||t.area==='marca').slice(0,2);
-    priorities.push(...workTasks);
-  }
-
-  // Fill up to 5 with other high priority tasks
-  const remaining = urgentTasks.filter(t => !priorities.find(p=>p.id===t.id));
-  priorities.push(...remaining.slice(0, 5 - priorities.length));
-  priorities = priorities.slice(0,5);
-
-  // Convertir tareas a formato misión y escribir en ST.missions (unificado con HUB)
+function saveWeekPlan() {
   const week = getMissionWeek();
-  ST.missions = Array(5).fill(null).map((_,i) =>
-    priorities[i] ? { name: priorities[i].name, area: priorities[i].area, done: false }
-                  : { name: null, area: null, done: false });
+  const AREAS = ['trabajo','marca','despinsage','casa','yo','estudios'];
+  const newMissions = Array.from({length:5},(_,i) => {
+    const name = (document.getElementById('weekplan-name-'+i)?.value||'').trim();
+    const area = document.getElementById('weekplan-area-'+i)?.value || 'trabajo';
+    const prev = (ST.missions||[])[i] || {};
+    return name ? {name, area, done: prev.done||false} : {name:null, area:null, done:false};
+  });
+  ST.missions = newMissions;
   ST.missionsWeek = week;
   if(!ST.weekPlan) ST.weekPlan = {};
   ST.weekPlan.generatedAt = new Date().toISOString();
   save();
-
+  document.getElementById('weekplan-modal')?.remove();
   renderWeekPlan();
-  showToast('⚡ Semana planificada — '+priorities.length+' misiones activas');
+  renderMissions();
+  showToast('⚡ Semana planificada — '+newMissions.filter(m=>m&&m.name).length+' misiones');
 }
 
 function getWeekNum(d) {
@@ -4674,6 +3918,202 @@ function getUserEvents() {
 function saveUserEvents(evs) { localStorage.setItem('monart-events-user', JSON.stringify(evs)); }
 function allEvents() { return [...EVENTS, ...getUserEvents()]; }
 
+// ── EVENT NOTES (for hardcoded EVENTS) ──
+function getEventNotes() { try { return JSON.parse(localStorage.getItem('monart-ev-notes')||'{}'); } catch(e){ return {}; } }
+function saveEventNotes(map) { localStorage.setItem('monart-ev-notes', JSON.stringify(map)); }
+
+// ── EVENT EDITOR ──
+let _evModalId = null, _evModalIsUser = false;
+
+function openEventModalById(id) {
+  const ev = getUserEvents().find(e => e.id === id);
+  if(ev) openEventModal(ev, true);
+}
+function openEventModalHardcoded(d, n) {
+  const ev = EVENTS.find(e => e.d === d && e.n === n);
+  if(ev) openEventModal(ev, false);
+}
+function openEventModal(ev, isUser) {
+  _evModalId = ev.id || null;
+  _evModalIsUser = isUser;
+  document.getElementById('evModalTitle').textContent = isUser ? '✏ Editar evento' : '📋 Evento';
+  const nameEl = document.getElementById('evModalName');
+  const dateEl = document.getElementById('evModalDate');
+  const timeEl = document.getElementById('evModalTime');
+  const typeEl = document.getElementById('evModalType');
+  nameEl.value = ev.n; nameEl.readOnly = !isUser;
+  dateEl.value = ev.d; dateEl.readOnly = !isUser;
+  timeEl.value = ev.time || ''; timeEl.readOnly = !isUser;
+  typeEl.value = ev.t; typeEl.disabled = !isUser;
+  const notes = isUser ? (ev.notes || '') : (getEventNotes()[ev.d+':'+ev.n] || '');
+  document.getElementById('evModalNotes').value = notes;
+  document.getElementById('evModalDeleteBtn').style.display = isUser ? 'block' : 'none';
+  document.getElementById('eventEditModal').style.display = 'flex';
+}
+function closeEventModal() {
+  document.getElementById('eventEditModal').style.display = 'none';
+  _evModalId = null;
+}
+function saveEventModal() {
+  const name = document.getElementById('evModalName').value.trim();
+  const date = document.getElementById('evModalDate').value;
+  const time = document.getElementById('evModalTime').value;
+  const type = document.getElementById('evModalType').value;
+  const notes = document.getElementById('evModalNotes').value.trim();
+  if(_evModalIsUser && _evModalId) {
+    const evs = getUserEvents();
+    const idx = evs.findIndex(e => e.id === _evModalId);
+    if(idx !== -1) {
+      evs[idx] = { ...evs[idx], n: name || evs[idx].n, d: date || evs[idx].d, t: type, notes };
+      if(time) evs[idx].time = time; else delete evs[idx].time;
+      saveUserEvents(evs);
+    }
+  } else if(!_evModalIsUser) {
+    const key = document.getElementById('evModalDate').value + ':' + document.getElementById('evModalName').value;
+    const map = getEventNotes();
+    if(notes) map[key] = notes; else delete map[key];
+    saveEventNotes(map);
+  }
+  closeEventModal();
+  renderCal();
+  showToast('✅ Evento guardado');
+}
+function deleteEventFromModal() {
+  if(!_evModalIsUser || !_evModalId) return;
+  saveUserEvents(getUserEvents().filter(e => e.id !== _evModalId));
+  closeEventModal();
+  renderCal();
+  showToast('🗑 Evento eliminado');
+}
+
+
+// ══════════════════════════════════
+// DAILY PROGRESS LOG
+// ══════════════════════════════════
+function updateDailyLog() {
+  const today = new Date().toISOString().split('T')[0];
+  if(!ST.dailyLog) ST.dailyLog = {};
+  if(!ST.dailyLog[today]) ST.dailyLog[today] = {habitsDone:0, tasks:[]};
+  ST.dailyLog[today].habitsDone = ALL_HABITS.filter(h=>ST.completed[h]).length;
+  const doneTasks = TASKS.filter(t => t.done || getStatus(t)==='done');
+  ST.dailyLog[today].tasks = doneTasks.map(t=>({name:t.name, area:t.area}));
+}
+
+function renderDailyProgress() {
+  const AREA_COLORS_DP = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
+  if(!ST.dailyLog) ST.dailyLog = {};
+  const today = new Date().toISOString().split('T')[0];
+  const days = [];
+  for(let i=29; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  const maxTotal = Math.max(1, ALL_HABITS.length);
+
+  const barsHTML = days.map(dateStr => {
+    const log = ST.dailyLog[dateStr] || {habitsDone:0, tasks:[]};
+    const isToday = dateStr === today;
+    const segments = [];
+    if(log.habitsDone > 0) {
+      const h = Math.max(2, Math.round((log.habitsDone / maxTotal) * 36));
+      segments.push({color:'#ffcc00', h});
+    }
+    const areaMap = {};
+    (log.tasks||[]).forEach(t => { if(t.area) areaMap[t.area]=(areaMap[t.area]||0)+1; });
+    const taskTotal = Object.values(areaMap).reduce((s,n)=>s+n,0)||1;
+    Object.entries(areaMap).forEach(([area, count]) => {
+      const h = Math.max(2, Math.round((count / (taskTotal+ALL_HABITS.length)) * 36));
+      segments.push({color: AREA_COLORS_DP[area]||'#7b6fff', h});
+    });
+    const segsHTML = segments.map(s=>`<div class="dprog-segment" style="height:${s.h}px;background:${s.color}"></div>`).join('');
+    const d = new Date(dateStr+'T12:00:00');
+    const label = d.getDate()+'/'+(d.getMonth()+1);
+    return `<div class="dprog-bar-row${isToday?' dprog-today':''}">
+      <div class="dprog-bar">${segsHTML}</div>
+      <div class="dprog-label">${label}</div>
+    </div>`;
+  }).join('');
+
+  const html = `<div class="dprog-wrap">
+    <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);letter-spacing:2px;margin-bottom:8px">PROGRESO 30 DÍAS</div>
+    <div class="dprog-scroll">${barsHTML}</div>
+  </div>`;
+
+  ['daily-progress-dash','daily-progress-habits'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = html;
+    const scroll = el.querySelector('.dprog-scroll');
+    if(scroll) setTimeout(()=>{ scroll.scrollLeft = scroll.scrollWidth; }, 30);
+  });
+}
+
+// ══════════════════════════════════
+// DAILY MISSIONS
+// ══════════════════════════════════
+function initDailyMissions() {
+  const today = new Date().toISOString().split('T')[0];
+  if(!ST.dailyMissions || ST.dailyMissions.date !== today) {
+    ST.dailyMissions = { date: today, items: [] };
+  }
+}
+
+function renderDailyMissions() {
+  ['daily-missions-dash','daily-missions-habits'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(!ST.dailyMissions) initDailyMissions();
+    const items = ST.dailyMissions.items || [];
+    const canAdd = items.length < 3;
+    const done = items.filter(m=>m.done).length;
+
+    let itemsHTML = items.map((m,i) => `
+      <div class="dmission-item${m.done?' dmission-done':''}">
+        <div class="dmission-check" onclick="toggleDailyMission(${i})">${m.done?'✓':''}</div>
+        <span class="dmission-name" style="${m.done?'text-decoration:line-through;opacity:.5':''}">${m.text}</span>
+        <button onclick="deleteDailyMission(${i})" style="background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:12px;padding:4px 8px;line-height:1">✕</button>
+      </div>`).join('');
+
+    if(canAdd) {
+      itemsHTML += `<div class="dmission-item">
+        <div class="dmission-check" style="border-style:dashed;color:var(--muted);font-size:16px;cursor:default">+</div>
+        <input class="dmission-input" placeholder="Nueva misión del día..."
+          onkeydown="if(event.key==='Enter'&&this.value.trim()){addDailyMission(this.value.trim());this.value='';}" />
+      </div>`;
+    }
+
+    el.innerHTML = `<div class="dmission-card card">
+      <div class="card-title" style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <span>⚡ MISIONES DEL DÍA</span>
+        <span style="font-family:var(--fm);font-size:10px;color:var(--gold)">${done}/${items.length}</span>
+      </div>
+      ${itemsHTML || '<div style="font-family:var(--fm);font-size:10px;color:var(--muted);padding:4px 0">Añade hasta 3 misiones para hoy</div>'}
+    </div>`;
+  });
+}
+
+function addDailyMission(text) {
+  if(!ST.dailyMissions) initDailyMissions();
+  if(ST.dailyMissions.items.length >= 3) return;
+  ST.dailyMissions.items.push({text, done:false});
+  save(); updateDailyLog(); renderDailyProgress(); renderDailyMissions();
+}
+
+function toggleDailyMission(idx) {
+  if(!ST.dailyMissions) return;
+  const m = ST.dailyMissions.items[idx];
+  if(!m) return;
+  m.done = !m.done;
+  if(m.done) { ST.xp += 50; showXpPop('+50 XP'); }
+  else ST.xp = Math.max(0, ST.xp - 50);
+  save(); updateDailyLog(); renderDailyProgress(); renderDailyMissions();
+}
+
+function deleteDailyMission(idx) {
+  if(!ST.dailyMissions) return;
+  ST.dailyMissions.items.splice(idx, 1);
+  save(); renderDailyMissions();
+}
 
 // ══════════════════════════════════
 // INIT
@@ -4688,9 +4128,8 @@ async function init() {
 
   // Inicializar misiones (reset semanal si cambió la semana)
   initMissions();
-
-  // Cargar estado del boss (reset diario si cambió el día)
-  loadBossState();
+  // Inicializar misiones diarias
+  initDailyMissions();
 
   // Cargar local primero (instantáneo)
   updateAll();
@@ -4730,6 +4169,47 @@ setInterval(() => loadFromCloud(true), 30000);
 </div>
 
 <!-- ══ DELETE CONFIRM MODAL ══ -->
+<div class="ev-modal-overlay" id="eventEditModal" style="display:none" onclick="if(event.target===this)closeEventModal()">
+  <div class="ev-modal-box">
+    <div class="ev-modal-header">
+      <div class="del-modal-title" id="evModalTitle">✏ Editar evento</div>
+      <button class="ev-modal-close" onclick="closeEventModal()">×</button>
+    </div>
+    <div>
+      <div class="ev-modal-label">Título</div>
+      <input class="ev-modal-input" id="evModalName" type="text" />
+    </div>
+    <div class="ev-modal-row">
+      <div>
+        <div class="ev-modal-label">Fecha</div>
+        <input class="ev-modal-input" id="evModalDate" type="date" />
+      </div>
+      <div>
+        <div class="ev-modal-label">Hora (opcional)</div>
+        <input class="ev-modal-input" id="evModalTime" type="time" />
+      </div>
+    </div>
+    <div>
+      <div class="ev-modal-label">Tipo</div>
+      <select class="ev-modal-input" id="evModalType">
+        <option value="personal">Personal</option>
+        <option value="despinsage">Despinsage</option>
+        <option value="cumple">Cumpleaños</option>
+        <option value="work">Trabajo</option>
+      </select>
+    </div>
+    <div>
+      <div class="ev-modal-label">Notas / Recordatorios</div>
+      <textarea class="ev-modal-textarea" id="evModalNotes" placeholder="Qué traer, preparar, recordar..."></textarea>
+    </div>
+    <div class="todo-modal-btns">
+      <button id="evModalDeleteBtn" onclick="deleteEventFromModal()" style="padding:8px 14px;border-radius:8px;border:1px solid rgba(255,77,109,.35);background:transparent;color:var(--accent2);font-family:var(--fm);font-size:11px;cursor:pointer;display:none">Eliminar</button>
+      <button class="todo-modal-cancel" onclick="closeEventModal()">Cancelar</button>
+      <button class="todo-modal-confirm" onclick="saveEventModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="del-modal-overlay" id="deleteModal" style="display:none" onclick="if(event.target===this)closeDeleteModal()">
   <div class="del-modal-box" id="deleteModalBox">
     <div class="del-modal-title">⚠ Eliminar tarea</div>
