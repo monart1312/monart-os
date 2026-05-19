@@ -1446,6 +1446,32 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   opacity: 0.15;
 }
 
+/* ── SCHEDULE DAY LABEL ── */
+.sched-day-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  margin-bottom: 2px;
+}
+.sched-day-tag {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.sched-day-focus {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--muted2);
+  text-align: right;
+}
+
 /* ── DELETE BUTTON ── */
 .t-del { opacity:0; background:transparent; border:none; color:var(--accent2); font-size:13px; cursor:pointer; padding:10px 8px; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:opacity .15s,background .15s; flex-shrink:0; line-height:1; touch-action:manipulation; }
 .task-item:hover .t-del, .r-card:hover .t-del, .kanban-card:hover .t-del, .mc-pill:hover .t-del { opacity:1; }
@@ -2526,8 +2552,8 @@ function bossCounterattack() {
   _saveBossState();
 }
 
-const ALL_HABITS = ['notion','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4','windown','dormir'];
-const XP_MAP = {'notion':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5,'windown':15,'dormir':20};
+const ALL_HABITS = ['notion','lectura','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4','windown','dormir'];
+const XP_MAP = {'notion':10,'lectura':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5,'windown':15,'dormir':20};
 
 const EVENTS = [
   {d:'2026-05-07',n:'Psicólogo 13:00h',t:'personal'},
@@ -2800,25 +2826,59 @@ function goPage(id, btn) {
 }
 
 // ══════════════════════════════════
-// SCHEDULE DATA
+// SCHEDULE DATA (por día de semana)
 // ══════════════════════════════════
-const SCHEDULE = [
-  {id:'notion',   time:'09:30', tag:'CHECK', cat:'gold',   name:'Check diario',           sub:'5 min · Abrir app · Ver tareas del día',                        xp:10},
-  {id:'paseo-m',  time:'10:00', tag:'WALK',  cat:'green',  name:'Paseo mañana',           sub:'20 min · Correa, vuelta al bloque',                             xp:15},
-  {id:'trabajo1', time:'10:30', tag:'WORK',  cat:'purple', name:'Trabajo profundo I',     sub:'90 min · Móvil boca abajo · Tarea prioritaria del día',         xp:25},
-  {id:'dibujo',   time:'12:00', tag:'DRAW',  cat:'gold',   name:'Dibujo diario',          sub:'10 min · Rápido · Sin juzgar · Solo trazar',                   xp:10},
-  {id:'agua1',    time:'12:30', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 1',          sub:'500ml · Primer vaso del día',                                   xp:5},
-  {id:'paseo-d',  time:'13:30', tag:'WALK',  cat:'green',  name:'Paseo mediodía',         sub:'1h · Parque o ruta larga',                                      xp:15},
-  {id:'agua2',    time:'14:30', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 2',          sub:'500ml · Con la comida o después',                               xp:5},
-  {id:'trabajo2', time:'15:30', tag:'WORK',  cat:'purple', name:'Trabajo profundo II',    sub:'90 min · Cerrar o avanzar proyecto en curso',                  xp:25},
-  {id:'entreno',  time:'17:00', tag:'GYM',   cat:'cyan',   name:'Entreno / Estiramientos',sub:'L·X·V gym 1h tarde · M·J·S estiramientos 20min',               xp:20},
-  {id:'marca',    time:'18:30', tag:'MARCA', cat:'purple', name:'Trabajo personal marca', sub:'90 min · Portfolio · Redes · Contenido · Clientes',             xp:25},
-  {id:'agua3',    time:'19:00', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 3',          sub:'500ml · Por la tarde',                                          xp:5},
-  {id:'paseo-n',  time:'23:00', tag:'WALK',  cat:'green',  name:'Paseo noche',            sub:'40 min · Paseo tranquilo para desconectar',                    xp:15},
-  {id:'agua4',    time:'23:30', tag:'H2O',   cat:'cyan',   name:'Agua — Vaso 4',          sub:'500ml · Último vaso del día',                                   xp:5},
-  {id:'windown',  time:'01:00', tag:'OFF',   cat:'pink',   name:'Wind down',              sub:'Apaga pantallas · Prepara ropa · Leer o música',               xp:15},
-  {id:'dormir',   time:'02:00', tag:'ZZZ',   cat:'pink',   name:'En cama',                sub:'Antes de 02:00h · Sin TikTok/Reels en cama',                   xp:20},
-];
+function getDaySchedule() {
+  const dow = new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
+  // Bloques fijos — iguales todos los días
+  const base = [
+    {id:'notion',  time:'09:30',tag:'CHECK',cat:'gold',  name:'Check diario',            sub:'5 min · Abrir app · Ver tareas del día',           xp:10},
+    {id:'lectura', time:'09:45',tag:'READ', cat:'gold',  name:'Lectura diaria',          sub:'10 min · Saga o filosofía · Sin pantallas · Presente', xp:10},
+    {id:'paseo-m', time:'10:00',tag:'WALK', cat:'green', name:'Paseo mañana',            sub:'20 min · Correa, vuelta al bloque',                 xp:15},
+    {id:'dibujo',  time:'12:00',tag:'DRAW', cat:'gold',  name:'Dibujo diario',           sub:'20 min · Rápido · Sin juzgar · Solo trazar',       xp:10},
+    {id:'agua1',   time:'12:30',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 1',           sub:'500ml · Primer vaso del día',                       xp:5},
+    {id:'paseo-d', time:'13:30',tag:'WALK', cat:'green', name:'Paseo mediodía',          sub:'1h · Parque o ruta larga',                          xp:15},
+    {id:'agua2',   time:'14:30',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 2',           sub:'500ml · Con la comida o después',                   xp:5},
+    {id:'entreno', time:'17:00',tag:'GYM',  cat:'cyan',  name:'Entreno / Estiramientos', sub:'L·X·V gym 1h tarde · M·J·S estiramientos 20min',   xp:20},
+    {id:'agua3',   time:'19:00',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 3',           sub:'500ml · Por la tarde',                              xp:5},
+    {id:'paseo-n', time:'23:00',tag:'WALK', cat:'green', name:'Paseo noche',             sub:'40 min · Paseo tranquilo para desconectar',        xp:15},
+    {id:'agua4',   time:'23:30',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 4',           sub:'500ml · Último vaso del día',                       xp:5},
+    {id:'windown', time:'01:00',tag:'OFF',  cat:'pink',  name:'Wind down',               sub:'Apaga pantallas · Prepara ropa · Leer o música',   xp:15},
+    {id:'dormir',  time:'02:00',tag:'ZZZ',  cat:'pink',  name:'En cama',                 sub:'Antes de 02:00h · Sin TikTok/Reels en cama',       xp:20},
+  ];
+  // Bloques variables — trabajo1 (10:30), trabajo2 (16:00), marca/tarde (18:30)
+  const varBlocks = [
+    // 0 — DOMINGO
+    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Proyectos personales',        sub:'90 min · Sin presión · Cosas pendientes · Pila personal',        xp:25},
+     {id:'trabajo2',time:'15:30',tag:'WORK', cat:'purple',name:'Dibujo libre / Exploración',  sub:'90 min · Bocetos · Sin objetivo · Fluir',                        xp:25},
+     {id:'marca',   time:'18:30',tag:'CHECK',cat:'gold',  name:'Revisión semanal',            sub:'60 min · Repaso objetivos · Prepara la semana siguiente',        xp:25}],
+    // 1 — LUNES
+    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'El Contable — Trabajo profundo',  sub:'90 min · Móvil boca abajo · Tarea prioritaria del día',      xp:25},
+     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Houdini · Simulaciones FX',       sub:'2h · Nodo a nodo · Tutorial o proyecto propio',              xp:25},
+     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Trabajo personal marca',           sub:'90 min · Portfolio · Redes · Contenido · Clientes',          xp:25}],
+    // 2 — MARTES
+    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Despinsage — Trabajo profundo',   sub:'90 min · Carteles · Vídeo · Materiales pendientes',           xp:25},
+     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Blender · Modelado / Render',     sub:'2h · Continuar proyecto · Avanzar técnica',                   xp:25},
+     {id:'marca',   time:'18:30',tag:'MEET', cat:'cyan',  name:'Reunión Despinsage 🤝',            sub:'60 min · Reunión semanal de producción',                      xp:25}],
+    // 3 — MIÉRCOLES
+    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Monplan — Trabajo profundo',      sub:'90 min · Contenido · Estrategia · Entrega',                   xp:25},
+     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Houdini · VFX / Procedural',      sub:'2h · Profundizar nodos · Proyecto FX propio',                 xp:25},
+     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Trabajo personal marca',           sub:'90 min · Portfolio · Redes · Contenido · Clientes',           xp:25}],
+    // 4 — JUEVES
+    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Proyecto foco — Cerrar loops',    sub:'90 min · Revisar pendientes · Entregar · Documentar',          xp:25},
+     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'IA Generativa · Exploración',     sub:'2h · Midjourney · Runway · ComfyUI · Prompting',              xp:25},
+     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Trabajo personal marca',           sub:'90 min · Portfolio · Contenido · Admin marca',                xp:25}],
+    // 5 — VIERNES
+    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Cierre semana — Revisión',        sub:'90 min · Entregar · Cerrar · Documentar · Tareas sueltas',    xp:25},
+     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Blender · Render / Compositing',  sub:'2h · Revisión · Acabados · Subir a portfolio',                xp:25},
+     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Revisión semanal marca',           sub:'60 min · Métricas · Contenido · Plan siguiente semana',       xp:25}],
+    // 6 — SÁBADO
+    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Proyecto libre / Experimentos',   sub:'90 min · Sin presión · Prueba algo nuevo · Explora',          xp:25},
+     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Exploración creativa',            sub:'2h · Houdini · Blender · IA · Lo que pida el cuerpo',         xp:25},
+     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Contenido redes / Portfolio',     sub:'90 min · Publicar · Crear · Conectar · Crecer',               xp:25}],
+  ];
+  return [...base, ...varBlocks[dow]];
+}
 
 // Sync ALL_HABITS con SCHEDULE
 // (ya definido arriba como array de IDs)
@@ -2969,7 +3029,7 @@ function drawHubChar(lvl, xpPct) {
 // HABITS
 // ══════════════════════════════════
 function toggleH(id, xpVal) {
-  const item = SCHEDULE.find(s => s.id === id);
+  const item = getDaySchedule().find(s => s.id === id);
   const xp = xpVal || (item ? item.xp : 10);
   const was = ST.completed[id];
   if(!was) {
@@ -3033,12 +3093,26 @@ function renderSchedule() {
   }
 
   const todayTasks = TASKS.filter(t => t.dueDate === todayStr && t.dueTime);
+  const daySchedule = getDaySchedule();
   const combined = [
-    ...SCHEDULE.map(s => ({type:'habit', mins: toMins(s.time), data: s})),
+    ...daySchedule.map(s => ({type:'habit', mins: toMins(s.time), data: s})),
     ...todayTasks.map(t => ({type:'task', mins: toMins(t.dueTime), data: t}))
   ].sort((a, b) => a.mins - b.mins);
 
-  list.innerHTML = combined.map(item =>
+  const dow = new Date().getDay();
+  const DOW_META = [
+    {emoji:'😴', label:'DOMINGO',   focus:'Pila personal · Revisión semanal'},
+    {emoji:'🔨', label:'LUNES',     focus:'El Contable · Houdini'},
+    {emoji:'🎸', label:'MARTES',    focus:'Despinsage · Blender · Reunión 18:30'},
+    {emoji:'⚡', label:'MIÉRCOLES', focus:'Monplan · Houdini VFX'},
+    {emoji:'🤖', label:'JUEVES',    focus:'Proyecto foco · IA Generativa'},
+    {emoji:'✅', label:'VIERNES',   focus:'Cierre semana · Blender'},
+    {emoji:'🎨', label:'SÁBADO',    focus:'Exploración libre · Contenido'},
+  ];
+  const dl = DOW_META[dow];
+  const dayHeader = `<div class="sched-day-label"><span class="sched-day-tag">${dl.emoji} ${dl.label}</span><span class="sched-day-focus">${dl.focus}</span></div>`;
+
+  list.innerHTML = dayHeader + combined.map(item =>
     item.type === 'habit' ? schedItemHTML(item.data) : taskItemHTML(item.data)
   ).join('');
 }
