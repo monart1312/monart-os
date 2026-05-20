@@ -8,14 +8,14 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
-  --bg: #04040a;
-  --s1: #08080f;
-  --s2: #0e0e1c;
-  --s3: #151528;
-  --s4: #1e1e34;
-  --border: #181828;
-  --border2: #222238;
-  --border3: #2e2e4e;
+  --bg: #03030a;
+  --s1: #07070f;
+  --s2: #0d0d1c;
+  --s3: #131326;
+  --s4: #1c1c32;
+  --border: #242440;
+  --border2: #2e2e50;
+  --border3: #3c3c62;
   --accent: #7b6fff;
   --accent2: #ff4d6d;
   --gold: #ffcc00;
@@ -23,9 +23,9 @@
   --cyan: #00d4ff;
   --pink: #ff6eb4;
   --orange: #ff8c42;
-  --text: #eeeef8;
-  --muted: #383852;
-  --muted2: #6a6a8a;
+  --text: #f2f2ff;
+  --muted: #545470;
+  --muted2: #8585a8;
   --ff: 'Syne', sans-serif;
   --fm: 'JetBrains Mono', monospace;
   --nav-w: 64px;
@@ -1623,24 +1623,42 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 /* ── DAILY PROGRESS CHART ── */
 .dprog-wrap { background:var(--s1); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px; }
-.dprog-scroll { display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:4px; }
+.dprog-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.dprog-title { font-family:var(--fm); font-size:9px; color:var(--muted2); letter-spacing:2px; text-transform:uppercase; }
+.dprog-total { font-family:var(--fm); font-size:10px; color:var(--gold); font-weight:700; }
+.dprog-scroll { display:flex; align-items:flex-end; gap:4px; overflow-x:auto; padding-bottom:4px; }
 .dprog-scroll::-webkit-scrollbar { height:3px; }
 .dprog-scroll::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
-.dprog-bar-row { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; width:28px; }
-.dprog-bar { width:100%; height:40px; background:var(--s3); border-radius:4px 4px 0 0; overflow:hidden; display:flex; flex-direction:column-reverse; align-items:stretch; }
-.dprog-today .dprog-bar { outline:1px solid var(--accent); }
+.dprog-bar-row { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; width:26px; }
+.dprog-bar { width:100%; height:60px; background:var(--s3); border:1px solid var(--border); border-radius:4px 4px 0 0; overflow:hidden; display:flex; flex-direction:column-reverse; align-items:stretch; }
+.dprog-today .dprog-bar { border-color:var(--accent); box-shadow:0 0 6px rgba(123,111,255,.3); }
 .dprog-segment { width:100%; flex-shrink:0; }
-.dprog-label { font-family:var(--fm); font-size:6px; color:var(--muted); text-align:center; white-space:nowrap; }
+.dprog-label { font-family:var(--fm); font-size:6px; color:var(--muted2); text-align:center; white-space:nowrap; }
+.dprog-today .dprog-label { color:var(--accent); }
 
 /* ── DAILY MISSIONS ── */
 .dmission-card { margin-bottom:12px; }
-.dmission-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
-.dmission-item:last-child { border-bottom:none; }
+.dmission-add-row { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; background:var(--s3); border:1px solid var(--border2); margin-bottom:8px; cursor:text; }
+.dmission-add-icon { color:var(--accent); font-size:16px; font-weight:700; flex-shrink:0; line-height:1; }
+.dmission-add-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--ff); font-size:13px; }
+.dmission-add-input::placeholder { color:var(--muted2); }
+.dmission-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; background:var(--s2); border:1px solid var(--border); margin-bottom:6px; transition:border-color .15s; }
+.dmission-item:hover { border-color:var(--border2); }
+.dmission-item.dmission-done { opacity:.6; }
 .dmission-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer; transition:all .2s; }
 .dmission-done .dmission-check { background:var(--green); border-color:var(--green); color:#000; }
-.dmission-name { flex:1; font-size:13px; font-weight:600; }
-.dmission-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--ff); font-size:13px; }
-.dmission-input::placeholder { color:var(--muted); }
+.dmission-name { flex:1; font-size:13px; font-weight:600; cursor:pointer; }
+.dmission-done .dmission-name { text-decoration:line-through; opacity:.5; }
+.dmission-edit-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--ff); font-size:13px; font-weight:600; border-bottom:1px solid var(--accent); padding-bottom:1px; }
+.dmission-action { background:transparent; border:none; color:var(--muted2); cursor:pointer; font-size:13px; padding:4px 6px; line-height:1; border-radius:4px; transition:color .15s,background .15s; }
+.dmission-action:hover { color:var(--accent2); background:rgba(255,77,109,.1); }
+.dmission-full-msg { font-family:var(--fm); font-size:10px; color:var(--muted2); text-align:center; padding:4px; letter-spacing:1px; }
+
+/* ── TASK NOTES ── */
+.t-notes-btn { opacity:0; background:transparent; border:none; color:var(--muted2); font-size:13px; cursor:pointer; padding:8px 6px; min-width:36px; min-height:36px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:opacity .15s,color .15s; flex-shrink:0; line-height:1; }
+.task-item:hover .t-notes-btn { opacity:1; }
+.t-notes-btn.has-notes { opacity:1 !important; color:var(--accent); }
+@media (max-width:600px) { .t-notes-btn { opacity:1 !important; } }
 
 </style>
 </head>
@@ -1724,8 +1742,8 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     </div>
     <div class="ss-sep"></div>
     <div class="ss-item">
-      <div class="ss-val cyan" id="d-day">1</div>
-      <div class="ss-key">DÍA/66</div>
+      <div class="ss-val cyan" id="d-tasks-done">0</div>
+      <div class="ss-key">TAREAS</div>
     </div>
     <div class="ss-sep"></div>
     <div class="ss-item">
@@ -2399,19 +2417,20 @@ function updateAll() {
   const pct = Math.round((done/ALL_HABITS.length)*100);
 
   // Streak record
-  ST.streakRecord = Math.max(ST.streakRecord||0, ST.streak||0);
+  const curStreak = computeStreak();
+  ST.streakRecord = Math.max(ST.streakRecord||0, curStreak);
 
   // Dash stats strip
-  document.getElementById('d-streak').textContent = ST.streak;
+  document.getElementById('d-streak').textContent = curStreak;
   document.getElementById('d-streak-record').textContent = ST.streakRecord;
-  document.getElementById('d-day').textContent = ST.day;
+  document.getElementById('d-tasks-done').textContent = computeTotalTasksDone();
   document.getElementById('d-done').textContent = pct+'%';
   document.getElementById('dash-day-chip').textContent = 'Día '+ST.day+'/66';
   renderFocusTasks();
 
   // Habits page
   document.getElementById('hab-day-sub').textContent = 'Día '+ST.day+' de 66';
-  document.getElementById('hab-streak-chip').textContent = '🔥 '+ST.streak+' días';
+  document.getElementById('hab-streak-chip').textContent = '🔥 '+curStreak+' días';
 
   // RPG hero card (habits tab)
   const rpgPct = document.getElementById('ring-pct');
@@ -2586,6 +2605,7 @@ function renderTasks() {
         <div class="t-meta">${areaLabel(t.area)}</div>
       </div>
       <div class="prio-badge ${prioBadgeClass(t.prio)}">${prioLabel(t.prio)}</div>
+      <button class="t-notes-btn${t.notes?' has-notes':''}" onclick="event.stopPropagation();openTaskNotes('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();openTaskNotes('${t.id}')" title="Notas">📝</button>
       <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar tarea">✕</button>
     </div>
   `).join('');
@@ -4008,34 +4028,53 @@ function renderDailyProgress() {
     const d = new Date(); d.setDate(d.getDate()-i);
     days.push(d.toISOString().split('T')[0]);
   }
-  const maxTotal = Math.max(1, ALL_HABITS.length);
+  // Max tasks in any day (for scaling), min 5 so bars are visible even with few tasks
+  const maxTasks = Math.max(5, ...days.map(ds => (ST.dailyLog[ds]?.tasks||[]).length));
+
+  let totalTasksAllTime = computeTotalTasksDone();
 
   const barsHTML = days.map(dateStr => {
     const log = ST.dailyLog[dateStr] || {habitsDone:0, tasks:[]};
     const isToday = dateStr === today;
+    const tasks = log.tasks || [];
     const segments = [];
+
+    // Habits segment (gold, on top)
     if(log.habitsDone > 0) {
-      const h = Math.max(2, Math.round((log.habitsDone / maxTotal) * 36));
+      const h = Math.max(3, Math.round((log.habitsDone / ALL_HABITS.length) * 20));
       segments.push({color:'#ffcc00', h});
     }
+    // Tasks by area
     const areaMap = {};
-    (log.tasks||[]).forEach(t => { if(t.area) areaMap[t.area]=(areaMap[t.area]||0)+1; });
-    const taskTotal = Object.values(areaMap).reduce((s,n)=>s+n,0)||1;
-    Object.entries(areaMap).forEach(([area, count]) => {
-      const h = Math.max(2, Math.round((count / (taskTotal+ALL_HABITS.length)) * 36));
-      segments.push({color: AREA_COLORS_DP[area]||'#7b6fff', h});
-    });
-    const segsHTML = segments.map(s=>`<div class="dprog-segment" style="height:${s.h}px;background:${s.color}"></div>`).join('');
+    tasks.forEach(t => { if(t.area) areaMap[t.area]=(areaMap[t.area]||0)+1; });
+    const taskCount = tasks.length;
+    if(taskCount > 0) {
+      const barH = Math.max(4, Math.round((taskCount / maxTasks) * 40));
+      // Stack area colors proportionally within bar height
+      Object.entries(areaMap).forEach(([area, count]) => {
+        const h = Math.max(2, Math.round((count / taskCount) * barH));
+        segments.push({color: AREA_COLORS_DP[area]||'#7b6fff', h});
+      });
+    }
+
+    const segsHTML = segments.length
+      ? segments.map(s=>`<div class="dprog-segment" style="height:${s.h}px;background:${s.color}"></div>`).join('')
+      : '';
     const d = new Date(dateStr+'T12:00:00');
     const label = d.getDate()+'/'+(d.getMonth()+1);
+    const taskLabel = taskCount > 0 ? `<div style="font-family:var(--fm);font-size:8px;color:var(--muted2);margin-bottom:1px">${taskCount}</div>` : '';
     return `<div class="dprog-bar-row${isToday?' dprog-today':''}">
+      ${taskLabel}
       <div class="dprog-bar">${segsHTML}</div>
       <div class="dprog-label">${label}</div>
     </div>`;
   }).join('');
 
   const html = `<div class="dprog-wrap">
-    <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);letter-spacing:2px;margin-bottom:8px">PROGRESO 30 DÍAS</div>
+    <div class="dprog-header">
+      <span class="dprog-title">ESTADÍSTICA · PROGRESO</span>
+      <span class="dprog-total">${totalTasksAllTime} tareas</span>
+    </div>
     <div class="dprog-scroll">${barsHTML}</div>
   </div>`;
 
@@ -4064,37 +4103,38 @@ function renderDailyMissions() {
     if(!el) return;
     if(!ST.dailyMissions) initDailyMissions();
     const items = ST.dailyMissions.items || [];
-    const canAdd = items.length < 3;
+    const canAdd = items.length < 5;
     const done = items.filter(m=>m.done).length;
 
-    let itemsHTML = items.map((m,i) => `
+    const itemsHTML = items.map((m,i) => `
       <div class="dmission-item${m.done?' dmission-done':''}">
-        <div class="dmission-check" onclick="toggleDailyMission(${i})">${m.done?'✓':''}</div>
-        <span class="dmission-name" style="${m.done?'text-decoration:line-through;opacity:.5':''}">${m.text}</span>
-        <button onclick="deleteDailyMission(${i})" style="background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:12px;padding:4px 8px;line-height:1">✕</button>
+        <div class="dmission-check${m.done?' dmission-checked':''}" onclick="toggleDailyMission(${i})">${m.done?'✓':''}</div>
+        <span class="dmission-name" onclick="startEditMission(${i},'${id}')">${m.text}</span>
+        <button class="dmission-action" onclick="deleteDailyMission(${i})">✕</button>
       </div>`).join('');
 
-    if(canAdd) {
-      itemsHTML += `<div class="dmission-item">
-        <div class="dmission-check" style="border-style:dashed;color:var(--muted);font-size:16px;cursor:default">+</div>
-        <input class="dmission-input" placeholder="Nueva misión del día..."
-          onkeydown="if(event.key==='Enter'&&this.value.trim()){addDailyMission(this.value.trim());this.value='';}" />
-      </div>`;
-    }
+    const addRow = canAdd ? `
+      <div class="dmission-add-row">
+        <span class="dmission-add-icon">+</span>
+        <input class="dmission-add-input" placeholder="+ Nueva misión del día..."
+          onkeydown="if(event.key==='Enter'&&this.value.trim()){addDailyMission(this.value.trim());this.value='';}
+          else if(event.key==='Escape')this.blur();" />
+      </div>` : `<div class="dmission-full-msg">Max. 5 misiones diarias</div>`;
 
     el.innerHTML = `<div class="dmission-card card">
       <div class="card-title" style="display:flex;justify-content:space-between;margin-bottom:10px">
         <span>⚡ MISIONES DEL DÍA</span>
         <span style="font-family:var(--fm);font-size:10px;color:var(--gold)">${done}/${items.length}</span>
       </div>
-      ${itemsHTML || '<div style="font-family:var(--fm);font-size:10px;color:var(--muted);padding:4px 0">Añade hasta 3 misiones para hoy</div>'}
+      ${addRow}
+      ${itemsHTML}
     </div>`;
   });
 }
 
 function addDailyMission(text) {
   if(!ST.dailyMissions) initDailyMissions();
-  if(ST.dailyMissions.items.length >= 3) return;
+  if(ST.dailyMissions.items.length >= 5) return;
   ST.dailyMissions.items.push({text, done:false});
   save(); updateDailyLog(); renderDailyProgress(); renderDailyMissions();
 }
@@ -4113,6 +4153,86 @@ function deleteDailyMission(idx) {
   if(!ST.dailyMissions) return;
   ST.dailyMissions.items.splice(idx, 1);
   save(); renderDailyMissions();
+}
+
+// ══════════════════════════════════
+// TASK NOTES
+// ══════════════════════════════════
+let _tnModalId = null;
+function openTaskNotes(id) {
+  const t = TASKS.find(x=>x.id===id);
+  if(!t) return;
+  _tnModalId = id;
+  document.getElementById('tnModalTaskName').textContent = t.name;
+  document.getElementById('tnModalNotes').value = t.notes || '';
+  document.getElementById('taskNotesModal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('tnModalNotes').focus(), 100);
+}
+function closeTaskNotes() {
+  document.getElementById('taskNotesModal').style.display = 'none';
+  _tnModalId = null;
+}
+function saveTaskNotes() {
+  if(!_tnModalId) return;
+  const t = TASKS.find(x=>x.id===_tnModalId);
+  if(t) { t.notes = document.getElementById('tnModalNotes').value.trim(); save(); renderTasks(); }
+  closeTaskNotes();
+  showToast('✅ Notas guardadas');
+}
+
+// ══════════════════════════════════
+// STREAK + STATS HELPERS
+// ══════════════════════════════════
+function computeStreak() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayHabits = ALL_HABITS.filter(h=>ST.completed[h]).length;
+  let streak = 0;
+  for(let i=0; i<365; i++) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const dateStr = d.toISOString().split('T')[0];
+    const log = ST.dailyLog ? ST.dailyLog[dateStr] : null;
+    const isToday = dateStr === todayStr;
+    const habitsDone = isToday ? todayHabits : (log ? log.habitsDone : 0);
+    const tasksDone = log ? (log.tasks||[]).length : 0;
+    if(habitsDone > 0 || tasksDone > 0) { streak++; }
+    else if(i > 0) { break; }
+  }
+  return streak;
+}
+function computeTotalTasksDone() {
+  let total = 0;
+  Object.values(ST.dailyLog||{}).forEach(log => { total += (log.tasks||[]).length; });
+  return total;
+}
+
+// ══════════════════════════════════
+// MISSION INLINE EDIT
+// ══════════════════════════════════
+function startEditMission(idx, containerId) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const items = ST.dailyMissions ? ST.dailyMissions.items : [];
+  const m = items[idx];
+  if(!m || m.done) return;
+  const nameEls = el.querySelectorAll('.dmission-name');
+  const nameEl = nameEls[idx];
+  if(!nameEl) return;
+  const input = document.createElement('input');
+  input.className = 'dmission-edit-input';
+  input.value = m.text;
+  nameEl.replaceWith(input);
+  input.focus();
+  input.select();
+  const commit = () => {
+    const val = input.value.trim();
+    if(val) { m.text = val; save(); }
+    renderDailyMissions();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if(e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if(e.key === 'Escape') { input.value = m.text; input.blur(); }
+  });
 }
 
 // ══════════════════════════════════
@@ -4206,6 +4326,24 @@ setInterval(() => loadFromCloud(true), 30000);
       <button id="evModalDeleteBtn" onclick="deleteEventFromModal()" style="padding:8px 14px;border-radius:8px;border:1px solid rgba(255,77,109,.35);background:transparent;color:var(--accent2);font-family:var(--fm);font-size:11px;cursor:pointer;display:none">Eliminar</button>
       <button class="todo-modal-cancel" onclick="closeEventModal()">Cancelar</button>
       <button class="todo-modal-confirm" onclick="saveEventModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="ev-modal-overlay" id="taskNotesModal" style="display:none" onclick="if(event.target===this)closeTaskNotes()">
+  <div class="ev-modal-box" style="max-height:80vh">
+    <div class="ev-modal-header">
+      <div class="del-modal-title" id="tnModalTitle">📝 Notas</div>
+      <button class="ev-modal-close" onclick="closeTaskNotes()">×</button>
+    </div>
+    <div id="tnModalTaskName" style="font-size:14px;font-weight:700;line-height:1.4;color:var(--text)"></div>
+    <div>
+      <div class="ev-modal-label">Notas / Descripción</div>
+      <textarea class="ev-modal-textarea" id="tnModalNotes" placeholder="Añade contexto, pasos, links, recordatorios..." style="min-height:120px"></textarea>
+    </div>
+    <div class="todo-modal-btns">
+      <button class="todo-modal-cancel" onclick="closeTaskNotes()">Cancelar</button>
+      <button class="todo-modal-confirm" onclick="saveTaskNotes()">Guardar</button>
     </div>
   </div>
 </div>
