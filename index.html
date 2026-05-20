@@ -2150,6 +2150,8 @@ async function syncToCloud() {
     prev_lvl: ST._prevLvl || 1,
     history: ST.history,
     missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
+    daily_log: ST.dailyLog || {},
+    daily_missions: ST.dailyMissions || null,
     updated_at: ST.updated_at
   });
 }
@@ -2172,6 +2174,21 @@ async function loadFromCloud(silent = false) {
         ST.missions = rmItems;
         ST.missionsWeek = rmd.week || remote.missions_week || ST.missionsWeek;
       }
+      // Merge dailyLog (union de días, gana el que tenga más tareas por día)
+      const remoteDL = remote.daily_log || {};
+      const mergedDL = Object.assign({}, ST.dailyLog || {});
+      Object.entries(remoteDL).forEach(([date, log]) => {
+        if(!mergedDL[date] || (log.tasks||[]).length > (mergedDL[date].tasks||[]).length) mergedDL[date] = log;
+      });
+      ST.dailyLog = mergedDL;
+      // Merge dailyMissions (tomar el de hoy con más items, o remote si local no tiene hoy)
+      const todayStr = new Date().toISOString().split('T')[0];
+      const remoteDM = remote.daily_missions;
+      if(remoteDM && remoteDM.date === todayStr) {
+        if(!ST.dailyMissions || ST.dailyMissions.date !== todayStr || (remoteDM.items||[]).length > (ST.dailyMissions.items||[]).length) {
+          ST.dailyMissions = remoteDM;
+        }
+      }
       await syncToCloud();
     } else {
       const localTs = ST.updated_at || '2000-01-01';
@@ -2181,7 +2198,9 @@ async function loadFromCloud(silent = false) {
                completed: remote.completed||{}, history: remote.history||[],
                _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at,
                missions: (()=>{ const d=remote.missions||{}; const it=d.items||(Array.isArray(d)?d:[]); return it.some(m=>m&&m.name)?it:(ST.missions||[]); })(),
-               missionsWeek: (()=>{ const d=remote.missions||{}; return d.week||remote.missions_week||ST.missionsWeek||null; })() };
+               missionsWeek: (()=>{ const d=remote.missions||{}; return d.week||remote.missions_week||ST.missionsWeek||null; })(),
+               dailyLog: remote.daily_log || ST.dailyLog || {},
+               dailyMissions: remote.daily_missions || ST.dailyMissions || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
       }
     }
@@ -2193,9 +2212,12 @@ async function loadFromCloud(silent = false) {
     if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
       TASKS = remoteTasks.map(rt => {
         const local = TASKS.find(t => t.id === rt.id);
-        // Si Supabase no tiene columna status, preservar estado local
-        if(local && local.status && !rt.status) return {...rt, status: local.status, done: local.done};
-        return rt;
+        const merged = {...rt};
+        // Preservar status y done locales si Supabase no los tiene
+        if(local && local.status && !rt.status) { merged.status = local.status; merged.done = local.done; }
+        // Preservar notes locales si Supabase aún no tiene la columna
+        if(local && local.notes && !rt.notes) merged.notes = local.notes;
+        return merged;
       });
       localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
     }
@@ -3181,7 +3203,7 @@ function toggleTask(id) {
       spawnParticles(window.innerWidth/2, window.innerHeight*0.6, AREA_COLORS[t.area]||'#00f5a0');
       updateDailyLog();
     }
-    sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, created_at: new Date().toISOString() });
+    sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, notes: t.notes||null, created_at: new Date().toISOString() });
     save();
     updateAll();
     renderTasks();
@@ -4175,7 +4197,11 @@ function closeTaskNotes() {
 function saveTaskNotes() {
   if(!_tnModalId) return;
   const t = TASKS.find(x=>x.id===_tnModalId);
-  if(t) { t.notes = document.getElementById('tnModalNotes').value.trim(); save(); renderTasks(); }
+  if(t) {
+    t.notes = document.getElementById('tnModalNotes').value.trim() || null;
+    sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status||'backlog', notes: t.notes, created_at: t.created_at || new Date().toISOString() });
+    save(); renderTasks();
+  }
   closeTaskNotes();
   showToast('✅ Notas guardadas');
 }
