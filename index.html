@@ -1957,8 +1957,8 @@ const LEVELS = [
 const AREA_COLORS = {trabajo:'#7b6fff',marca:'#b57aff',despinsage:'#00d4ff',casa:'#00f5a0',yo:'#ff6eb4',estudios:'#f5a623'};
 
 
-const ALL_HABITS = ['notion','lectura','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4','windown','dormir'];
-const XP_MAP = {'notion':10,'lectura':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5,'windown':15,'dormir':20};
+const ALL_HABITS = ['notion','lectura','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4'];
+const XP_MAP = {'notion':10,'lectura':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5};
 
 const EVENTS = [
   {d:'2026-05-07',n:'Psicólogo 13:00h',t:'personal'},
@@ -2152,6 +2152,7 @@ async function syncToCloud() {
     missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
     daily_log: ST.dailyLog || {},
     daily_missions: ST.dailyMissions || null,
+    user_events: getUserEvents(),
     updated_at: ST.updated_at
   });
 }
@@ -2189,6 +2190,14 @@ async function loadFromCloud(silent = false) {
           ST.dailyMissions = remoteDM;
         }
       }
+      // Merge user events (unión por id, remote gana si mismo id)
+      if(remote.user_events && Array.isArray(remote.user_events)) {
+        const localEvs = getUserEvents();
+        const localMap = {};
+        localEvs.forEach(e => { localMap[e.id] = e; });
+        remote.user_events.forEach(e => { localMap[e.id] = e; }); // remote overwrites
+        saveUserEvents(Object.values(localMap));
+      }
       await syncToCloud();
     } else {
       const localTs = ST.updated_at || '2000-01-01';
@@ -2202,6 +2211,9 @@ async function loadFromCloud(silent = false) {
                dailyLog: remote.daily_log || ST.dailyLog || {},
                dailyMissions: remote.daily_missions || ST.dailyMissions || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
+        if(remote.user_events && Array.isArray(remote.user_events) && remote.user_events.length > 0) {
+          saveUserEvents(remote.user_events);
+        }
       }
     }
   } else if(!silent) {
@@ -2272,8 +2284,6 @@ function getDaySchedule() {
     {id:'agua3',   time:'19:00',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 3',           sub:'500ml · Por la tarde',                              xp:5},
     {id:'paseo-n', time:'23:00',tag:'WALK', cat:'green', name:'Paseo noche',             sub:'40 min · Paseo tranquilo para desconectar',        xp:15},
     {id:'agua4',   time:'23:30',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 4',           sub:'500ml · Último vaso del día',                       xp:5},
-    {id:'windown', time:'01:00',tag:'OFF',  cat:'pink',  name:'Wind down',               sub:'Apaga pantallas · Prepara ropa · Leer o música',   xp:15},
-    {id:'dormir',  time:'02:00',tag:'ZZZ',  cat:'pink',  name:'En cama',                 sub:'Antes de 02:00h · Sin TikTok/Reels en cama',       xp:20},
   ];
   // Bloques variables — trabajo1 (10:30), trabajo2 (16:00), marca/tarde (18:30)
   const varBlocks = [
@@ -3761,7 +3771,6 @@ function renderWeekPlan() {
     '15:30':  {text:'WORK II', cls:'work'},
     '17:20':  {text:'ART/MONART', cls:'gold'},
     '23:00':  {text:'WALK NIGHT', cls:'green'},
-    '00:30':  {text:'WIND DOWN', cls:'pink'},
   };
 
   // Specific tasks per day from weekly plan
