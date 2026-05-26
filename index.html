@@ -1781,10 +1781,12 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .dmission-full-msg { font-family:var(--fm); font-size:10px; color:var(--muted2); text-align:center; padding:4px; letter-spacing:1px; }
 
 /* ── TASK NOTES ── */
-.t-notes-btn { opacity:0; background:transparent; border:none; color:var(--muted2); font-size:13px; cursor:pointer; padding:8px 6px; min-width:36px; min-height:36px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:opacity .15s,color .15s; flex-shrink:0; line-height:1; }
-.task-item:hover .t-notes-btn { opacity:1; }
-.t-notes-btn.has-notes { opacity:1 !important; color:var(--accent); }
-@media (max-width:600px) { .t-notes-btn { opacity:1 !important; } }
+.t-notes-btn { opacity:0.35; background:transparent; border:none; color:var(--muted2); font-size:13px; cursor:pointer; padding:6px; min-width:32px; min-height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:all .15s; flex-shrink:0; line-height:1; }
+.task-item:hover .t-notes-btn { opacity:1; background:var(--s3); }
+.t-notes-btn.has-notes { opacity:1 !important; color:var(--accent); background:rgba(0,212,180,0.12) !important; border:1px solid rgba(0,212,180,0.25); }
+.t-date-btn { opacity:0.35; background:transparent; border:none; color:var(--muted2); font-size:12px; cursor:pointer; padding:4px 6px; min-height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:all .15s; flex-shrink:0; line-height:1; font-family:var(--fm); font-weight:700; white-space:nowrap; }
+.task-item:hover .t-date-btn { opacity:1; background:var(--s3); }
+@media (max-width:600px) { .t-notes-btn { opacity:0.7 !important; } .t-date-btn { opacity:0.7 !important; } }
 
 </style>
 </head>
@@ -2811,6 +2813,8 @@ function renderTasks() {
       else if(t.dueDate === todayISO) { urgency = 'due-today'; dueBadge = `<span class="t-due today">HOY</span>`; }
       else { dueBadge = `<span class="t-due upcoming">${t.dueDate.slice(5).replace('-','/')}</span>`; }
     }
+    const dateBtnLabel = t.dueDate ? t.dueDate.slice(5).replace('-','/') : '📅';
+    const dateBtnCls = t.dueDate ? `t-date-btn${urgency==='overdue'?' t-due overdue':urgency==='due-today'?' t-due today':' t-due upcoming'}` : 't-date-btn';
     return `
     <div class="task-item ${t.done?'done-task':''} ${urgency}" data-prio="${t.prio}" onclick="toggleTask('${t.id}')">
       <div class="t-check">${t.done?'✓':''}</div>
@@ -2818,7 +2822,7 @@ function renderTasks() {
         <div class="t-name">${t.name}</div>
         <div class="t-meta">${areaLabel(t.area)}</div>
       </div>
-      ${dueBadge}
+      <button class="${dateBtnCls}" onclick="openTaskDatePicker('${t.id}',event)" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();openTaskDatePicker('${t.id}',event)" title="Fecha límite">${dateBtnLabel}</button>
       <div class="prio-badge ${prioBadgeClass(t.prio)}">${prioLabel(t.prio)}</div>
       <button class="t-notes-btn${t.notes?' has-notes':''}" onclick="event.stopPropagation();openTaskNotes('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();openTaskNotes('${t.id}')" title="Notas">📝</button>
       <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar tarea">✕</button>
@@ -4384,6 +4388,26 @@ function deleteDailyMission(idx) {
 // TASK NOTES
 // ══════════════════════════════════
 let _tnModalId = null;
+let _taskDateId = null;
+function openTaskDatePicker(id, e) {
+  e.stopPropagation();
+  _taskDateId = id;
+  const t = TASKS.find(x => x.id === id);
+  const inp = document.getElementById('taskHiddenDate');
+  inp.value = t?.dueDate || '';
+  inp.showPicker ? inp.showPicker() : inp.click();
+}
+function onTaskDatePicked(val) {
+  const t = TASKS.find(x => x.id === _taskDateId);
+  if (!t) return;
+  t.dueDate = val || null;
+  t.due = t.dueDate;
+  save();
+  sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status||'backlog', notes: t.notes||null, dueDate: t.dueDate||null, created_at: t.created_at || new Date().toISOString() });
+  renderTasks();
+  showToast(val ? `📅 Fecha: ${val.slice(5).replace('-','/')}` : 'Fecha eliminada');
+}
+
 function openTaskNotes(id) {
   const t = TASKS.find(x=>x.id===id);
   if(!t) return;
@@ -4559,6 +4583,7 @@ setInterval(() => loadFromCloud(true), 30000);
   </div>
 </div>
 
+<input type="date" id="taskHiddenDate" style="position:fixed;opacity:0;pointer-events:none;width:0;height:0;z-index:-1" oninput="onTaskDatePicked(this.value)" onchange="onTaskDatePicked(this.value)">
 <div class="ev-modal-overlay" id="taskNotesModal" style="display:none" onclick="if(event.target===this)closeTaskNotes()">
   <div class="ev-modal-box" style="max-height:80vh">
     <div class="ev-modal-header">
