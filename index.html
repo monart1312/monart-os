@@ -23,16 +23,16 @@
   --accent2: #f06878;  /* rojo alerta */
 
   /* ── COLORES SEMÁNTICOS ── */
-  --gold: #f0d060;     /* ámbar vivo */
-  --green: #5dd48a;    /* verde claro */
-  --cyan: #55c8e8;     /* azul acero */
-  --pink: #e090c0;     /* rosa visible */
-  --orange: #f09050;   /* naranja urgencia */
+  --gold: #ffd830;     /* ámbar máximo */
+  --green: #5dea90;    /* verde vivo */
+  --cyan: #55d8f8;     /* azul claro */
+  --pink: #f09cd4;     /* rosa vivo */
+  --orange: #ff9040;   /* naranja urgencia */
 
-  /* ── TEXTO — contraste WCAG AA en exterior ── */
-  --text: #eef4fc;     /* casi blanco */
-  --muted: #7aA0be;    /* ratio 4.8:1 sobre --bg */
-  --muted2: #a0bdd8;   /* ratio 6.5:1 sobre --bg */
+  /* ── TEXTO — contraste exterior (ratio >7:1) ── */
+  --text: #ffffff;
+  --muted: #aac8e2;    /* ratio ~8.5:1 sobre --bg */
+  --muted2: #cce0f2;   /* ratio ~11:1 sobre --bg */
 
   --ff: 'Syne', sans-serif;
   --fm: 'JetBrains Mono', monospace;
@@ -90,7 +90,7 @@ body::after {
 }
 
 .nav-btn {
-  width: 44px; height: 44px;
+  width: 48px; height: 52px;
   border-radius: 12px;
   border: none;
   background: transparent;
@@ -123,8 +123,8 @@ body::after {
   border-radius: 0 3px 3px 0;
 }
 
-.nav-icon { font-size: 18px; line-height: 1; }
-.nav-label { font-size: 7px; font-family: var(--fm); letter-spacing: 1px; text-transform: uppercase; }
+.nav-icon { font-size: 20px; line-height: 1; }
+.nav-label { font-size: 9px; font-family: var(--fm); letter-spacing: 1px; text-transform: uppercase; font-weight:700; }
 
 .nav-spacer { flex: 1; }
 
@@ -160,7 +160,8 @@ body::after {
 
 .page-sub {
   font-family: var(--fm);
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--muted);
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -169,8 +170,9 @@ body::after {
 
 .chip {
   font-family: var(--fm);
-  font-size: 10px;
-  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
   border-radius: 20px;
   border: 1px solid var(--border2);
   color: var(--muted2);
@@ -185,8 +187,8 @@ body::after {
 }
 
 .card-title {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted2);
@@ -226,7 +228,7 @@ body::after {
 .stat-card.sc-pink::before { background: linear-gradient(90deg, var(--accent2), transparent); }
 
 .stat-val {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 800;
   font-family: var(--fm);
   line-height: 1;
@@ -237,12 +239,13 @@ body::after {
 .stat-val.pink { color: var(--accent2); }
 
 .stat-key {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 2px;
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: var(--fm);
+  font-weight: 700;
 }
 
 .player-banner {
@@ -283,8 +286,8 @@ body::after {
   margin-bottom: 5px;
 }
 
-.xp-lbl { font-family: var(--fm); font-size: 10px; color: var(--muted); }
-.xp-val { font-family: var(--fm); font-size: 10px; color: var(--gold); }
+.xp-lbl { font-family: var(--fm); font-size: 12px; color: var(--muted); font-weight:700; }
+.xp-val { font-family: var(--fm); font-size: 12px; color: var(--gold); font-weight:700; }
 
 .bar-wrap { background: var(--s3); border-radius: 4px; height: 5px; overflow: hidden; }
 .bar-fill {
@@ -313,7 +316,8 @@ body::after {
 
 .quote-author {
   font-family: var(--fm);
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--muted);
   margin-top: 8px;
   letter-spacing: 2px;
@@ -342,8 +346,8 @@ body::after {
 
 .week-day.has-event { border-color: var(--cyan); }
 
-.wd-name { font-family: var(--fm); font-size: 8px; color: var(--muted); text-transform: uppercase; }
-.wd-num { font-size: 14px; font-weight: 700; margin: 4px 0; }
+.wd-name { font-family: var(--fm); font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight:700; }
+.wd-num { font-size: 16px; font-weight: 800; margin: 4px 0; }
 .wd-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cyan); margin: 0 auto; }
 
 /* ═══════════════════════════════════════
@@ -395,9 +399,9 @@ body::after {
 }
 
 .h-info { flex: 1; }
-.h-name { font-size: 13px; font-weight: 700; }
+.h-name { font-size: 15px; font-weight: 700; }
 .habit-item.done .h-name { text-decoration: line-through; opacity: .5; }
-.h-sub { font-family: var(--fm); font-size: 9px; color: var(--muted); margin-top: 2px; }
+.h-sub { font-family: var(--fm); font-size: 11px; color: var(--muted); margin-top: 3px; }
 
 .h-xp {
   font-family: var(--fm);
@@ -437,8 +441,8 @@ body::after {
   justify-content: center;
 }
 
-.ring-pct { font-size: 28px; font-weight: 800; font-family: var(--fm); }
-.ring-sub { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; font-family: var(--fm); }
+.ring-pct { font-size: 32px; font-weight: 800; font-family: var(--fm); }
+.ring-sub { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-top: 3px; font-family: var(--fm); font-weight:700; }
 
 .next-day-btn {
   width: 100%;
@@ -511,7 +515,7 @@ body::after {
 .task-item.done-task .t-name { text-decoration: line-through; }
 .task-item.overdue { border-left: 3px solid var(--accent2); background: color-mix(in srgb, var(--s1) 90%, var(--accent2) 10%); }
 .task-item.due-today { border-left: 3px solid var(--orange); }
-.t-due { font-family:var(--fm); font-size:9px; padding:2px 6px; border-radius:4px; flex-shrink:0; }
+.t-due { font-family:var(--fm); font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; flex-shrink:0; }
 .t-due.overdue { background: rgba(240,104,120,.18); color: var(--accent2); }
 .t-due.today { background: rgba(240,144,80,.18); color: var(--orange); }
 .t-due.upcoming { color: var(--muted); }
@@ -532,13 +536,14 @@ body::after {
 }
 
 .t-info { flex: 1; }
-.t-name { font-size: 13px; font-weight: 600; }
-.t-meta { font-family: var(--fm); font-size: 9px; color: var(--muted); margin-top: 2px; }
+.t-name { font-size: 15px; font-weight: 700; }
+.t-meta { font-family: var(--fm); font-size: 11px; color: var(--muted); margin-top: 2px; font-weight:600; }
 
 .prio-chip {
   font-family: var(--fm);
-  font-size: 9px;
-  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
   border-radius: 10px;
 }
 
@@ -673,12 +678,13 @@ body::after {
 .event-item.ev-cumple { border-left-color: var(--accent2); }
 .event-item.ev-work { border-left-color: var(--gold); }
 
-.ev-date { font-family: var(--fm); font-size: 10px; color: var(--muted); width: 60px; flex-shrink: 0; }
-.ev-name { font-size: 13px; font-weight: 600; }
+.ev-date { font-family: var(--fm); font-size: 12px; font-weight:700; color: var(--muted); width: 60px; flex-shrink: 0; }
+.ev-name { font-size: 15px; font-weight: 700; }
 .ev-tag {
   font-family: var(--fm);
-  font-size: 8px;
-  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
   border-radius: 6px;
   margin-left: auto;
   flex-shrink: 0;
@@ -1040,7 +1046,8 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 .sched-time {
   font-family: var(--fm);
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--muted2);
   width: 44px;
   flex-shrink: 0;
@@ -1048,7 +1055,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 .sched-tag {
   font-family: var(--fm);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
   width: 36px;
@@ -1064,14 +1071,15 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .sched-info { flex: 1; }
 
 .sched-name {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
 }
 
 .sched-sub {
   font-family: var(--fm);
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--muted2);
   margin-top: 1px;
 }
