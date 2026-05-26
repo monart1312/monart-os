@@ -1788,6 +1788,90 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .task-item:hover .t-date-btn { opacity:1; background:var(--s3); }
 @media (max-width:600px) { .t-notes-btn { opacity:0.7 !important; } .t-date-btn { opacity:0.7 !important; } }
 
+/* ── FOCUS MODE ── */
+.focus-page { padding:24px; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+.focus-header-strip { display:flex; align-items:center; justify-content:space-between; width:100%; max-width:420px; margin-bottom:20px; }
+.focus-card { width:100%; max-width:420px; padding:28px 22px; background:var(--s1); border:1px solid var(--border2); border-radius:24px; }
+.focus-area-tag { font-family:var(--fm); font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.focus-task-name { font-size:22px; font-weight:800; line-height:1.3; color:var(--text); margin-bottom:20px; }
+.pomo-ring-wrap { position:relative; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; width:160px; height:160px; }
+.pomo-time { position:absolute; font-size:36px; font-weight:800; font-family:var(--fm); color:var(--text); }
+.pomo-sub { position:absolute; bottom:24px; font-size:9px; color:var(--muted); font-family:var(--fm); letter-spacing:2px; text-transform:uppercase; }
+.pomo-controls { display:flex; gap:10px; justify-content:center; margin-bottom:20px; }
+.pomo-btn { padding:10px 20px; border-radius:12px; border:1px solid var(--border2); background:var(--s2); color:var(--text); font-family:var(--fm); font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; }
+.pomo-btn:hover { background:var(--s3); border-color:var(--accent); }
+.pomo-btn.primary { background:var(--accent); color:#031a16; border-color:var(--accent); }
+.focus-done-btn { width:100%; padding:16px; border-radius:14px; background:var(--green); border:none; color:#000; font-size:16px; font-weight:800; cursor:pointer; letter-spacing:1px; transition:all .15s; margin-bottom:10px; }
+.focus-done-btn:hover { filter:brightness(1.1); }
+.focus-skip-btn { background:transparent; border:none; color:var(--muted); font-family:var(--fm); font-size:11px; cursor:pointer; padding:8px; letter-spacing:1px; width:100%; text-align:center; }
+.focus-all-done { text-align:center; padding:60px 24px; }
+
+/* ── MORNING BOOT ── */
+.mboot-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(10px); }
+.mboot-box { background:var(--s1); border:1px solid var(--border2); border-radius:24px; padding:28px 22px; width:100%; max-width:400px; max-height:90vh; overflow-y:auto; }
+.mboot-greeting { font-size:24px; font-weight:800; margin-bottom:4px; }
+.mboot-date { font-family:var(--fm); font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:22px; }
+.mboot-section { margin-bottom:20px; }
+.mboot-label { font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.mboot-event-item { display:flex; align-items:center; gap:10px; padding:8px 10px; background:var(--s2); border-radius:8px; margin-bottom:6px; font-size:13px; }
+.mboot-event-time { font-family:var(--fm); font-size:10px; color:var(--accent); font-weight:700; width:44px; flex-shrink:0; }
+.mboot-energy { display:flex; gap:8px; }
+.mboot-e-btn { flex:1; padding:14px 8px; border-radius:12px; border:1px solid var(--border); background:var(--s2); color:var(--text); font-size:18px; font-weight:700; cursor:pointer; transition:all .15s; text-align:center; line-height:1.4; }
+.mboot-e-btn.selected { border-color:var(--accent); background:rgba(0,212,180,0.12); box-shadow:0 0 0 1px var(--accent); }
+.mboot-e-label { font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:1px; display:block; margin-top:4px; color:var(--muted); }
+.mboot-start-btn { width:100%; padding:16px; border-radius:14px; background:var(--accent); border:none; color:#031a16; font-size:15px; font-weight:800; cursor:pointer; letter-spacing:2px; margin-top:8px; }
+.mboot-no-events { font-family:var(--fm); font-size:11px; color:var(--muted); padding:4px 0; }
+
+/* ── ENERGY FILTER ── */
+.energy-filter { display:flex; gap:6px; margin-bottom:14px; }
+.ef-btn { flex:1; padding:9px 6px; border-radius:10px; border:1px solid var(--border); background:var(--s2); color:var(--muted2); font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; text-align:center; font-family:var(--fm); }
+.ef-btn:hover { border-color:var(--border2); color:var(--text); }
+.ef-btn.ef-active { border-color:var(--accent); background:rgba(0,212,180,0.1); color:var(--accent); }
+
+/* ── COUNTDOWN ── */
+.hub-countdown { background:var(--s1); border:1px solid var(--border2); border-radius:14px; padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:12px; }
+.hcd-icon { font-size:20px; flex-shrink:0; }
+.hcd-info { flex:1; min-width:0; }
+.hcd-name { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hcd-time-sub { font-family:var(--fm); font-size:10px; color:var(--muted); margin-top:2px; }
+.hcd-count { font-family:var(--fm); font-size:20px; font-weight:800; flex-shrink:0; }
+.hcd-count.urgent { color:var(--accent2); animation:urgentPulse 1.5s infinite; }
+.hcd-count.soon { color:var(--orange); }
+.hcd-count.ok { color:var(--green); }
+
+/* ── CONFETTI ── */
+#confetti-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9998; }
+
+/* ── HEATMAP ── */
+.heatmap-wrap { background:var(--s1); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; overflow-x:auto; }
+.heatmap-grid { display:flex; gap:2px; align-items:flex-start; }
+.heatmap-days-col { display:flex; flex-direction:column; gap:2px; margin-right:4px; padding-top:0; }
+.heatmap-day-label { font-family:var(--fm); font-size:7px; color:var(--muted); width:12px; text-align:right; height:10px; line-height:10px; }
+.heatmap-weeks { display:flex; gap:2px; }
+.heatmap-week { display:flex; flex-direction:column; gap:2px; }
+.heatmap-cell { width:10px; height:10px; border-radius:2px; cursor:default; transition:transform .1s; }
+.heatmap-cell:hover { transform:scale(1.4); }
+.hc-0 { background:var(--s3); }
+.hc-1 { background:rgba(0,212,180,0.2); }
+.hc-2 { background:rgba(0,212,180,0.42); }
+.hc-3 { background:rgba(0,212,180,0.68); }
+.hc-4 { background:#00d4b4; box-shadow:0 0 4px rgba(0,212,180,.5); }
+
+/* ── WEEKLY REVIEW ── */
+.wreview-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(10px); }
+.wreview-box { background:var(--s1); border:1px solid var(--border2); border-radius:24px; padding:28px 22px; width:100%; max-width:400px; }
+.wreview-title { font-size:20px; font-weight:800; margin-bottom:4px; }
+.wreview-sub { font-family:var(--fm); font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:20px; }
+.wreview-stat { display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border); }
+.wreview-stat:last-child { border-bottom:none; }
+.wreview-stat-label { font-size:13px; color:var(--muted2); }
+.wreview-stat-val { font-family:var(--fm); font-size:20px; font-weight:800; }
+.wreview-btn { width:100%; padding:14px; border-radius:14px; background:var(--gold); border:none; color:#000; font-size:14px; font-weight:800; cursor:pointer; margin-top:16px; }
+
+/* ── SWIPE FEEDBACK ── */
+.task-item.swiping-right { background:rgba(93,234,144,0.12) !important; border-color:var(--green) !important; }
+.task-item.swiping-left { background:rgba(255,144,64,0.12) !important; border-color:var(--orange) !important; }
+
 </style>
 </head>
 <body>
@@ -1811,6 +1895,10 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   <button class="nav-btn active" onclick="goPage('dash',this)" title="Inicio">
     <span class="nav-icon" style="font-family:var(--fm);font-size:14px;font-weight:700">⌘</span>
     <span class="nav-label">HUB</span>
+  </button>
+  <button class="nav-btn" onclick="goPage('focus',this)" title="Focus">
+    <span class="nav-icon" style="font-family:var(--fm);font-size:16px;font-weight:700">◎</span>
+    <span class="nav-label">FOCUS</span>
   </button>
   <button class="nav-btn" onclick="goPage('tasks',this)" title="Tareas">
     <span class="nav-icon" style="font-family:var(--fm);font-size:16px;font-weight:700">◈</span>
@@ -1849,6 +1937,16 @@ svg circle:first-child { stroke: #0e0e1e !important; }
       <div class="page-sub" id="dash-date">—</div>
     </div>
     <div class="chip" id="dash-day-chip">Día 1/66</div>
+  </div>
+
+  <!-- Countdown próximo evento -->
+  <div class="hub-countdown" id="hub-countdown" style="display:none">
+    <div class="hcd-icon">⏳</div>
+    <div class="hcd-info">
+      <div class="hcd-name" id="hcd-name">—</div>
+      <div class="hcd-time-sub" id="hcd-time-sub">—</div>
+    </div>
+    <div class="hcd-count ok" id="hcd-count">—</div>
   </div>
 
   <!-- Daily progress chart -->
@@ -1981,6 +2079,9 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 </div><!-- /page-habits -->
 
+<!-- ══ PAGE: FOCUS ══ -->
+<div class="page focus-page" id="page-focus"></div>
+
 <!-- ══ PAGE: TASKS ══ -->
 <div class="page" id="page-tasks">
   <div class="page-header">
@@ -1988,6 +2089,13 @@ svg circle:first-child { stroke: #0e0e1e !important; }
       <div class="page-title">Mis Tareas</div>
       <div class="page-sub">Por áreas de vida</div>
     </div>
+  </div>
+
+  <!-- Energy filter -->
+  <div class="energy-filter">
+    <button class="ef-btn" onclick="setEnergyFilter('alta',this)" title="Solo tareas urgentes o alta prioridad">🔥 Concentración</button>
+    <button class="ef-btn ef-active" onclick="setEnergyFilter('normal',this)" title="Todas las tareas">⚡ Normal</button>
+    <button class="ef-btn" onclick="setEnergyFilter('baja',this)" title="Solo tareas fáciles">🌿 Easy</button>
   </div>
 
   <div class="area-tabs">
@@ -2042,6 +2150,8 @@ svg circle:first-child { stroke: #0e0e1e !important; }
       <div class="page-sub">Progreso del reset</div>
     </div>
   </div>
+
+  <div id="heatmap-container"></div>
 
   <div class="chart-wrap">
     <div class="card-title">Últimos 14 días — Completado</div>
@@ -2392,6 +2502,7 @@ function goPage(id, btn) {
   if(id==='hist') renderHist();
   if(id==='tasks') renderTasks();
   if(id==='habits') { renderSchedule(); }
+  if(id==='focus') { renderFocusMode(); }
 }
 
 // ══════════════════════════════════
@@ -2557,15 +2668,15 @@ function renderSchedule() {
   ).join('');
 }
 
-function nextDay() {
-  const done = ALL_HABITS.filter(h=>ST.completed[h]).length;
-  if(done === ALL_HABITS.length) ST.streak++;
-  else if(done === 0) ST.streak = 0;
+function nextDay(silent) {
+  const habsDone = ALL_HABITS.filter(h=>ST.completed[h]).length;
+  if(habsDone === ALL_HABITS.length) ST.streak++;
+  else if(habsDone === 0) ST.streak = 0;
   ST.streakRecord = Math.max(ST.streakRecord||0, ST.streak);
 
   ST.history.unshift({
     day: ST.day,
-    done,
+    done: habsDone,
     total: ALL_HABITS.length,
     xp: ST.xp,
     date: new Date().toLocaleDateString('es-ES',{day:'numeric',month:'short'})
@@ -2574,10 +2685,72 @@ function nextDay() {
   ST.day = Math.min(ST.day+1, 66);
   ST.completed = {};
   ST._prevLvl = getLevel(ST.xp);
+
+  // Borrar tareas completadas (quedan archivadas en dailyLog)
+  const doneTasks = TASKS.filter(t => t.done);
+  doneTasks.forEach(t => sbDeleteTask(t.id));
+  TASKS = TASKS.filter(t => !t.done);
+
+  // Registrar fecha de cierre
+  ST.lastDayClose = new Date().toISOString().split('T')[0];
+
+  // Resetear misiones diarias para el nuevo día
+  ST.dailyMissions = { date: ST.lastDayClose, items: [] };
+
   save();
   updateAll();
-  showToast('✅ Día '+(ST.day-1)+' cerrado — ¡Sigue así!');
-  document.querySelector('.main').scrollTo(0,0);
+  renderTasks();
+  if(!silent) {
+    showToast('✅ Día '+(ST.day-1)+' cerrado — ¡Sigue así!');
+    document.querySelector('.main').scrollTo(0,0);
+  }
+}
+
+function checkAutoClose() {
+  const today = new Date().toISOString().split('T')[0];
+  if(!ST.lastDayClose) { ST.lastDayClose = today; save(); return; }
+  if(ST.lastDayClose >= today) return;
+
+  const lastD = new Date(ST.lastDayClose + 'T12:00:00');
+  const todayD = new Date(today + 'T12:00:00');
+  const diffDays = Math.round((todayD - lastD) / 86400000);
+  if(diffDays <= 0) return;
+
+  // Cerrar cada día perdido usando datos del dailyLog si existen
+  for(let i = 0; i < diffDays; i++) {
+    const d = new Date(lastD);
+    d.setDate(lastD.getDate() + 1 + i);
+    const dStr = d.toISOString().split('T')[0];
+    const log = (ST.dailyLog||{})[dStr] || {};
+    const habsDone = log.habitsDone || 0;
+    if(habsDone === ALL_HABITS.length) ST.streak++;
+    else if(habsDone === 0) ST.streak = Math.max(0, ST.streak - 1);
+    ST.streakRecord = Math.max(ST.streakRecord||0, ST.streak);
+    ST.history.unshift({ day: ST.day, done: habsDone, total: ALL_HABITS.length, xp: ST.xp,
+      date: d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}) });
+    ST.day = Math.min(ST.day+1, 66);
+  }
+  ST.completed = {};
+  ST.lastDayClose = today;
+  ST.dailyMissions = { date: today, items: [] };
+
+  const doneTasks = TASKS.filter(t => t.done);
+  doneTasks.forEach(t => sbDeleteTask(t.id));
+  TASKS = TASKS.filter(t => !t.done);
+
+  save();
+  updateAll();
+  renderTasks();
+  showToast(`⏰ ${diffDays} día${diffDays>1?'s':''} cerrado${diffDays>1?'s':''} automáticamente`);
+}
+
+function check2amAutoClose() {
+  const now = new Date();
+  if(now.getHours() !== 2 || now.getMinutes() !== 0) return;
+  const today = now.toISOString().split('T')[0];
+  if((ST.lastDayClose||'') < today) checkAutoClose();
+  // Lunes = reset semanal misiones (done→false, nombres se mantienen)
+  if(now.getDay() === 1) { initMissions(); save(); }
 }
 
 function updateAll() {
@@ -2763,12 +2936,24 @@ function confirmQuickCapture() {
   const inp = document.getElementById('qcInput');
   const name = inp ? inp.value.trim() : '';
   if(!name) return;
-  const task = { id:'t'+Date.now(), name, area:'trabajo', prio:'media', done:false, status:'backlog' };
-  TASKS.unshift(task);
+  const area = autoCategorize(name);
+  const task = { id:'t'+Date.now(), name, area, prio:'media', done:false, status:'backlog', inbox: area === 'inbox' };
+  TASKS.push(task); // al final, no al principio
   sbUpsertTask({...task, created_at: new Date().toISOString()});
   ST.xp += 5; save(); updateAll(); renderTasks();
-  showToast('⚡ Capturado — revisa en TODO');
+  showToast(`⚡ Capturado${area!=='inbox'?' → '+areaLabel(area):' → INBOX'}`);
   closeQuickCapture();
+}
+
+function autoCategorize(text) {
+  const t = text.toLowerCase();
+  if(/despinsage|despins|vermut|correbars|sopar.*comunitat|alternativa|torneig|quinto/.test(t)) return 'despinsage';
+  if(/jesse|asics|contable|cliente|factura|presupuesto|proyecto|reunión.*trabajo|trabajo/.test(t)) return 'trabajo';
+  if(/portfolio|instagram|redes|post|feed|monart.*brand|marca/.test(t)) return 'marca';
+  if(/blender|houdini|fusion|rhino|curso|tutorial|aprender|clase/.test(t)) return 'estudios';
+  if(/psico|gym|sport|entrena|leer|meditar|bienestar|médico|doctor|farmacia/.test(t)) return 'yo';
+  if(/perro|kompis|compra|supermercado|casa|limpia|recibo|banco|alquiler/.test(t)) return 'casa';
+  return 'inbox'; // sin categoría detectada → inbox
 }
 
 // kept as stub so old calls don't break (updateAll references it)
@@ -2816,7 +3001,7 @@ function renderTasks() {
     const dateBtnLabel = t.dueDate ? t.dueDate.slice(5).replace('-','/') : '📅';
     const dateBtnCls = t.dueDate ? `t-date-btn${urgency==='overdue'?' t-due overdue':urgency==='due-today'?' t-due today':' t-due upcoming'}` : 't-date-btn';
     return `
-    <div class="task-item ${t.done?'done-task':''} ${urgency}" data-prio="${t.prio}" onclick="toggleTask('${t.id}')">
+    <div class="task-item ${t.done?'done-task':''} ${urgency}" data-prio="${t.prio}" data-id="${t.id}" onclick="toggleTask('${t.id}')">
       <div class="t-check">${t.done?'✓':''}</div>
       <div class="t-info">
         <div class="t-name">${t.name}</div>
@@ -2824,7 +3009,7 @@ function renderTasks() {
       </div>
       <button class="${dateBtnCls}" onclick="openTaskDatePicker('${t.id}',event)" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();openTaskDatePicker('${t.id}',event)" title="Fecha límite">${dateBtnLabel}</button>
       <div class="prio-badge ${prioBadgeClass(t.prio)}">${prioLabel(t.prio)}</div>
-      <button class="t-notes-btn${t.notes?' has-notes':''}" onclick="event.stopPropagation();openTaskNotes('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();openTaskNotes('${t.id}')" title="Notas">📝</button>
+      <button class="t-notes-btn${t.notes?' has-notes':''}" onclick="event.stopPropagation();openTaskNotes('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();openTaskNotes('${t.id}')" title="Notas">${t.notes?'📝':'<span style="font-size:9px;font-family:var(--fm);font-weight:700">NOTA</span>'}</button>
       <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar tarea">✕</button>
     </div>`;
   }).join('');
@@ -3213,10 +3398,12 @@ function renderTodoAll() {
   const AREAS = ['trabajo','marca','despinsage','casa','yo','estudios'];
   const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
 
+  const _ef = typeof _energyFilter !== 'undefined' ? _energyFilter : 'all';
+  const _efOk = t => _ef === 'all' || t.prio === _ef || t.prio === 'alta';
   const riding = {
-    ontheline: TASKS.filter(t => getStatus(t) === 'ontheline'),
-    ongoing:   TASKS.filter(t => getStatus(t) === 'ongoing'),
-    forreview: TASKS.filter(t => getStatus(t) === 'forreview'),
+    ontheline: TASKS.filter(t => getStatus(t) === 'ontheline' && _efOk(t)),
+    ongoing:   TASKS.filter(t => getStatus(t) === 'ongoing' && _efOk(t)),
+    forreview: TASKS.filter(t => getStatus(t) === 'forreview' && _efOk(t)),
     done:      TASKS.filter(t => getStatus(t) === 'done')
   };
   const backlog = {};
@@ -3279,6 +3466,16 @@ function renderTodoAll() {
     </div>`;
   }
 
+  const inbox = TASKS.filter(t => !t.done && (t.area === 'inbox' || t.inbox));
+
+  function inboxPill(t) {
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:700;flex:1;color:var(--text)">${t.name}</span>
+      <button onclick="event.stopPropagation();openCategorizeModal('${t.id}')" style="font-family:var(--fm);font-size:10px;font-weight:700;padding:4px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--s3);color:var(--muted2);cursor:pointer">+ Catalogar</button>
+      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
+    </div>`;
+  }
+
   list.innerHTML = `
   <div class="todo-two-sec">
     <div class="todo-sec">
@@ -3293,7 +3490,7 @@ function renderTodoAll() {
         ${rCol('done','DONE','#3db872',riding.done)}
       </div>
     </div>
-    <div class="todo-sec" style="padding-bottom:52px">
+    <div class="todo-sec">
       <div class="todo-sec-head">
         <span class="todo-sec-label">MINDCHEST</span>
         <span class="todo-sec-sub">backlog por &#225;rea</span>
@@ -3302,6 +3499,14 @@ function renderTodoAll() {
         ${AREAS.map(a => mcCol(a)).join('')}
       </div>
     </div>
+    ${inbox.length > 0 ? `
+    <div class="todo-sec" style="padding-bottom:80px">
+      <div class="todo-sec-head">
+        <span class="todo-sec-label" style="color:var(--orange)">⚡ CAPTURAS</span>
+        <span class="todo-sec-sub">${inbox.length} sin catalogar — pulsa para procesar</span>
+      </div>
+      <div style="padding:0 4px">${inbox.map(inboxPill).join('')}</div>
+    </div>` : ''}
   </div>`;
 }
 
@@ -3409,6 +3614,7 @@ function toggleTask(id) {
       ST.xp += xpGain;
       showXpPop('+'+xpGain+' XP');
       spawnParticles(window.innerWidth/2, window.innerHeight*0.6, AREA_COLORS[t.area]||'#3db872');
+      if(t.prio === 'alta') triggerConfetti();
       updateDailyLog();
     }
     sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, notes: t.notes||null, created_at: new Date().toISOString() });
@@ -3766,6 +3972,8 @@ function renderAreaStats() {
 function renderHist() {
   const list = document.getElementById('hist-list');
   const chart = document.getElementById('miniChart');
+
+  renderHeatmap();
 
   if(!ST.history.length) {
     list.innerHTML = '<div class="hist-empty">SIN HISTORIAL AÚN<br><br>Cierra tu primer día con el botón de hábitos.</div>';
@@ -4385,6 +4593,34 @@ function deleteDailyMission(idx) {
 }
 
 // ══════════════════════════════════
+// CATALOGAR CAPTURAS
+// ══════════════════════════════════
+let _catTaskId = null;
+function openCategorizeModal(id) {
+  _catTaskId = id;
+  const t = TASKS.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('catModalName').textContent = t.name;
+  document.getElementById('catAreaSelect').value = t.area !== 'inbox' ? t.area : 'trabajo';
+  document.getElementById('catPrioSelect').value = t.prio || 'media';
+  document.getElementById('catModal').style.display = 'flex';
+}
+function closeCategorizeModal() {
+  document.getElementById('catModal').style.display = 'none';
+  _catTaskId = null;
+}
+function confirmCategorize() {
+  const t = TASKS.find(x=>x.id===_catTaskId);
+  if(!t) return;
+  t.area = document.getElementById('catAreaSelect').value;
+  t.prio = document.getElementById('catPrioSelect').value;
+  t.inbox = false;
+  sbUpsertTask({id:t.id,name:t.name,area:t.area,prio:t.prio,done:t.done,status:t.status||'backlog',notes:t.notes||null,created_at:t.created_at||new Date().toISOString()});
+  save(); renderTasks(); closeCategorizeModal();
+  showToast(`✅ Catalogado → ${areaLabel(t.area)}`);
+}
+
+// ══════════════════════════════════
 // TASK NOTES
 // ══════════════════════════════════
 let _tnModalId = null;
@@ -4489,6 +4725,324 @@ function startEditMission(idx, containerId) {
 }
 
 // ══════════════════════════════════
+// FOCUS MODE
+// ══════════════════════════════════
+let _pomoState = { running:false, phase:'work', elapsed:0, timer:null };
+const POMO_WORK = 25*60, POMO_BREAK = 5*60;
+
+function renderFocusMode() {
+  const tasks = TASKS.filter(t => !t.done && _energyFilter !== 'all'
+    ? (t.prio === 'alta' || t.prio === _energyFilter)
+    : !t.done);
+  const current = tasks[0];
+  const page = document.getElementById('page-focus');
+  if(!page) return;
+  const total = _pomoState.phase === 'work' ? POMO_WORK : POMO_BREAK;
+  const left = total - _pomoState.elapsed;
+  const mm = String(Math.floor(left/60)).padStart(2,'0');
+  const ss = String(left%60).padStart(2,'0');
+  const pct = Math.round((_pomoState.elapsed / total) * 100);
+  const circumference = 2 * Math.PI * 54;
+  const dashOffset = circumference - (pct/100)*circumference;
+  page.innerHTML = `
+    <div class="focus-header-strip">
+      <div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--muted2)">
+        ${_pomoState.phase === 'work' ? '🔥 FOCO' : '☕ DESCANSO'}
+      </div>
+      <button onclick="showWeeklyReview()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-family:var(--fm);font-weight:700;color:var(--muted2);cursor:pointer">📊 Review</button>
+    </div>
+    ${current ? `
+    <div class="focus-card">
+      <div style="font-family:var(--fm);font-size:10px;font-weight:700;color:var(--muted2);margin-bottom:8px;letter-spacing:.08em">${areaLabel(current.area).toUpperCase()}</div>
+      <div style="font-size:18px;font-weight:800;color:var(--text);line-height:1.3;margin-bottom:12px">${current.name}</div>
+      ${current.notes ? `<div style="font-size:12px;color:var(--muted2);margin-bottom:12px;padding:8px;background:var(--s2);border-radius:8px">${current.notes}</div>` : ''}
+      <div style="display:flex;gap:8px">
+        <button class="focus-done-btn" onclick="focusCompleteTask('${current.id}')">✅ Hecho</button>
+        <button class="focus-done-btn" style="background:var(--s2);color:var(--muted2)" onclick="focusSkipTask('${current.id}')">→ Saltar</button>
+      </div>
+    </div>` : `<div class="focus-card" style="text-align:center;color:var(--muted2)">
+      <div style="font-size:32px;margin-bottom:8px">🎉</div>
+      <div style="font-weight:700">Sin tareas pendientes</div>
+    </div>`}
+    <div class="pomo-ring-wrap">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="54" fill="none" stroke="var(--s2)" stroke-width="8"/>
+        <circle cx="60" cy="60" r="54" fill="none" stroke="${_pomoState.phase==='work'?'var(--accent)':'var(--cyan)'}"
+          stroke-width="8" stroke-linecap="round" stroke-dasharray="${circumference}"
+          stroke-dashoffset="${dashOffset}" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset .5s"/>
+      </svg>
+      <div class="pomo-time">${mm}:${ss}</div>
+    </div>
+    <div class="pomo-controls">
+      <button class="pomo-btn" onclick="togglePomo()">${_pomoState.running ? '⏸ Pausar' : '▶ Iniciar'}</button>
+      <button class="pomo-btn" style="background:var(--s2);color:var(--muted2)" onclick="resetPomo()">↺ Reset</button>
+    </div>`;
+}
+
+function togglePomo() {
+  if(_pomoState.running) {
+    clearInterval(_pomoState.timer); _pomoState.running = false;
+  } else {
+    _pomoState.running = true;
+    _pomoState.timer = setInterval(() => {
+      _pomoState.elapsed++;
+      const total = _pomoState.phase === 'work' ? POMO_WORK : POMO_BREAK;
+      if(_pomoState.elapsed >= total) {
+        clearInterval(_pomoState.timer); _pomoState.running = false;
+        if(_pomoState.phase === 'work') {
+          ST.xp += 10; save(); showToast('🍅 Pomodoro completo! +10 XP');
+          _pomoState.phase = 'break';
+        } else {
+          _pomoState.phase = 'work';
+          showToast('☕ Descanso terminado — ¡a por ello!');
+        }
+        _pomoState.elapsed = 0;
+      }
+      renderFocusMode();
+    }, 1000);
+  }
+  renderFocusMode();
+}
+
+function resetPomo() {
+  clearInterval(_pomoState.timer);
+  _pomoState = { running:false, phase:'work', elapsed:0, timer:null };
+  renderFocusMode();
+}
+
+function focusCompleteTask(id) {
+  const t = TASKS.find(x=>x.id===id); if(!t) return;
+  t.done = true;
+  if(t.prio === 'alta') triggerConfetti();
+  ST.xp += (t.prio==='alta' ? 30 : t.prio==='media' ? 20 : 10);
+  sbUpsertTask({...t}); save(); updateAll(); renderTasks(); renderFocusMode();
+  showToast('✅ Tarea completada' + (t.prio==='alta'?' 🎉':''));
+}
+
+function focusSkipTask(id) {
+  const idx = TASKS.findIndex(x=>x.id===id); if(idx<0) return;
+  const [t] = TASKS.splice(idx,1); TASKS.push(t);
+  renderFocusMode();
+}
+
+// ══════════════════════════════════
+// COUNTDOWN (next event)
+// ══════════════════════════════════
+function updateCountdown() {
+  const el = document.getElementById('hub-countdown'); if(!el) return;
+  const now = new Date();
+  const events = allEvents().map(e => {
+    const d = new Date(e.date + (e.time ? 'T'+e.time : 'T00:00'));
+    return {...e, _d: d};
+  }).filter(e => e._d > now).sort((a,b)=>a._d-b._d);
+  if(!events.length) { el.style.display='none'; return; }
+  const next = events[0];
+  const diff = next._d - now;
+  const daysLeft = Math.floor(diff / 86400000);
+  const hoursLeft = Math.floor((diff % 86400000) / 3600000);
+  const minsLeft = Math.floor((diff % 3600000) / 60000);
+  let countStr, cls;
+  if(daysLeft === 0 && hoursLeft === 0) { countStr = `${minsLeft}m`; cls='urgent'; }
+  else if(daysLeft === 0) { countStr = `${hoursLeft}h ${minsLeft}m`; cls='urgent'; }
+  else if(daysLeft <= 2) { countStr = `${daysLeft}d ${hoursLeft}h`; cls='soon'; }
+  else { countStr = `${daysLeft}d`; cls='ok'; }
+  el.style.display = 'flex';
+  const nameEl = document.getElementById('hcd-name');
+  const subEl = document.getElementById('hcd-time-sub');
+  const countEl = document.getElementById('hcd-count');
+  if(nameEl) nameEl.textContent = next.name;
+  if(subEl) subEl.textContent = next.date + (next.time ? ' · '+next.time : '');
+  if(countEl) { countEl.textContent = countStr; countEl.className = 'hcd-count ' + cls; }
+}
+
+// ══════════════════════════════════
+// MORNING BOOT
+// ══════════════════════════════════
+let _selectedEnergy = 'alta';
+
+function checkMorningBoot() {
+  const now = new Date();
+  const h = now.getHours();
+  if(h < 8 || h > 12) return;
+  const today = now.toISOString().split('T')[0];
+  if(localStorage.getItem('mboot-date') === today) return;
+  showMorningBoot();
+}
+
+function showMorningBoot() {
+  const overlay = document.getElementById('mbootOverlay'); if(!overlay) return;
+  const now = new Date();
+  const h = now.getHours();
+  const greeting = h < 12 ? '☀️ Buenos días' : h < 18 ? '🌤 Buenas tardes' : '🌙 Buenas noches';
+  document.getElementById('mboot-greeting').textContent = greeting + ', Sergi';
+  const taskCount = TASKS.filter(t=>!t.done && t.prio==='alta').length;
+  document.getElementById('mboot-task-count').textContent = `${taskCount} tarea${taskCount!==1?'s':''} alta prioridad`;
+  overlay.style.display = 'flex';
+}
+
+function closeMorningBoot() {
+  const overlay = document.getElementById('mbootOverlay'); if(!overlay) return;
+  overlay.style.display = 'none';
+  setEnergyFilter(_selectedEnergy, null);
+  localStorage.setItem('mboot-date', new Date().toISOString().split('T')[0]);
+  showToast(`⚡ Energía ${_selectedEnergy === 'alta' ? '🔥 Alta' : _selectedEnergy === 'media' ? '🌊 Media' : '🌿 Baja'} — ¡a por ello!`);
+}
+
+function selectEnergy(lvl, btn) {
+  _selectedEnergy = lvl;
+  document.querySelectorAll('.mboot-e-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else document.querySelectorAll('.mboot-e-btn').forEach(b => {
+    if(b.dataset.energy === lvl) b.classList.add('active');
+  });
+}
+
+// ══════════════════════════════════
+// ENERGY FILTER
+// ══════════════════════════════════
+let _energyFilter = 'all';
+
+function setEnergyFilter(lvl, btn) {
+  _energyFilter = _energyFilter === lvl ? 'all' : lvl;
+  document.querySelectorAll('.ef-btn').forEach(b => b.classList.remove('ef-active'));
+  if(_energyFilter !== 'all' && btn) btn.classList.add('ef-active');
+  renderTasks();
+}
+
+// ══════════════════════════════════
+// SWIPE GESTURES
+// ══════════════════════════════════
+function initSwipeGestures() {
+  document.addEventListener('touchstart', _swipeStart, {passive:true});
+  document.addEventListener('touchend', _swipeEnd, {passive:true});
+}
+
+let _swipeX0 = null, _swipeY0 = null, _swipeEl = null;
+
+function _swipeStart(e) {
+  _swipeX0 = e.touches[0].clientX;
+  _swipeY0 = e.touches[0].clientY;
+  _swipeEl = e.target.closest('.task-item');
+}
+
+function _swipeEnd(e) {
+  if(_swipeX0 === null || !_swipeEl) { _swipeX0=null; return; }
+  const dx = e.changedTouches[0].clientX - _swipeX0;
+  const dy = e.changedTouches[0].clientY - _swipeY0;
+  if(Math.abs(dx) < 50 || Math.abs(dy) > 80) { _swipeX0=null; _swipeEl=null; return; }
+  const id = _swipeEl.dataset.id;
+  if(!id) { _swipeX0=null; _swipeEl=null; return; }
+  if(dx > 0) {
+    _swipeEl.classList.add('swiping-right');
+    setTimeout(() => { toggleTask(id); }, 200);
+  } else {
+    _swipeEl.classList.add('swiping-left');
+    setTimeout(() => { deleteTask(id); }, 200);
+  }
+  _swipeX0=null; _swipeEl=null;
+}
+
+// ══════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════
+function triggerConfetti() {
+  const canvas = document.getElementById('confetti-canvas'); if(!canvas) return;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const particles = Array.from({length:80}, () => ({
+    x: Math.random()*canvas.width,
+    y: -20,
+    r: Math.random()*6+3,
+    d: Math.random()*80+40,
+    color: ['#7b6fff','#ffd700','#00d4aa','#ff6b9d','#ffffff'][Math.floor(Math.random()*5)],
+    tilt: Math.random()*10-10,
+    tiltAngle: 0,
+    tiltAngleInc: Math.random()*.07+.05
+  }));
+  let frame = 0;
+  const anim = setInterval(() => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    frame++;
+    particles.forEach(p => {
+      p.tiltAngle += p.tiltAngleInc;
+      p.y += (Math.cos(p.d+frame)+1+p.r/2) * 1.8;
+      p.x += Math.sin(frame/20)*2;
+      p.tilt = Math.sin(p.tiltAngle)*15;
+      ctx.beginPath();
+      ctx.lineWidth = p.r;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x+p.tilt+p.r/4, p.y);
+      ctx.lineTo(p.x+p.tilt, p.y+p.tilt+p.r/4);
+      ctx.stroke();
+    });
+    if(frame > 120) {
+      clearInterval(anim);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      canvas.style.display = 'none';
+    }
+  }, 16);
+}
+
+// ══════════════════════════════════
+// HABIT HEATMAP
+// ══════════════════════════════════
+function renderHeatmap() {
+  const wrap = document.getElementById('heatmap-container'); if(!wrap) return;
+  const history = (ST.history || []).slice(0,84).reverse();
+  const weeks = [];
+  let week = [];
+  history.forEach((entry, i) => {
+    const pct = entry.total > 0 ? entry.done / entry.total : 0;
+    const lvl = pct === 0 ? 0 : pct < .33 ? 1 : pct < .66 ? 2 : pct < 1 ? 3 : 4;
+    week.push({lvl, date: entry.date, done: entry.done, total: entry.total});
+    if(week.length === 7) { weeks.push(week); week = []; }
+  });
+  if(week.length) weeks.push(week);
+  wrap.innerHTML = `
+    <div class="heatmap-wrap">
+      <div style="font-family:var(--fm);font-size:10px;font-weight:700;color:var(--muted2);margin-bottom:8px;letter-spacing:.08em">📊 HÁBITOS — ÚLTIMAS SEMANAS</div>
+      <div class="heatmap-grid">
+        ${weeks.map(w => `<div style="display:flex;flex-direction:column;gap:2px">${w.map(d=>`<div class="heatmap-cell hc-${d.lvl}" title="${d.date}: ${d.done}/${d.total}"></div>`).join('')}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════
+// WEEKLY REVIEW
+// ══════════════════════════════════
+function getISOWeek(d) {
+  const tmp = new Date(d); tmp.setHours(0,0,0,0);
+  tmp.setDate(tmp.getDate() + 3 - (tmp.getDay()+6)%7);
+  const week1 = new Date(tmp.getFullYear(),0,4);
+  return 1 + Math.round(((tmp-week1)/86400000 - 3 + (week1.getDay()+6)%7)/7);
+}
+
+function showWeeklyReview() {
+  const overlay = document.getElementById('wreviewOverlay'); if(!overlay) return;
+  const now = new Date();
+  const weekHistory = (ST.history||[]).slice(0,7);
+  const totalHabits = weekHistory.reduce((s,e)=>s+(e.done||0),0);
+  const maxHabits = weekHistory.reduce((s,e)=>s+(e.total||ALL_HABITS.length),0);
+  const doneTasks = (ST.history[0]||{}).tasksCompleted || 0;
+  const pct = maxHabits > 0 ? Math.round(totalHabits/maxHabits*100) : 0;
+  const weekNum = getISOWeek(now);
+  document.getElementById('wreview-content').innerHTML = `
+    <div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--muted2);margin-bottom:16px;letter-spacing:.08em">SEMANA ${weekNum} · ${now.getFullYear()}</div>
+    <div class="wreview-stat"><span>🔥 Streak actual</span><strong>${ST.streak} días</strong></div>
+    <div class="wreview-stat"><span>⚡ XP esta semana</span><strong>${ST.xp} XP</strong></div>
+    <div class="wreview-stat"><span>✅ Hábitos (7d)</span><strong>${totalHabits}/${maxHabits} (${pct}%)</strong></div>
+    <div class="wreview-stat"><span>📋 Nivel actual</span><strong>${getLevel(ST.xp).name}</strong></div>
+    <div class="wreview-stat"><span>🎯 Misiones semana</span><strong>${(ST.missions||[]).filter(m=>m&&m.done).length}/${(ST.missions||[]).filter(m=>m&&m.text).length}</strong></div>`;
+  overlay.style.display = 'flex';
+}
+
+function closeWeeklyReview() {
+  const overlay = document.getElementById('wreviewOverlay');
+  if(overlay) overlay.style.display = 'none';
+}
+
+// ══════════════════════════════════
 // INIT
 // ══════════════════════════════════
 async function init() {
@@ -4508,12 +5062,29 @@ async function init() {
   updateAll();
   renderTasks();
 
+  // Auto-cierre retroactivo si hubo días sin cerrar
+  checkAutoClose();
+
+  // Morning boot check
+  checkMorningBoot();
+
+  // Swipe gestures
+  initSwipeGestures();
+
+  // Countdown — update every minute
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+
+  // Heatmap en historial (se llama al navegar, pero inicializar también aquí)
+  // renderHeatmap() se llama desde renderHist()
+
   // Luego sincronizar con la nube
   await loadFromCloud();
 }
 
 init();
 setInterval(() => loadFromCloud(true), 30000);
+setInterval(check2amAutoClose, 60000);
 </script>
 
 <!-- ══ MISSION EDIT MODAL ══ -->
@@ -4616,6 +5187,37 @@ setInterval(() => loadFromCloud(true), 30000);
   </div>
 </div>
 
+<!-- ══ CATALOGAR MODAL ══ -->
+<div class="ev-modal-overlay" id="catModal" style="display:none" onclick="if(event.target===this)closeCategorizeModal()">
+  <div class="ev-modal-box">
+    <div class="ev-modal-header">
+      <div class="del-modal-title">📂 Catalogar captura</div>
+      <button class="ev-modal-close" onclick="closeCategorizeModal()">×</button>
+    </div>
+    <div id="catModalName" style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;padding:10px;background:var(--s2);border-radius:8px"></div>
+    <div class="ev-modal-label">Área</div>
+    <select class="ev-modal-input" id="catAreaSelect">
+      <option value="trabajo">💼 Trabajo</option>
+      <option value="marca">⭐ Marca</option>
+      <option value="despinsage">🤝 Despinsage</option>
+      <option value="casa">🏠 Casa</option>
+      <option value="yo">🧠 Yo</option>
+      <option value="estudios">△ Estudios</option>
+    </select>
+    <div class="ev-modal-label" style="margin-top:12px">Prioridad</div>
+    <select class="ev-modal-input" id="catPrioSelect">
+      <option value="alta">🔴 Alta</option>
+      <option value="prog">🔵 En progreso</option>
+      <option value="media" selected>🟡 Media</option>
+      <option value="baja">🟢 Baja</option>
+    </select>
+    <div class="todo-modal-btns" style="margin-top:16px">
+      <button class="todo-modal-cancel" onclick="closeCategorizeModal()">Cancelar</button>
+      <button class="todo-modal-confirm" onclick="confirmCategorize()">Catalogar →</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ QUICK CAPTURE MODAL ══ -->
 <div class="qc-overlay" id="qcOverlay" style="display:none" onclick="if(event.target===this)closeQuickCapture()">
   <div class="qc-box">
@@ -4634,6 +5236,42 @@ setInterval(() => loadFromCloud(true), 30000);
 
 <!-- ══ FAB + BUTTON ══ -->
 <button class="fab-universal" onclick="quickCapture()" title="Captura rápida (⚡)">&#xFF0B;</button>
+
+<!-- ══ CONFETTI CANVAS ══ -->
+<canvas id="confetti-canvas" style="display:none"></canvas>
+
+<!-- ══ MORNING BOOT ══ -->
+<div class="mboot-overlay" id="mbootOverlay" style="display:none">
+  <div class="mboot-box">
+    <div class="mboot-greeting" id="mboot-greeting">☀️ Buenos días, Sergi</div>
+    <div style="font-family:var(--fm);font-size:12px;color:var(--muted2);margin-bottom:20px" id="mboot-task-count">Cargando...</div>
+    <div style="font-family:var(--fm);font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.08em;margin-bottom:10px">¿CÓMO ESTÁ TU ENERGÍA HOY?</div>
+    <div class="mboot-energy">
+      <button class="mboot-e-btn active" data-energy="alta" onclick="selectEnergy('alta',this)">
+        🔥<div class="mboot-e-label">Alta</div>
+      </button>
+      <button class="mboot-e-btn" data-energy="media" onclick="selectEnergy('media',this)">
+        🌊<div class="mboot-e-label">Media</div>
+      </button>
+      <button class="mboot-e-btn" data-energy="baja" onclick="selectEnergy('baja',this)">
+        🌿<div class="mboot-e-label">Baja</div>
+      </button>
+    </div>
+    <button class="mboot-start-btn" onclick="closeMorningBoot()">Empezar el día ▶</button>
+  </div>
+</div>
+
+<!-- ══ WEEKLY REVIEW ══ -->
+<div class="wreview-overlay" id="wreviewOverlay" style="display:none" onclick="if(event.target===this)closeWeeklyReview()">
+  <div class="wreview-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-family:var(--fm);font-size:13px;font-weight:800;color:var(--text)">📊 WEEKLY REVIEW</div>
+      <button onclick="closeWeeklyReview()" style="background:none;border:none;color:var(--muted2);font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div id="wreview-content"></div>
+    <button class="wreview-btn" onclick="closeWeeklyReview()">Cerrar</button>
+  </div>
+</div>
 
 </body>
 </html>
