@@ -1896,10 +1896,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <span class="nav-icon" style="font-family:var(--fm);font-size:14px;font-weight:700">⌘</span>
     <span class="nav-label">HUB</span>
   </button>
-  <button class="nav-btn" onclick="goPage('focus',this)" title="Focus">
-    <span class="nav-icon" style="font-family:var(--fm);font-size:16px;font-weight:700">◎</span>
-    <span class="nav-label">FOCUS</span>
-  </button>
   <button class="nav-btn" onclick="goPage('tasks',this)" title="Tareas">
     <span class="nav-icon" style="font-family:var(--fm);font-size:16px;font-weight:700">◈</span>
     <span class="nav-label">TODO</span>
@@ -2022,6 +2018,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
     <div>
       <div class="page-title">Life Reset</div>
       <div class="page-sub" id="hab-day-sub">Día 1 de 66</div>
+      <div id="rpg-date-display" style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--muted2);margin-top:3px;letter-spacing:.05em"></div>
     </div>
     <div class="chip" id="hab-streak-chip">🔥 0 días</div>
   </div>
@@ -2045,6 +2042,50 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
   <!-- Daily missions -->
   <div id="daily-missions-habits" style="margin-top:12px"></div>
+
+  <!-- ══ FOCUS TIMER ══ -->
+  <div class="card" id="rpg-focus-timer" style="margin-top:16px;padding:18px 16px">
+    <div style="font-family:var(--fm);font-size:10px;font-weight:800;color:var(--muted2);letter-spacing:.1em;margin-bottom:12px">⏱ FOCUS TIMER</div>
+
+    <!-- Task selector -->
+    <select id="focus-task-sel" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:var(--fm);font-size:12px;font-weight:700;margin-bottom:10px;-webkit-appearance:none"
+      onchange="focusTimerUpdateTask(this.value)">
+      <option value="">— Selecciona tarea —</option>
+    </select>
+
+    <!-- Duration + ring -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <div style="flex:1">
+        <div style="font-family:var(--fm);font-size:9px;font-weight:700;color:var(--muted2);letter-spacing:.08em;margin-bottom:6px">DURACIÓN (min)</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="setFocusDuration(25)" class="pomo-btn" id="fd-25" style="flex:1;font-size:11px;padding:7px 4px">25</button>
+          <button onclick="setFocusDuration(45)" class="pomo-btn" id="fd-45" style="flex:1;font-size:11px;padding:7px 4px">45</button>
+          <button onclick="setFocusDuration(90)" class="pomo-btn" id="fd-90" style="flex:1;font-size:11px;padding:7px 4px">90</button>
+          <input type="number" id="focus-custom-min" min="1" max="360" placeholder="?"
+            style="flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:7px 4px;color:var(--text);font-family:var(--fm);font-size:11px;font-weight:700;text-align:center;width:40px"
+            onchange="setFocusDuration(parseInt(this.value)||25)">
+        </div>
+      </div>
+      <div style="position:relative;width:80px;height:80px;flex-shrink:0">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--s2)" stroke-width="6"/>
+          <circle id="focus-ring-arc" cx="40" cy="40" r="34" fill="none" stroke="var(--accent)"
+            stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"
+            transform="rotate(-90 40 40)" style="transition:stroke-dashoffset .5s"/>
+        </svg>
+        <div id="focus-timer-display" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:17px;font-weight:800;color:var(--text)">—</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="pomo-controls" style="margin-bottom:0">
+      <button class="pomo-btn primary" id="focus-play-btn" onclick="toggleFocusTimer()">▶ Iniciar</button>
+      <button class="pomo-btn" onclick="resetFocusTimer()">↺ Reset</button>
+      <button class="pomo-btn" id="focus-done-rpg-btn" onclick="completeFocusTask()" style="display:none;background:var(--green);color:#000;border-color:var(--green)">✅ Hecho</button>
+    </div>
+  </div>
+
   </div><!-- /rpg-dia-content -->
 
   <!-- ══ SEMANA VIEW ══ -->
@@ -2079,9 +2120,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 </div><!-- /page-habits -->
 
-<!-- ══ PAGE: FOCUS ══ -->
-<div class="page focus-page" id="page-focus"></div>
-
 <!-- ══ PAGE: TASKS ══ -->
 <div class="page" id="page-tasks">
   <div class="page-header">
@@ -2092,10 +2130,10 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   </div>
 
   <!-- Energy filter -->
-  <div class="energy-filter">
-    <button class="ef-btn" onclick="setEnergyFilter('alta',this)" title="Solo tareas urgentes o alta prioridad">🔥 Concentración</button>
-    <button class="ef-btn ef-active" onclick="setEnergyFilter('normal',this)" title="Todas las tareas">⚡ Normal</button>
-    <button class="ef-btn" onclick="setEnergyFilter('baja',this)" title="Solo tareas fáciles">🌿 Easy</button>
+  <div class="energy-filter" id="energyFilterRow">
+    <button class="ef-btn" data-ef="alta" onclick="setEnergyFilter('alta',this)" title="Solo P1 — máxima prioridad">🔥 Foco</button>
+    <button class="ef-btn ef-active" data-ef="all" onclick="setEnergyFilter('all',this)" title="Todas las tareas">⚡ Todo</button>
+    <button class="ef-btn" data-ef="baja" onclick="setEnergyFilter('baja',this)" title="Solo tareas P3 fáciles">🌿 Easy</button>
   </div>
 
   <div class="area-tabs">
@@ -2297,10 +2335,12 @@ async function sbGetAllTasks() {
 
 async function sbUpsertTask(task) {
   try {
+    // Strip client-only fields not in Supabase schema
+    const { inbox, _local, ...payload } = task;
     await fetch(`${SB_URL}/rest/v1/tasks`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(task)
+      body: JSON.stringify(payload)
     });
   } catch(e) {}
 }
@@ -2502,7 +2542,6 @@ function goPage(id, btn) {
   if(id==='hist') renderHist();
   if(id==='tasks') renderTasks();
   if(id==='habits') { renderSchedule(); }
-  if(id==='focus') { renderFocusMode(); }
 }
 
 // ══════════════════════════════════
@@ -2777,6 +2816,12 @@ function updateAll() {
   // Habits page
   document.getElementById('hab-day-sub').textContent = 'Día '+ST.day+' de 66';
   document.getElementById('hab-streak-chip').textContent = '🔥 '+curStreak+' días';
+  // Fecha actual en RPG
+  const _rpgDateEl = document.getElementById('rpg-date-display');
+  if(_rpgDateEl) {
+    const _nd = new Date();
+    _rpgDateEl.textContent = _nd.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}).replace(/^\w/,c=>c.toUpperCase());
+  }
 
   // RPG hero card (habits tab)
   const rpgPct = document.getElementById('ring-pct');
@@ -2806,6 +2851,8 @@ function updateAll() {
   renderTasks();
   renderDailyProgress();
   renderDailyMissions();
+  // Inicializar focus timer cuando se actualiza todo
+  setTimeout(initRpgFocusTimer, 0);
 }
 
 // ══════════════════════════════════
@@ -3399,7 +3446,12 @@ function renderTodoAll() {
   const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
 
   const _ef = typeof _energyFilter !== 'undefined' ? _energyFilter : 'all';
-  const _efOk = t => _ef === 'all' || t.prio === _ef || t.prio === 'alta';
+  const _efOk = t => {
+    if(_ef === 'all') return true;
+    if(_ef === 'alta') return t.prio === 'alta';
+    if(_ef === 'baja') return t.prio === 'baja';
+    return true;
+  };
   const riding = {
     ontheline: TASKS.filter(t => getStatus(t) === 'ontheline' && _efOk(t)),
     ongoing:   TASKS.filter(t => getStatus(t) === 'ongoing' && _efOk(t)),
@@ -3407,7 +3459,7 @@ function renderTodoAll() {
     done:      TASKS.filter(t => getStatus(t) === 'done')
   };
   const backlog = {};
-  AREAS.forEach(a => { backlog[a] = TASKS.filter(t => getStatus(t) === 'backlog' && t.area === a); });
+  AREAS.forEach(a => { backlog[a] = TASKS.filter(t => getStatus(t) === 'backlog' && t.area === a && !t.inbox); });
 
   const _todayISO2 = new Date().toISOString().split('T')[0];
   function rCard(t) {
@@ -4725,104 +4777,101 @@ function startEditMission(idx, containerId) {
 }
 
 // ══════════════════════════════════
-// FOCUS MODE
+// RPG FOCUS TIMER
 // ══════════════════════════════════
-let _pomoState = { running:false, phase:'work', elapsed:0, timer:null };
-const POMO_WORK = 25*60, POMO_BREAK = 5*60;
+let _ft = { running:false, elapsed:0, duration:25*60, taskId:null, interval:null };
 
-function renderFocusMode() {
-  const tasks = TASKS.filter(t => !t.done && _energyFilter !== 'all'
-    ? (t.prio === 'alta' || t.prio === _energyFilter)
-    : !t.done);
-  const current = tasks[0];
-  const page = document.getElementById('page-focus');
-  if(!page) return;
-  const total = _pomoState.phase === 'work' ? POMO_WORK : POMO_BREAK;
-  const left = total - _pomoState.elapsed;
-  const mm = String(Math.floor(left/60)).padStart(2,'0');
-  const ss = String(left%60).padStart(2,'0');
-  const pct = Math.round((_pomoState.elapsed / total) * 100);
-  const circumference = 2 * Math.PI * 54;
-  const dashOffset = circumference - (pct/100)*circumference;
-  page.innerHTML = `
-    <div class="focus-header-strip">
-      <div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--muted2)">
-        ${_pomoState.phase === 'work' ? '🔥 FOCO' : '☕ DESCANSO'}
-      </div>
-      <button onclick="showWeeklyReview()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;font-family:var(--fm);font-weight:700;color:var(--muted2);cursor:pointer">📊 Review</button>
-    </div>
-    ${current ? `
-    <div class="focus-card">
-      <div style="font-family:var(--fm);font-size:10px;font-weight:700;color:var(--muted2);margin-bottom:8px;letter-spacing:.08em">${areaLabel(current.area).toUpperCase()}</div>
-      <div style="font-size:18px;font-weight:800;color:var(--text);line-height:1.3;margin-bottom:12px">${current.name}</div>
-      ${current.notes ? `<div style="font-size:12px;color:var(--muted2);margin-bottom:12px;padding:8px;background:var(--s2);border-radius:8px">${current.notes}</div>` : ''}
-      <div style="display:flex;gap:8px">
-        <button class="focus-done-btn" onclick="focusCompleteTask('${current.id}')">✅ Hecho</button>
-        <button class="focus-done-btn" style="background:var(--s2);color:var(--muted2)" onclick="focusSkipTask('${current.id}')">→ Saltar</button>
-      </div>
-    </div>` : `<div class="focus-card" style="text-align:center;color:var(--muted2)">
-      <div style="font-size:32px;margin-bottom:8px">🎉</div>
-      <div style="font-weight:700">Sin tareas pendientes</div>
-    </div>`}
-    <div class="pomo-ring-wrap">
-      <svg width="120" height="120" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r="54" fill="none" stroke="var(--s2)" stroke-width="8"/>
-        <circle cx="60" cy="60" r="54" fill="none" stroke="${_pomoState.phase==='work'?'var(--accent)':'var(--cyan)'}"
-          stroke-width="8" stroke-linecap="round" stroke-dasharray="${circumference}"
-          stroke-dashoffset="${dashOffset}" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset .5s"/>
-      </svg>
-      <div class="pomo-time">${mm}:${ss}</div>
-    </div>
-    <div class="pomo-controls">
-      <button class="pomo-btn" onclick="togglePomo()">${_pomoState.running ? '⏸ Pausar' : '▶ Iniciar'}</button>
-      <button class="pomo-btn" style="background:var(--s2);color:var(--muted2)" onclick="resetPomo()">↺ Reset</button>
-    </div>`;
+function initRpgFocusTimer() {
+  const sel = document.getElementById('focus-task-sel'); if(!sel) return;
+  // Populate selector with RIDING active tasks
+  const activeTasks = TASKS.filter(t => !t.done && ['ontheline','ongoing'].includes(t.status||''));
+  const allPending = TASKS.filter(t => !t.done && !t.inbox);
+  const pool = activeTasks.length ? activeTasks : allPending;
+  sel.innerHTML = '<option value="">— Selecciona tarea —</option>' +
+    pool.map(t => `<option value="${t.id}">${t.name}${t.area ? ' · '+areaLabel(t.area).split(' ')[0] : ''}</option>`).join('');
+  if(_ft.taskId) sel.value = _ft.taskId;
+  updateFocusTimerDisplay();
 }
 
-function togglePomo() {
-  if(_pomoState.running) {
-    clearInterval(_pomoState.timer); _pomoState.running = false;
+function focusTimerUpdateTask(id) {
+  _ft.taskId = id || null;
+  const doneBtn = document.getElementById('focus-done-rpg-btn');
+  if(doneBtn) doneBtn.style.display = _ft.taskId ? 'block' : 'none';
+}
+
+function setFocusDuration(mins) {
+  if(_ft.running) return; // don't change while running
+  _ft.duration = mins * 60;
+  _ft.elapsed = 0;
+  document.querySelectorAll('#rpg-focus-timer .pomo-btn[id^="fd-"]').forEach(b => {
+    b.style.background = 'var(--s2)'; b.style.color = 'var(--muted2)';
+  });
+  const btn = document.getElementById('fd-'+mins);
+  if(btn) { btn.style.background = 'var(--accent)'; btn.style.color = '#031a16'; }
+  const customInp = document.getElementById('focus-custom-min');
+  if(customInp && ![25,45,90].includes(mins)) customInp.value = mins;
+  updateFocusTimerDisplay();
+}
+
+function toggleFocusTimer() {
+  if(_ft.running) {
+    clearInterval(_ft.interval); _ft.running = false;
+    const btn = document.getElementById('focus-play-btn');
+    if(btn) btn.textContent = '▶ Continuar';
   } else {
-    _pomoState.running = true;
-    _pomoState.timer = setInterval(() => {
-      _pomoState.elapsed++;
-      const total = _pomoState.phase === 'work' ? POMO_WORK : POMO_BREAK;
-      if(_pomoState.elapsed >= total) {
-        clearInterval(_pomoState.timer); _pomoState.running = false;
-        if(_pomoState.phase === 'work') {
-          ST.xp += 10; save(); showToast('🍅 Pomodoro completo! +10 XP');
-          _pomoState.phase = 'break';
-        } else {
-          _pomoState.phase = 'work';
-          showToast('☕ Descanso terminado — ¡a por ello!');
-        }
-        _pomoState.elapsed = 0;
+    _ft.running = true;
+    const btn = document.getElementById('focus-play-btn');
+    if(btn) btn.textContent = '⏸ Pausar';
+    _ft.interval = setInterval(() => {
+      _ft.elapsed++;
+      if(_ft.elapsed >= _ft.duration) {
+        clearInterval(_ft.interval); _ft.running = false;
+        const xpGain = Math.round(_ft.duration / 60) * 2; // 2 XP por minuto
+        ST.xp += xpGain; save();
+        triggerConfetti();
+        showToast(`⏱ ¡Sesión completada! +${xpGain} XP`);
+        _ft.elapsed = 0;
+        const btn2 = document.getElementById('focus-play-btn');
+        if(btn2) btn2.textContent = '▶ Iniciar';
       }
-      renderFocusMode();
+      updateFocusTimerDisplay();
     }, 1000);
   }
-  renderFocusMode();
 }
 
-function resetPomo() {
-  clearInterval(_pomoState.timer);
-  _pomoState = { running:false, phase:'work', elapsed:0, timer:null };
-  renderFocusMode();
+function resetFocusTimer() {
+  clearInterval(_ft.interval);
+  _ft.running = false; _ft.elapsed = 0;
+  const btn = document.getElementById('focus-play-btn');
+  if(btn) btn.textContent = '▶ Iniciar';
+  updateFocusTimerDisplay();
 }
 
-function focusCompleteTask(id) {
-  const t = TASKS.find(x=>x.id===id); if(!t) return;
-  t.done = true;
+function completeFocusTask() {
+  if(!_ft.taskId) return;
+  const t = TASKS.find(x=>x.id===_ft.taskId); if(!t) return;
+  t.done = true; t.status = 'done';
   if(t.prio === 'alta') triggerConfetti();
-  ST.xp += (t.prio==='alta' ? 30 : t.prio==='media' ? 20 : 10);
-  sbUpsertTask({...t}); save(); updateAll(); renderTasks(); renderFocusMode();
-  showToast('✅ Tarea completada' + (t.prio==='alta'?' 🎉':''));
+  const xpGain = {alta:30,prog:25,media:20,baja:10}[t.prio]||15;
+  ST.xp += xpGain; save(); updateAll(); renderTasks();
+  resetFocusTimer(); _ft.taskId = null;
+  showToast(`✅ ${t.name} — +${xpGain} XP`);
+  setTimeout(initRpgFocusTimer, 200);
 }
 
-function focusSkipTask(id) {
-  const idx = TASKS.findIndex(x=>x.id===id); if(idx<0) return;
-  const [t] = TASKS.splice(idx,1); TASKS.push(t);
-  renderFocusMode();
+function updateFocusTimerDisplay() {
+  const left = Math.max(0, _ft.duration - _ft.elapsed);
+  const mm = String(Math.floor(left/60)).padStart(2,'0');
+  const ss = String(left%60).padStart(2,'0');
+  const disp = document.getElementById('focus-timer-display');
+  if(disp) disp.textContent = `${mm}:${ss}`;
+  // Update ring arc
+  const arc = document.getElementById('focus-ring-arc');
+  if(arc) {
+    const circumference = 2 * Math.PI * 34; // r=34
+    const pct = _ft.elapsed / _ft.duration;
+    arc.setAttribute('stroke-dashoffset', circumference - pct * circumference);
+  }
 }
 
 // ══════════════════════════════════
@@ -4903,9 +4952,11 @@ function selectEnergy(lvl, btn) {
 let _energyFilter = 'all';
 
 function setEnergyFilter(lvl, btn) {
-  _energyFilter = _energyFilter === lvl ? 'all' : lvl;
+  _energyFilter = lvl;
   document.querySelectorAll('.ef-btn').forEach(b => b.classList.remove('ef-active'));
-  if(_energyFilter !== 'all' && btn) btn.classList.add('ef-active');
+  // Find the matching button (works even when called with btn=null e.g. from MorningBoot)
+  const target = btn || document.querySelector(`.ef-btn[data-ef="${lvl}"]`);
+  if(target) target.classList.add('ef-active');
   renderTasks();
 }
 
