@@ -1637,14 +1637,21 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .kanban-card.kc-done { opacity: 0.45; }
 .kanban-card.kc-done .kanban-card-name { text-decoration: line-through; }
 
-/* ── TODO: RIDING + MINDCHEST ── */
-.todo-two-sec { display:flex; flex-direction:column; gap:20px; }
+/* ── TODO: RIDING + PENDIENTE + CAPTURAS ── */
+.todo-stack { display:flex; flex-direction:column; gap:24px; }
 .todo-sec { position:relative; }
 .todo-sec-head { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
 .todo-sec-label { font-family:var(--fm); font-size:11px; font-weight:700; letter-spacing:3px; color:var(--text); }
 .todo-sec-sub { font-family:var(--fm); font-size:9px; color:var(--muted2); letter-spacing:1px; }
-.todo-kanban { min-height:180px; }
-.todo-two-sec .kanban-cards { max-height:210px; }
+.todo-kanban { min-height:140px; }
+
+/* Backlog lista por área */
+.bl-list { display:flex; flex-direction:column; gap:12px; }
+.bl-area-group { }
+.bl-area-head { display:flex; align-items:center; gap:8px; padding:7px 10px; margin-bottom:6px; border-radius:8px; background:var(--s1); }
+.bl-area-name { font-family:var(--fm); font-size:10px; font-weight:800; letter-spacing:.08em; }
+.bl-area-count { font-family:var(--fm); font-size:9px; font-weight:700; color:var(--muted2); margin-left:auto; }
+.bl-pills { display:flex; flex-direction:column; gap:5px; padding-left:4px; }
 .r-card { background:var(--s2); border:1px solid var(--border2); border-radius:10px; padding:10px 12px; cursor:grab; transition:all .15s; margin-bottom:0; touch-action:none; }
 .r-card:hover { border-color:var(--border3); background:var(--s3); }
 .r-card:active { cursor:grabbing; }
@@ -1871,6 +1878,156 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 /* ── SWIPE FEEDBACK ── */
 .task-item.swiping-right { background:rgba(93,234,144,0.12) !important; border-color:var(--green) !important; }
 .task-item.swiping-left { background:rgba(255,144,64,0.12) !important; border-color:var(--orange) !important; }
+
+/* ════════════════════════════════════════
+   TOUCH & INTERACTION QUALITY
+════════════════════════════════════════ */
+:root { -webkit-tap-highlight-color: transparent; }
+
+/* Eliminates 300ms tap delay everywhere */
+.r-card, .mc-pill, .task-item, .pomo-btn, .ef-btn, .nav-btn,
+.hab-circle, .sched-item, .rpg-tab, .ev-item, .chip,
+button, a, [onclick], [ontouchstart] {
+  touch-action: manipulation;
+}
+
+/* Press feedback on cards */
+.r-card {
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  will-change: transform;
+  -webkit-user-select: none; user-select: none;
+}
+.r-card:active { transform: scale(.97); background: var(--s2) !important; }
+
+.mc-pill {
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+  will-change: transform;
+  -webkit-user-select: none; user-select: none;
+}
+.mc-pill:active { transform: scale(.97); }
+
+.task-item {
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease, transform .1s ease;
+  will-change: transform;
+}
+.task-item:active { transform: scale(.99); background: var(--s2) !important; }
+
+/* Smooth kanban horizontal scroll */
+.kanban-wrap { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
+.kanban-col { scroll-snap-align: start; }
+
+/* ════════════════════════════════════════
+   TASK DETAIL BOTTOM SHEET
+════════════════════════════════════════ */
+.tsheet-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 2100;
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease;
+}
+.tsheet-overlay.open {
+  opacity: 1; pointer-events: all;
+}
+.tsheet {
+  width: 100%;
+  max-height: 92dvh;
+  background: var(--bg);
+  border-radius: 22px 22px 0 0;
+  border-top: 1px solid var(--border2);
+  box-shadow: 0 -8px 40px rgba(0,0,0,.5);
+  transform: translateY(100%);
+  transition: transform .38s cubic-bezier(.32,.72,0,1);
+  will-change: transform;
+  display: flex; flex-direction: column;
+}
+.tsheet-overlay.open .tsheet { transform: translateY(0); }
+.tsheet-handle {
+  width: 36px; height: 5px;
+  background: var(--border2); border-radius: 3px;
+  margin: 10px auto 0;
+  flex-shrink: 0; cursor: grab;
+}
+.tsheet-scroll {
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 16px 20px 40px;
+  flex: 1;
+}
+.tsheet-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 16px; gap: 12px;
+}
+.tsheet-name {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: var(--ff); font-size: 20px; font-weight: 800;
+  line-height: 1.3; resize: none; padding: 0;
+  min-height: 32px;
+}
+.tsheet-close {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 50%; width: 32px; height: 32px;
+  color: var(--muted2); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; line-height: 1;
+}
+.tsheet-label {
+  font-family: var(--fm); font-size: 9px; font-weight: 800;
+  letter-spacing: .12em; color: var(--muted); margin-bottom: 8px;
+}
+.tsheet-section { margin-bottom: 18px; }
+.tsheet-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.tsc {
+  padding: 6px 13px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--s2);
+  color: var(--muted2); font-family: var(--fm); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+  touch-action: manipulation;
+}
+.tsc.active {
+  background: var(--accent); border-color: var(--accent);
+  color: #031a16;
+}
+.tsheet-date {
+  width: 100%; background: var(--s2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; color: var(--text);
+  font-family: var(--fm); font-size: 13px; font-weight: 700;
+  outline: none; cursor: pointer;
+}
+.tsheet-notes {
+  width: 100%; background: var(--s2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; color: var(--text);
+  font-family: var(--ff); font-size: 14px; line-height: 1.5;
+  outline: none; resize: none; min-height: 90px; box-sizing: border-box;
+}
+.tsheet-notes:focus { border-color: var(--accent); }
+.tsheet-footer {
+  display: flex; gap: 10px; margin-top: 20px; padding-bottom: 8px;
+}
+.tsheet-del-btn {
+  padding: 12px 16px; border-radius: 12px;
+  border: 1px solid rgba(255,77,109,.35); background: transparent;
+  color: var(--accent2); font-family: var(--fm); font-size: 12px;
+  font-weight: 700; cursor: pointer; touch-action: manipulation;
+}
+.tsheet-save-btn {
+  flex: 1; padding: 14px; border-radius: 12px;
+  background: var(--accent); border: none;
+  color: #031a16; font-family: var(--fm); font-size: 14px;
+  font-weight: 800; cursor: pointer; touch-action: manipulation;
+  transition: filter .15s;
+}
+.tsheet-save-btn:active { filter: brightness(1.1); }
+
+/* Pill notes indicator on kanban cards */
+.r-card-has-notes { position:relative; }
+.r-card-has-notes::after { content:'📝'; position:absolute; top:6px; right:6px; font-size:10px; }
 
 </style>
 </head>
@@ -3048,9 +3205,9 @@ function renderTasks() {
     const dateBtnLabel = t.dueDate ? t.dueDate.slice(5).replace('-','/') : '📅';
     const dateBtnCls = t.dueDate ? `t-date-btn${urgency==='overdue'?' t-due overdue':urgency==='due-today'?' t-due today':' t-due upcoming'}` : 't-date-btn';
     return `
-    <div class="task-item ${t.done?'done-task':''} ${urgency}" data-prio="${t.prio}" data-id="${t.id}" onclick="toggleTask('${t.id}')">
-      <div class="t-check">${t.done?'✓':''}</div>
-      <div class="t-info">
+    <div class="task-item ${t.done?'done-task':''} ${urgency}" data-prio="${t.prio}" data-id="${t.id}">
+      <div class="t-check" onclick="event.stopPropagation();toggleTask('${t.id}')" ontouchend="event.stopPropagation();event.preventDefault();toggleTask('${t.id}')">${t.done?'✓':''}</div>
+      <div class="t-info" onclick="openTaskSheet('${t.id}')" ontouchend="event.stopPropagation();event.preventDefault();openTaskSheet('${t.id}')">
         <div class="t-name">${t.name}</div>
         <div class="t-meta">${areaLabel(t.area)}</div>
       </div>
@@ -3097,64 +3254,94 @@ function tdragEnd() {
   _dragCleanup();
 }
 
-// ── TOUCH DRAG (mobile) ──
+// ── TOUCH DRAG (mobile) — con detección de tap ──
 let _touchGhost = null;
 let _touchOffX = 0, _touchOffY = 0;
+let _touchStartX = 0, _touchStartY = 0, _touchStartTime = 0;
+let _touchMoved = false, _dragReady = false;
 
 function ttouchStart(e, id) {
   if(e.touches.length !== 1) return;
   if(e.target.closest('button')) return;
   _dragId = id;
   _dragSourceEl = e.currentTarget;
-  document.body.classList.add('drag-active');
-  requestAnimationFrame(() => { if(_dragSourceEl) _dragSourceEl.classList.add('dragging'); });
-  const t = e.touches[0];
-  const rect = e.currentTarget.getBoundingClientRect();
-  _touchOffX = t.clientX - rect.left;
-  _touchOffY = t.clientY - rect.top;
-  _touchGhost = e.currentTarget.cloneNode(true);
-  _touchGhost.style.cssText = `position:fixed;opacity:.7;pointer-events:none;z-index:9999;width:${rect.width}px;left:${t.clientX - _touchOffX}px;top:${t.clientY - _touchOffY}px;`;
-  document.body.appendChild(_touchGhost);
+  const touch = e.touches[0];
+  _touchStartX = touch.clientX;
+  _touchStartY = touch.clientY;
+  _touchStartTime = Date.now();
+  _touchMoved = false;
+  _dragReady = false;
+  // Long-press (300ms) → start drag ghost
+  _dragActiveTimer = setTimeout(() => {
+    if(!_dragId || _touchMoved) return;
+    _dragReady = true;
+    document.body.classList.add('drag-active');
+    if(_dragSourceEl) _dragSourceEl.classList.add('dragging');
+    const rect = _dragSourceEl.getBoundingClientRect();
+    _touchOffX = _touchStartX - rect.left;
+    _touchOffY = _touchStartY - rect.top;
+    _touchGhost = _dragSourceEl.cloneNode(true);
+    _touchGhost.style.cssText = `position:fixed;opacity:.75;pointer-events:none;z-index:9999;width:${rect.width}px;border-radius:12px;left:${_touchStartX - _touchOffX}px;top:${_touchStartY - _touchOffY}px;transition:none;`;
+    document.body.appendChild(_touchGhost);
+  }, 300);
 }
 
 function ttouchMove(e) {
   if(!_dragId || e.touches.length !== 1) return;
+  const touch = e.touches[0];
+  const dx = touch.clientX - _touchStartX;
+  const dy = touch.clientY - _touchStartY;
+  if(Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+    _touchMoved = true;
+    if(!_dragReady) clearTimeout(_dragActiveTimer); // cancel if scroll not drag
+  }
+  if(!_dragReady) return;
   e.preventDefault();
-  const t = e.touches[0];
-  if(_touchGhost) { _touchGhost.style.left = (t.clientX - _touchOffX)+'px'; _touchGhost.style.top = (t.clientY - _touchOffY)+'px'; }
+  if(_touchGhost) { _touchGhost.style.left=(touch.clientX-_touchOffX)+'px'; _touchGhost.style.top=(touch.clientY-_touchOffY)+'px'; }
   document.querySelectorAll('.kanban-col.drag-over').forEach(c => c.classList.remove('drag-over'));
-  _touchGhost && (_touchGhost.style.display = 'none');
-  const el = document.elementFromPoint(t.clientX, t.clientY);
-  _touchGhost && (_touchGhost.style.display = '');
+  if(_touchGhost) _touchGhost.style.display='none';
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if(_touchGhost) _touchGhost.style.display='';
   const col = el ? el.closest('.kanban-col') : null;
   if(col) col.classList.add('drag-over');
 }
 
 function ttouchEnd(e) {
+  clearTimeout(_dragActiveTimer);
   if(!_dragId) return;
-  const t = e.changedTouches[0];
+  const touch = e.changedTouches[0];
+  const wasDrag = _dragReady;
+  const id = _dragId;
   if(_touchGhost) { _touchGhost.remove(); _touchGhost = null; }
   document.querySelectorAll('.kanban-col.drag-over').forEach(c => c.classList.remove('drag-over'));
-  const underEl = document.elementFromPoint(t.clientX, t.clientY);
-  const col = underEl ? underEl.closest('.kanban-col[data-status]') : null;
-  const id = _dragId;
-  _dragCleanup();
-  if(!col || !id) return;
-  const newStatus = col.getAttribute('data-status');
-  if(!newStatus) return;
-  const task = TASKS.find(x => x.id === id);
-  if(task) {
-    const wasNotDone = getStatus(task) !== 'done';
-    task.status = newStatus;
-    task.done = newStatus === 'done';
-    if(task.done && wasNotDone) {
-      const xpGain = {alta:30, prog:25, media:20, baja:10}[task.prio] || 15;
-      ST.xp += xpGain; showXpPop('+'+xpGain+' XP');
-      spawnParticles(t.clientX, t.clientY, AREA_COLORS[task.area]||'#3db872');
-      updateDailyLog();
+  if(wasDrag) {
+    // Drop logic
+    const underEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    const col = underEl ? underEl.closest('.kanban-col[data-status]') : null;
+    _dragCleanup();
+    if(col && id) {
+      const newStatus = col.getAttribute('data-status');
+      if(newStatus) {
+        const task = TASKS.find(x=>x.id===id);
+        if(task) {
+          const wasNotDone = getStatus(task)!=='done';
+          task.status = newStatus; task.done = newStatus==='done';
+          if(task.done && wasNotDone) {
+            const xpGain = {alta:30,prog:25,media:20,baja:10}[task.prio]||15;
+            ST.xp += xpGain; showXpPop('+'+xpGain+' XP');
+            spawnParticles(touch.clientX,touch.clientY,AREA_COLORS[task.area]||'#3db872');
+            updateDailyLog();
+          }
+          sbUpsertTask(task); save(); updateAll(); renderTasks();
+        }
+      }
     }
-    sbUpsertTask(task);
-    save(); updateAll(); renderTasks();
+  } else {
+    _dragCleanup();
+    // Tap = open task sheet (if not moved and fast)
+    if(!_touchMoved && Date.now()-_touchStartTime < 400 && id) {
+      setTimeout(()=>openTaskSheet(id), 10);
+    }
   }
 }
 
@@ -3470,9 +3657,11 @@ function renderTodoAll() {
       else if(dueLabel === _todayISO2) dueColor = 'var(--orange)';
     }
     const dueTxt = dueLabel ? `<span style="font-family:var(--fm);font-size:8px;color:${dueColor};margin-left:auto">${dueLabel === _todayISO2?'HOY':dueLabel < _todayISO2?'VENCIDA':dueLabel.slice(5).replace('-','/')}</span>` : '';
-    return `<div class="r-card" draggable="true"
+    return `<div class="r-card${t.notes?' r-card-has-notes':''}" draggable="true"
+      data-id="${t.id}"
       ondragstart="tdragStart(event,'${t.id}')" ondragend="tdragEnd()"
-      ontouchstart="ttouchStart(event,'${t.id}')" ontouchmove="ttouchMove(event)" ontouchend="ttouchEnd(event)">
+      ontouchstart="ttouchStart(event,'${t.id}')" ontouchmove="ttouchMove(event)" ontouchend="ttouchEnd(event)"
+      onclick="if(!_dragReady&&!_touchMoved)openTaskSheet('${t.id}')">
       <div class="r-card-name">${t.name}</div>
       <div class="r-card-meta">
         <span style="font-family:var(--fm);font-size:8px;color:${col}">${AREA_NAMES[t.area]||t.area}</span>
@@ -3486,15 +3675,17 @@ function renderTodoAll() {
     const col = AREA_COLORS[t.area] || '#6a6a8a';
     const dueTxt = t.due ? `<div class="mc-pill-due">${t.due}</div>` : '';
     return `<div class="mc-pill" draggable="true"
+      data-id="${t.id}"
       ondragstart="tdragStart(event,'${t.id}')" ondragend="tdragEnd()"
       ontouchstart="ttouchStart(event,'${t.id}')" ontouchmove="ttouchMove(event)" ontouchend="ttouchEnd(event)"
+      onclick="if(!_dragReady&&!_touchMoved)openTaskSheet('${t.id}')"
       style="background:${col}22;border:1px solid ${col}55">
       <div style="flex:1;min-width:0">
         <div class="mc-pill-name">${t.name}</div>
+        ${t.notes?`<div style="font-family:var(--fm);font-size:9px;color:var(--muted);margin-top:2px">📝 ${t.notes.slice(0,40)}${t.notes.length>40?'…':''}</div>`:''}
         ${dueTxt}
       </div>
       <button class="mc-send-btn" onclick="event.stopPropagation();sendToRiding('${t.id}')" title="Enviar a Riding">&#8594;</button>
-      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
     </div>`;
   }
 
@@ -3528,12 +3719,31 @@ function renderTodoAll() {
     </div>`;
   }
 
+  // Backlog vertical por área (reemplaza MINDCHEST kanban)
+  const backlogTotal = AREAS.reduce((s,a) => s + backlog[a].length, 0);
+
+  function areaBacklogSection(area) {
+    const items = backlog[area];
+    if(!items.length) return '';
+    const col = AREA_COLORS[area] || '#6a6a8a';
+    const label = {trabajo:'💼 TRABAJO',marca:'⭐ MARCA',despinsage:'🤝 DESPINSAGE',casa:'🏠 CASA',yo:'🧠 YO',estudios:'◭ ESTUDIOS'}[area] || area.toUpperCase();
+    return `
+      <div class="bl-area-group">
+        <div class="bl-area-head" style="border-left:3px solid ${col}">
+          <span class="bl-area-name" style="color:${col}">${label}</span>
+          <span class="bl-area-count">${items.length}</span>
+        </div>
+        <div class="bl-pills">${items.map(mcPill).join('')}</div>
+      </div>`;
+  }
+
   list.innerHTML = `
-  <div class="todo-two-sec">
+  <div class="todo-stack">
+    <!-- RIDING -->
     <div class="todo-sec">
       <div class="todo-sec-head">
         <span class="todo-sec-label">RIDING</span>
-        <span class="todo-sec-sub">flujo de trabajo activo</span>
+        <span class="todo-sec-sub">trabajo activo</span>
       </div>
       <div class="kanban-wrap todo-kanban">
         ${rCol('ontheline','ON THE LINE','#e05c6e',riding.ontheline)}
@@ -3542,20 +3752,25 @@ function renderTodoAll() {
         ${rCol('done','DONE','#3db872',riding.done)}
       </div>
     </div>
+
+    <!-- PENDIENTE (backlog vertical por área) -->
+    ${backlogTotal > 0 ? `
     <div class="todo-sec">
       <div class="todo-sec-head">
-        <span class="todo-sec-label">MINDCHEST</span>
-        <span class="todo-sec-sub">backlog por &#225;rea</span>
+        <span class="todo-sec-label">PENDIENTE</span>
+        <span class="todo-sec-sub">${backlogTotal} tarea${backlogTotal!==1?'s':''} por empezar · toca para editar, → para activar</span>
       </div>
-      <div class="kanban-wrap todo-kanban">
-        ${AREAS.map(a => mcCol(a)).join('')}
+      <div class="bl-list">
+        ${AREAS.map(areaBacklogSection).join('')}
       </div>
-    </div>
+    </div>` : ''}
+
+    <!-- CAPTURAS -->
     ${inbox.length > 0 ? `
     <div class="todo-sec" style="padding-bottom:80px">
       <div class="todo-sec-head">
         <span class="todo-sec-label" style="color:var(--orange)">⚡ CAPTURAS</span>
-        <span class="todo-sec-sub">${inbox.length} sin catalogar — pulsa para procesar</span>
+        <span class="todo-sec-sub">${inbox.length} sin catalogar</span>
       </div>
       <div style="padding:0 4px">${inbox.map(inboxPill).join('')}</div>
     </div>` : ''}
@@ -4697,13 +4912,8 @@ function onTaskDatePicked(val) {
 }
 
 function openTaskNotes(id) {
-  const t = TASKS.find(x=>x.id===id);
-  if(!t) return;
-  _tnModalId = id;
-  document.getElementById('tnModalTaskName').textContent = t.name;
-  document.getElementById('tnModalNotes').value = t.notes || '';
-  document.getElementById('taskNotesModal').style.display = 'flex';
-  setTimeout(()=>document.getElementById('tnModalNotes').focus(), 100);
+  // Redirect to the full task sheet
+  openTaskSheet(id);
 }
 function closeTaskNotes() {
   document.getElementById('taskNotesModal').style.display = 'none';
@@ -4958,6 +5168,110 @@ function setEnergyFilter(lvl, btn) {
   const target = btn || document.querySelector(`.ef-btn[data-ef="${lvl}"]`);
   if(target) target.classList.add('ef-active');
   renderTasks();
+}
+
+// ══════════════════════════════════
+// TASK DETAIL SHEET
+// ══════════════════════════════════
+let _tsId = null, _tsField = {};
+
+function openTaskSheet(id) {
+  const t = TASKS.find(x=>x.id===id); if(!t) return;
+  _tsId = id;
+  _tsField = { status: t.status||'backlog', area: t.area||'trabajo', prio: t.prio||'media' };
+  // Populate fields
+  const nameEl = document.getElementById('tsName');
+  if(nameEl) { nameEl.value = t.name; tsAutoGrow(nameEl); }
+  document.getElementById('tsDueDate').value = t.dueDate||t.due||'';
+  document.getElementById('tsNotes').value = t.notes||'';
+  // Chips
+  _tsActivateChip('tsStatusChips', t.status||'backlog');
+  _tsActivateChip('tsAreaChips', t.area||'trabajo');
+  _tsActivateChip('tsPrioChips', t.prio||'media');
+  // Open overlay
+  const overlay = document.getElementById('taskSheet');
+  overlay.classList.add('open');
+  // Focus name after animation
+  setTimeout(()=>nameEl&&nameEl.focus(), 380);
+  // Swipe-down-to-close on handle
+  _initSheetDrag();
+}
+
+function closeTaskSheet() {
+  const overlay = document.getElementById('taskSheet');
+  overlay.classList.remove('open');
+  _tsId = null;
+}
+
+function saveTaskSheet() {
+  if(!_tsId) return;
+  const t = TASKS.find(x=>x.id===_tsId); if(!t) return;
+  t.name = (document.getElementById('tsName').value||'').trim() || t.name;
+  t.status = _tsField.status;
+  t.area = _tsField.area;
+  t.prio = _tsField.prio;
+  t.dueDate = document.getElementById('tsDueDate').value || null;
+  t.notes = document.getElementById('tsNotes').value.trim() || null;
+  t.done = t.status === 'done';
+  t.inbox = false;
+  if(t.done) {
+    const xpGain = {alta:30,prog:25,media:20,baja:10}[t.prio]||15;
+    ST.xp += xpGain; showXpPop('+'+xpGain+' XP');
+    if(t.prio==='alta') triggerConfetti();
+    updateDailyLog();
+  }
+  sbUpsertTask(t); save(); updateAll(); renderTasks();
+  closeTaskSheet();
+  showToast('✅ Guardado');
+}
+
+function deleteFromSheet() {
+  if(!_tsId) return;
+  closeTaskSheet();
+  setTimeout(()=>deleteTask(_tsId), 200);
+}
+
+function tsSetChip(field, btn) {
+  const val = btn.dataset.ts;
+  _tsField[field] = val;
+  const group = { status:'tsStatusChips', area:'tsAreaChips', prio:'tsPrioChips' }[field];
+  _tsActivateChip(group, val);
+}
+
+function _tsActivateChip(groupId, val) {
+  const group = document.getElementById(groupId); if(!group) return;
+  group.querySelectorAll('.tsc').forEach(b => b.classList.toggle('active', b.dataset.ts===val));
+}
+
+function tsAutoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight+'px';
+}
+
+// Swipe sheet handle down to close
+let _sheetDragY0 = null;
+function _initSheetDrag() {
+  const handle = document.getElementById('tsHandle'); if(!handle) return;
+  const inner = document.getElementById('taskSheetInner');
+  const onDown = e => {
+    _sheetDragY0 = (e.touches||[e])[0].clientY;
+    const onMove = ev => {
+      const dy = (ev.touches||[ev])[0].clientY - _sheetDragY0;
+      if(dy > 0) inner.style.transform = `translateY(${dy}px)`;
+    };
+    const onUp = ev => {
+      const dy = (ev.changedTouches||[ev])[0].clientY - _sheetDragY0;
+      inner.style.transform = '';
+      if(dy > 80) closeTaskSheet();
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+    };
+    document.addEventListener('touchmove', onMove, {passive:true});
+    document.addEventListener('touchend', onUp, {passive:true});
+  };
+  handle.removeEventListener('touchstart', handle._dragHandler);
+  handle._dragHandler = onDown;
+  handle.addEventListener('touchstart', onDown, {passive:true});
 }
 
 // ══════════════════════════════════
@@ -5290,6 +5604,76 @@ setInterval(check2amAutoClose, 60000);
 
 <!-- ══ CONFETTI CANVAS ══ -->
 <canvas id="confetti-canvas" style="display:none"></canvas>
+
+<!-- ══ TASK DETAIL SHEET ══ -->
+<div class="tsheet-overlay" id="taskSheet" onclick="if(event.target===this)closeTaskSheet()">
+  <div class="tsheet" id="taskSheetInner">
+    <div class="tsheet-handle" id="tsHandle"></div>
+    <div class="tsheet-scroll">
+
+      <!-- Name -->
+      <div class="tsheet-top">
+        <textarea class="tsheet-name" id="tsName" rows="1" oninput="tsAutoGrow(this)" placeholder="Nombre..."></textarea>
+        <button class="tsheet-close" onclick="closeTaskSheet()">×</button>
+      </div>
+
+      <!-- Status -->
+      <div class="tsheet-section">
+        <div class="tsheet-label">ESTADO</div>
+        <div class="tsheet-chips" id="tsStatusChips">
+          <button class="tsc" data-ts="backlog" onclick="tsSetChip('status',this)">📋 Backlog</button>
+          <button class="tsc" data-ts="ontheline" onclick="tsSetChip('status',this)">🔴 On the line</button>
+          <button class="tsc" data-ts="ongoing" onclick="tsSetChip('status',this)">🔵 Ongoing</button>
+          <button class="tsc" data-ts="forreview" onclick="tsSetChip('status',this)">🟡 Review</button>
+          <button class="tsc" data-ts="done" onclick="tsSetChip('status',this)">✅ Done</button>
+        </div>
+      </div>
+
+      <!-- Area -->
+      <div class="tsheet-section">
+        <div class="tsheet-label">ÁREA</div>
+        <div class="tsheet-chips" id="tsAreaChips">
+          <button class="tsc" data-ts="trabajo" onclick="tsSetChip('area',this)">💼 Trabajo</button>
+          <button class="tsc" data-ts="marca" onclick="tsSetChip('area',this)">⭐ Marca</button>
+          <button class="tsc" data-ts="despinsage" onclick="tsSetChip('area',this)">🤝 Despinsage</button>
+          <button class="tsc" data-ts="casa" onclick="tsSetChip('area',this)">🏠 Casa</button>
+          <button class="tsc" data-ts="yo" onclick="tsSetChip('area',this)">🧠 Yo</button>
+          <button class="tsc" data-ts="estudios" onclick="tsSetChip('area',this)">◭ Estudios</button>
+        </div>
+      </div>
+
+      <!-- Priority -->
+      <div class="tsheet-section">
+        <div class="tsheet-label">PRIORIDAD</div>
+        <div class="tsheet-chips" id="tsPrioChips">
+          <button class="tsc" data-ts="alta" onclick="tsSetChip('prio',this)" style="--tc:var(--accent2)">🔴 P1 Alta</button>
+          <button class="tsc" data-ts="prog" onclick="tsSetChip('prio',this)" style="--tc:var(--accent)">🔵 Prog</button>
+          <button class="tsc" data-ts="media" onclick="tsSetChip('prio',this)" style="--tc:var(--gold)">🟡 P2 Media</button>
+          <button class="tsc" data-ts="baja" onclick="tsSetChip('prio',this)" style="--tc:var(--green)">🟢 P3 Baja</button>
+        </div>
+      </div>
+
+      <!-- Due date -->
+      <div class="tsheet-section">
+        <div class="tsheet-label">FECHA LÍMITE</div>
+        <input type="date" class="tsheet-date" id="tsDueDate">
+      </div>
+
+      <!-- Notes -->
+      <div class="tsheet-section">
+        <div class="tsheet-label">NOTAS / CONTEXTO</div>
+        <textarea class="tsheet-notes" id="tsNotes" placeholder="Pasos, links, contexto, lo que necesites..."></textarea>
+      </div>
+
+      <!-- Footer actions -->
+      <div class="tsheet-footer">
+        <button class="tsheet-del-btn" onclick="deleteFromSheet()">🗑 Eliminar</button>
+        <button class="tsheet-save-btn" onclick="saveTaskSheet()">Guardar →</button>
+      </div>
+
+    </div><!-- /tsheet-scroll -->
+  </div><!-- /tsheet -->
+</div>
 
 <!-- ══ MORNING BOOT ══ -->
 <div class="mboot-overlay" id="mbootOverlay" style="display:none">
