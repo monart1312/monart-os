@@ -2609,6 +2609,7 @@ async function syncToCloud() {
     missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
     daily_log: ST.dailyLog || {},
     daily_missions: ST.dailyMissions || null,
+    last_day_close: ST.lastDayClose || null,
     user_events: getUserEvents(),
     updated_at: ST.updated_at
   });
@@ -2660,11 +2661,16 @@ async function loadFromCloud(silent = false) {
       const localTs = ST.updated_at || '2000-01-01';
       const remoteTs = remote.updated_at || '2000-01-01';
       if(remoteTs > localTs) {
+        // Only restore remote.completed if cloud data is from today — prevents old completed coming back after day reset
+        const _syncToday = new Date().toISOString().split('T')[0];
+        const _remoteLastDayClose = remote.last_day_close || '';
+        const _safeCompleted = _remoteLastDayClose >= _syncToday ? (remote.completed||{}) : (ST.completed||{});
         ST = { xp: remote.xp||0, streak: remote.streak||0, day: remote.day||1,
-               completed: remote.completed||{}, history: remote.history||[],
+               completed: _safeCompleted, history: remote.history||[],
                _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at,
                missions: (()=>{ const d=remote.missions||{}; const it=d.items||(Array.isArray(d)?d:[]); return it.some(m=>m&&m.name)?it:(ST.missions||[]); })(),
                missionsWeek: (()=>{ const d=remote.missions||{}; return d.week||remote.missions_week||ST.missionsWeek||null; })(),
+               lastDayClose: remote.last_day_close || ST.lastDayClose || null,
                dailyLog: remote.daily_log || ST.dailyLog || {},
                dailyMissions: remote.daily_missions || ST.dailyMissions || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
@@ -2924,7 +2930,7 @@ function nextDay(silent) {
 
 function checkAutoClose() {
   const today = new Date().toISOString().split('T')[0];
-  if(!ST.lastDayClose) { ST.lastDayClose = today; save(); return; }
+  if(!ST.lastDayClose) { ST.completed = {}; ST.lastDayClose = today; save(); return; }
   if(ST.lastDayClose >= today) return;
 
   const lastD = new Date(ST.lastDayClose + 'T12:00:00');
@@ -4796,8 +4802,8 @@ function renderDailyProgress() {
       : '';
     const d = new Date(dateStr+'T12:00:00');
     const label = d.getDate()+'/'+(d.getMonth()+1);
-    const taskLabel = taskCount > 0 ? `<div style="font-family:var(--fm);font-size:8px;color:var(--muted2);margin-bottom:1px">${taskCount}</div>` : '';
-    return `<div class="dprog-bar-row${isToday?' dprog-today':''}">
+    const taskLabel = taskCount > 0 ? `<div style="font-family:var(--fm);font-size:8px;color:var(--muted2);margin-bottom:1px" title="${taskCount} tareas">${taskCount}t</div>` : '';
+    return `<div class="dprog-bar-row${isToday?' dprog-today':''}" onclick="showDayStats('${dateStr}')" style="cursor:pointer">
       ${taskLabel}
       <div class="dprog-bar">${segsHTML}</div>
       <div class="dprog-label">${label}</div>
@@ -4807,7 +4813,12 @@ function renderDailyProgress() {
   const html = `<div class="dprog-wrap">
     <div class="dprog-header">
       <span class="dprog-title">ESTADÍSTICA · PROGRESO</span>
-      <span class="dprog-total">${totalTasksAllTime} tareas</span>
+      <span class="dprog-total" title="Total tareas completadas desde siempre">${totalTasksAllTime} tareas totales</span>
+    </div>
+    <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:6px;display:flex;gap:10px;align-items:center">
+      <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#e8c56a;border-radius:2px;display:inline-block"></span>hábitos</span>
+      <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#5b7cf6;border-radius:2px;display:inline-block"></span>tareas (Nt = nº ese día)</span>
+      <span style="color:var(--muted);font-size:8px">toca un día ↓</span>
     </div>
     <div class="dprog-scroll">${barsHTML}</div>
   </div>`;
@@ -4819,6 +4830,40 @@ function renderDailyProgress() {
     const scroll = el.querySelector('.dprog-scroll');
     if(scroll) setTimeout(()=>{ scroll.scrollLeft = scroll.scrollWidth; }, 30);
   });
+}
+
+function showDayStats(dateStr) {
+  const log = (ST.dailyLog||{})[dateStr] || {};
+  const tasks = log.tasks || [];
+  const habsDone = log.habitsDone || 0;
+  const d = new Date(dateStr+'T12:00:00');
+  const label = d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+  const AREA_COLORS_DS = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
+  const tasksHTML = tasks.length
+    ? tasks.map(t=>`<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)">
+        <span style="width:8px;height:8px;border-radius:50%;background:${AREA_COLORS_DS[t.area]||'#6a6a8a'};flex-shrink:0"></span>
+        <span style="font-size:13px;color:var(--text)">${t.name}</span>
+        <span style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-left:auto">${t.area||''}</span>
+      </div>`).join('')
+    : '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:8px 0">Sin tareas registradas</div>';
+  const habLine = `<div style="font-family:var(--fm);font-size:10px;color:#e8c56a;margin-bottom:10px">🌟 ${habsDone} / ${ALL_HABITS.length} hábitos completados</div>`;
+  showModal(`<div style="font-weight:800;font-size:15px;margin-bottom:12px">${label}</div>${habLine}${tasksHTML}`, false);
+}
+
+function showModal(contentHTML, withInput=false) {
+  const existing = document.getElementById('_dayStatsModal');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = '_dayStatsModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:0 0 24px 0';
+  overlay.innerHTML = `<div style="background:var(--s1);border-radius:18px 18px 14px 14px;padding:20px 18px 18px;width:min(360px,92vw);max-height:70vh;overflow-y:auto;box-shadow:0 -4px 32px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button onclick="document.getElementById('_dayStatsModal').remove()" style="background:var(--s3);border:none;border-radius:8px;padding:4px 10px;color:var(--muted2);cursor:pointer;font-family:var(--fm);font-size:11px">✕ cerrar</button>
+    </div>
+    ${contentHTML}
+  </div>`;
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 // ══════════════════════════════════
