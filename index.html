@@ -1138,6 +1138,22 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .rpg-ev-name { font-size:15px; font-weight:700; color:var(--text); flex:1; }
 .rpg-ev-notes { font-family:var(--fm); font-size:10px; color:var(--muted2); padding-left:24px; }
 
+/* ── RPG PILL LIST ── */
+.rpg-pill-list { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.rpg-pill { display:flex; align-items:center; gap:8px; background:var(--s2); border-radius:12px; padding:10px 12px; border:1px solid var(--border); transition:all .15s; }
+.rpg-pill.rpg-pill-done { opacity:.5; }
+.rpg-pill-reorder { display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
+.rpg-move-btn { background:none; border:none; cursor:pointer; color:var(--muted2); font-size:11px; padding:2px 4px; line-height:1; touch-action:manipulation; border-radius:4px; }
+.rpg-move-btn:active { background:var(--s3); color:var(--accent); }
+.rpg-pill-body { flex:1; min-width:0; cursor:pointer; }
+.rpg-pill-top { display:flex; align-items:center; gap:6px; margin-bottom:4px; flex-wrap:wrap; }
+.rpg-pill-tag { font-family:var(--fm); font-size:9px; font-weight:800; padding:2px 7px; border-radius:5px; letter-spacing:.05em; flex-shrink:0; }
+.rpg-pill-time { font-family:var(--fm); font-size:9px; color:var(--muted2); margin-left:auto; }
+.rpg-pill-check { font-size:12px; color:#3db872; margin-left:4px; }
+.rpg-pill-name { font-size:14px; font-weight:700; color:var(--text); line-height:1.3; }
+.rpg-pill.rpg-pill-done .rpg-pill-name { text-decoration:line-through; color:var(--muted); }
+.rpg-pill-sub { font-family:var(--fm); font-size:9px; color:var(--muted2); margin-top:2px; }
+.rpg-pill-xp { font-family:var(--fm); font-size:9px; font-weight:700; color:var(--muted); flex-shrink:0; }
 
 /* ── RPG TABS ── */
 .rpg-tabs {
@@ -2610,6 +2626,7 @@ async function syncToCloud() {
     daily_log: ST.dailyLog || {},
     daily_missions: ST.dailyMissions || null,
     last_day_close: ST.lastDayClose || null,
+    rpg_day_order: ST.rpgDayOrder || [],
     user_events: getUserEvents(),
     updated_at: ST.updated_at
   });
@@ -2671,6 +2688,7 @@ async function loadFromCloud(silent = false) {
                missions: (()=>{ const d=remote.missions||{}; const it=d.items||(Array.isArray(d)?d:[]); return it.some(m=>m&&m.name)?it:(ST.missions||[]); })(),
                missionsWeek: (()=>{ const d=remote.missions||{}; return d.week||remote.missions_week||ST.missionsWeek||null; })(),
                lastDayClose: remote.last_day_close || ST.lastDayClose || null,
+               rpgDayOrder: remote.rpg_day_order || ST.rpgDayOrder || [],
                dailyLog: remote.daily_log || ST.dailyLog || {},
                dailyMissions: remote.daily_missions || ST.dailyMissions || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
@@ -2815,37 +2833,57 @@ function renderSchedule() {
   if(!list) return;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const areaToCat = {trabajo:'purple',marca:'purple',despinsage:'cyan',casa:'green',yo:'pink',estudios:'gold'};
-  const areaNames  = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
-  const tagColors  = {despinsage:'#22b8cf', personal:'#3db872', cumple:'#c47da8', work:'#e8c56a'};
-
-  // ── Día header
+  const tagColors = {despinsage:'#22b8cf', personal:'#3db872', cumple:'#c47da8', work:'#e8c56a'};
+  const catColors = {purple:'#9b65e0', cyan:'#22b8cf', gold:'#e8c56a', green:'#3db872', pink:'#e07895'};
   const dow = new Date().getDay();
-  const DOW_EMOJIS  = ['😴','🔨','🎸','⚡','🤖','✅','🎨'];
-  const DOW_LABELS  = ['DOMINGO','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
+  const DOW_EMOJIS = ['😴','🔨','🎸','⚡','🤖','✅','🎨'];
+  const DOW_LABELS = ['DOMINGO','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
 
-  // ── Eventos de calendario HOY
+  // Eventos de calendario HOY (fijos, con hora)
   const todayEvs = allEvents()
     .filter(e => e.d === todayStr)
     .sort((a,b) => (a.time||'00:00').localeCompare(b.time||'00:00'));
 
+  // Tareas del TODO con fecha hoy
+  const todayTasks = TASKS.filter(t => !t.done && t.dueDate === todayStr);
+
+  // Hábitos del día
+  const habits = getDaySchedule();
+
+  // Items libres (hábitos + tareas hoy), reordenables
+  const freeItems = [
+    ...habits.map(h => ({ id: h.id, type: 'habit', data: h })),
+    ...todayTasks.map(t => ({ id: 'task_'+t.id, type: 'task', data: t }))
+  ];
+
+  // Aplicar orden guardado
+  const savedOrder = ST.rpgDayOrder || [];
+  freeItems.sort((a, b) => {
+    const ai = savedOrder.indexOf(a.id);
+    const bi = savedOrder.indexOf(b.id);
+    if(ai === -1 && bi === -1) return 0;
+    if(ai === -1) return 1;
+    if(bi === -1) return -1;
+    return ai - bi;
+  });
+
+  // Header
   let html = `<div class="sched-day-label">
     <span class="sched-day-tag">${DOW_EMOJIS[dow]} ${DOW_LABELS[dow]}</span>
-    ${todayEvs.length ? `<span class="sched-day-focus">📅 ${todayEvs.length} cita${todayEvs.length>1?'s':''} hoy</span>` : ''}
+    ${todayEvs.length ? `<span class="sched-day-focus">📅 ${todayEvs.length} cita${todayEvs.length>1?'s':''}</span>` : ''}
   </div>`;
 
-  // ── Sección citas/eventos (prioridad máxima)
+  // Eventos de calendario (pills fijos)
   if(todayEvs.length) {
     html += `<div class="rpg-events-section">`;
     todayEvs.forEach(ev => {
       const col = tagColors[ev.t] || '#5b7cf6';
-      const timeTxt = ev.time ? `<span class="rpg-ev-time">${ev.time}</span>` : '';
       const isUser = ev.id && ev.id.startsWith('ev');
       const clickFn = isUser ? `openEventModalById('${ev.id}')` : `openEventModal(allEvents().find(e=>e.id==='${ev.id}'), false)`;
       html += `<div class="rpg-cal-event" style="border-left:3px solid ${col}" onclick="${clickFn}">
         <div class="rpg-ev-header">
           <span class="rpg-ev-icon">📅</span>
-          ${timeTxt}
+          ${ev.time ? `<span class="rpg-ev-time">${ev.time}</span>` : ''}
           <span class="rpg-ev-name">${ev.n}</span>
         </div>
         ${ev.notes ? `<div class="rpg-ev-notes">${ev.notes}</div>` : ''}
@@ -2854,40 +2892,66 @@ function renderSchedule() {
     html += `</div>`;
   }
 
-  // ── Tareas con fecha de hoy (del TODO)
-  const todayTasks = TASKS.filter(t => !t.done && t.dueDate === todayStr);
-  if(todayTasks.length) {
-    html += `<div class="sched-divider">TAREAS DE HOY</div>`;
-    todayTasks.forEach(t => {
-      const cat = areaToCat[t.area] || 'purple';
-      html += `<div class="sched-item cat-${cat}" onclick="openTaskSheet('${t.id}')" style="border-left-style:dashed">
-        <div class="sched-tag" style="font-size:7px;letter-spacing:0;width:36px">TODO</div>
-        <div class="sched-info">
-          <div class="sched-name">${t.name}</div>
-          <div class="sched-sub">${areaNames[t.area]||t.area}${t.dueTime?' · '+t.dueTime:''}</div>
-        </div>
-        <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
-      </div>`;
+  // Pills reordenables (hábitos + tareas del día)
+  if(freeItems.length) {
+    html += `<div class="sched-divider">OBJETIVOS DEL DÍA</div>`;
+    html += `<div class="rpg-pill-list">`;
+    freeItems.forEach((item, idx) => {
+      const isFirst = idx === 0;
+      const isLast = idx === freeItems.length - 1;
+      const upBtn = !isFirst ? `<button class="rpg-move-btn" onclick="moveRpgItem('${item.id}',-1)">▲</button>` : `<span style="display:inline-block;width:22px"></span>`;
+      const downBtn = !isLast ? `<button class="rpg-move-btn" onclick="moveRpgItem('${item.id}',1)">▼</button>` : `<span style="display:inline-block;width:22px"></span>`;
+
+      if(item.type === 'habit') {
+        const h = item.data;
+        const done = ST.completed[h.id];
+        const col = catColors[h.cat] || '#5b7cf6';
+        html += `<div class="rpg-pill${done?' rpg-pill-done':''}" data-rpg-id="${item.id}">
+          <div class="rpg-pill-reorder">${upBtn}${downBtn}</div>
+          <div class="rpg-pill-body" onclick="toggleH('${h.id}', ${h.xp})">
+            <div class="rpg-pill-top">
+              <span class="rpg-pill-tag" style="background:${col}22;color:${col}">${h.tag}</span>
+              ${h.time ? `<span class="rpg-pill-time">${h.time}</span>` : ''}
+              <span class="rpg-pill-check">${done?'✓':''}</span>
+            </div>
+            <div class="rpg-pill-name">${h.name}</div>
+            ${h.sub ? `<div class="rpg-pill-sub">${h.sub}</div>` : ''}
+          </div>
+          <div class="rpg-pill-xp">${done?'+'+h.xp+'xp':h.xp+'xp'}</div>
+        </div>`;
+      } else {
+        const t = item.data;
+        const col = AREA_COLORS[t.area] || '#6a6a8a';
+        html += `<div class="rpg-pill" data-rpg-id="${item.id}">
+          <div class="rpg-pill-reorder">${upBtn}${downBtn}</div>
+          <div class="rpg-pill-body" onclick="openTaskSheet('${t.id}')">
+            <div class="rpg-pill-top">
+              <span class="rpg-pill-tag" style="background:${col}22;color:${col}">TODO</span>
+              ${t.dueTime ? `<span class="rpg-pill-time">${t.dueTime}</span>` : ''}
+            </div>
+            <div class="rpg-pill-name">${t.name}</div>
+          </div>
+          <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar" style="margin-left:4px">✕</button>
+        </div>`;
+      }
     });
+    html += `</div>`;
   }
 
-  // ── Hábitos / objetivos diarios (hora como referencia suave, no orden rígido)
-  html += `<div class="sched-divider">OBJETIVOS DEL DÍA</div>`;
-  getDaySchedule().forEach(item => {
-    const done = ST.completed[item.id] ? 'done' : '';
-    html += `<div class="sched-item cat-${item.cat} ${done}" onclick="toggleH('${item.id}', ${item.xp})">
-      <div class="sched-time" style="font-size:9px;opacity:.45;width:36px">${item.time}</div>
-      <div class="sched-tag">${item.tag}</div>
-      <div class="sched-info">
-        <div class="sched-name">${item.name}</div>
-        <div class="sched-sub">${item.sub}</div>
-      </div>
-      <div class="sched-xp">${done ? '+'+item.xp : item.xp}</div>
-      <div class="sched-check">${done ? '✓' : ''}</div>
-    </div>`;
-  });
-
   list.innerHTML = html;
+}
+
+function moveRpgItem(id, dir) {
+  // Lee el orden actual desde el DOM renderizado
+  const freeIds = [...document.querySelectorAll('.rpg-pill[data-rpg-id]')].map(el => el.dataset.rpgId);
+  const idx = freeIds.indexOf(id);
+  if(idx === -1) return;
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= freeIds.length) return;
+  [freeIds[idx], freeIds[newIdx]] = [freeIds[newIdx], freeIds[idx]];
+  ST.rpgDayOrder = freeIds;
+  save();
+  renderSchedule();
 }
 
 function nextDay(silent) {
@@ -3423,6 +3487,7 @@ function sendToRiding(id) {
   if(!t) return;
   t.status = 'ontheline';
   t.done = false;
+  sbUpsertTask(t); // sync to cloud immediately so 30s poll doesn't revert
   save(); renderTasks();
   showToast('→ En Riding: On the Line');
 }
@@ -3750,15 +3815,21 @@ function renderTodoAll() {
   const areasWithTasks = AREAS.filter(a => backlog[a].length > 0);
 
   // Determina área activa: mantiene la selección si sigue teniendo tareas
-  if(!_blActiveArea || !backlog[_blActiveArea] || !backlog[_blActiveArea].length) {
-    _blActiveArea = areasWithTasks[0] || null;
+  if(!_blActiveArea || (_blActiveArea !== 'todas' && (!backlog[_blActiveArea] || !backlog[_blActiveArea].length))) {
+    _blActiveArea = backlogTotal > 0 ? 'todas' : null;
   }
 
   const AREA_ICONS = {trabajo:'💼',marca:'⭐',despinsage:'🤝',casa:'🏠',yo:'🧠',estudios:'◭'};
   const AREA_LABELS = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINSAGE',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
 
   function blTabs() {
-    return areasWithTasks.map(a => {
+    const todasActive = _blActiveArea === 'todas' ? ' bl-active' : '';
+    const todasTab = `<div class="bl-tab${todasActive}" style="--bl-tab-color:#7b6fff" onclick="setBlArea('todas')">
+      <span style="font-size:13px">🗂️</span>
+      <span class="bl-tab-name" style="${todasActive?'':'color:var(--muted2)'}">TODAS</span>
+      <span class="bl-tab-count">${backlogTotal}</span>
+    </div>`;
+    const areaTabs = areasWithTasks.map(a => {
       const col = AREA_COLORS[a] || '#6a6a8a';
       const active = a === _blActiveArea ? ' bl-active' : '';
       return `<div class="bl-tab${active}" style="--bl-tab-color:${col}" onclick="setBlArea('${a}')">
@@ -3767,9 +3838,15 @@ function renderTodoAll() {
         <span class="bl-tab-count">${backlog[a].length}</span>
       </div>`;
     }).join('');
+    return todasTab + areaTabs;
   }
 
   function blContent() {
+    if(_blActiveArea === 'todas') {
+      const allTasks = AREAS.flatMap(a => backlog[a]);
+      if(!allTasks.length) return '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:12px 4px">Sin tareas pendientes</div>';
+      return `<div class="bl-pills">${allTasks.map(mcPill).join('')}</div>`;
+    }
     if(!_blActiveArea || !backlog[_blActiveArea]) return '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:12px 4px">Sin tareas pendientes aquí</div>';
     return `<div class="bl-pills">${backlog[_blActiveArea].map(mcPill).join('')}</div>`;
   }
@@ -5254,9 +5331,10 @@ function _blSwipeEnd(e) {
     return backlog.length > 0;
   });
   if(!areasWithTasks.length) return;
-  const idx = areasWithTasks.indexOf(_blActiveArea);
-  if(dx < 0 && idx < areasWithTasks.length-1) setBlArea(areasWithTasks[idx+1]);
-  else if(dx > 0 && idx > 0) setBlArea(areasWithTasks[idx-1]);
+  const allTabs = ['todas', ...areasWithTasks];
+  const idx = allTabs.indexOf(_blActiveArea);
+  if(dx < 0 && idx < allTabs.length-1) setBlArea(allTabs[idx+1]);
+  else if(dx > 0 && idx > 0) setBlArea(allTabs[idx-1]);
 }
 
 function setEnergyFilter(lvl, btn) {
