@@ -2534,8 +2534,17 @@ async function sbGetAllTasks() {
 
 async function sbUpsertTask(task) {
   try {
-    // Strip client-only fields not in Supabase schema
-    const { inbox, _local, ...payload } = task;
+    // Only send columns that exist in the Supabase tasks schema
+    // Extra fields (status, notes, dueDate, dueTime, reminderTime) are stored locally only
+    const payload = {
+      id: task.id,
+      name: task.name,
+      area: task.area,
+      prio: task.prio,
+      done: task.done,
+      ...(task.due !== undefined ? { due: task.due } : {}),
+      ...(task.created_at ? { created_at: task.created_at } : {}),
+    };
     const r = await fetch(`${SB_URL}/rest/v1/tasks`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
