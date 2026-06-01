@@ -2715,7 +2715,9 @@ async function loadFromCloud(silent = false) {
       localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
     }
   }
-  updateAll(); renderTasks();
+  updateAll(); renderTasks(); renderAreaStats();
+  // Refresh calendar if it's visible (events may have changed)
+  if(document.getElementById('page-cal')?.classList.contains('active')) renderCal();
   if(!silent) showToast('✅ Sincronizado');
 }
 
@@ -4352,9 +4354,22 @@ function renderAreaStats() {
     {key:'estudios',  label:'ESTUDIOS', color:'#e8a83a'},
   ];
 
-  const doneTasks = TASKS.filter(t => t.done || getStatus(t) === 'done');
+  // Contar tareas completadas: actuales (status=done) + históricas en dailyLog
   const counts = {};
-  AREAS_LIST.forEach(a => { counts[a.key] = doneTasks.filter(t => t.area === a.key).length; });
+  AREAS_LIST.forEach(a => { counts[a.key] = 0; });
+
+  // Tareas actuales marcadas como done
+  TASKS.filter(t => t.done || getStatus(t) === 'done').forEach(t => {
+    if(t.area && counts[t.area] !== undefined) counts[t.area]++;
+  });
+
+  // Tareas históricas guardadas en dailyLog (se borran de TASKS al cerrar día)
+  Object.values(ST.dailyLog || {}).forEach(log => {
+    (log.tasks || []).forEach(t => {
+      if(t.area && counts[t.area] !== undefined) counts[t.area]++;
+    });
+  });
+
   const maxCount = Math.max(1, ...Object.values(counts));
 
   el.innerHTML = AREAS_LIST.map(a => {
@@ -4829,6 +4844,7 @@ function saveEventModal() {
       if(time) evs[idx].time = time; else delete evs[idx].time;
       saveUserEvents(evs);
     }
+    syncToCloud(); // sync event changes to cloud
   } else if(!_evModalIsUser) {
     const key = document.getElementById('evModalDate').value + ':' + document.getElementById('evModalName').value;
     const map = getEventNotes();
@@ -4842,6 +4858,7 @@ function saveEventModal() {
 function deleteEventFromModal() {
   if(!_evModalIsUser || !_evModalId) return;
   saveUserEvents(getUserEvents().filter(e => e.id !== _evModalId));
+  syncToCloud(); // sync deletion to cloud
   closeEventModal();
   renderCal();
   showToast('🗑 Evento eliminado');
