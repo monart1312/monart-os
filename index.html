@@ -2511,12 +2511,16 @@ async function sbGet(table, id) {
 
 async function sbUpsert(table, row) {
   try {
-    await fetch(`${SB_URL}/rest/v1/${table}`, {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(row)
     });
-  } catch(e) { console.warn('Supabase save failed, using localStorage fallback'); }
+    if(!r.ok) {
+      const errTxt = await r.text().catch(()=>'');
+      console.error(`Supabase upsert ${table} HTTP ${r.status}:`, errTxt);
+    }
+  } catch(e) { console.warn('Supabase save failed, using localStorage fallback', e); }
 }
 
 async function sbGetAllTasks() {
@@ -2716,8 +2720,10 @@ async function loadFromCloud(silent = false) {
     }
   }
   updateAll(); renderTasks(); renderAreaStats();
-  // Refresh calendar if it's visible (events may have changed)
+  // Refresh calendar UI if visible
   if(document.getElementById('page-cal')?.classList.contains('active')) renderCal();
+  // Always refresh schedule (RPG shows today's events)
+  if(document.getElementById('scheduleList')) renderSchedule();
   if(!silent) showToast('✅ Sincronizado');
 }
 
@@ -3675,6 +3681,7 @@ function confirmAdd() {
     const ev = { id: 'ev'+Date.now(), d: dueDate, n: name, t: evTypeMap[area]||'personal', notes:'' };
     if(dueTime) ev.time = dueTime;
     const evs = getUserEvents(); evs.push(ev); saveUserEvents(evs);
+    syncToCloud(); // sync immediately — don't rely solely on debounce
     renderCal();
   }
 
