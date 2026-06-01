@@ -2534,15 +2534,19 @@ async function sbGetAllTasks() {
 
 async function sbUpsertTask(task) {
   try {
-    // Only send columns that exist in the Supabase tasks schema
-    // Extra fields (status, notes, dueDate, dueTime, reminderTime) are stored locally only
+    // Schema tasks: id, name, area, prio, done, created_at, status, due, duedate, notes
+    // dueTime and reminderTime don't exist in schema — strip them
+    // Note: Supabase column is 'duedate' (lowercase), local field is 'dueDate' (camelCase)
     const payload = {
       id: task.id,
       name: task.name,
       area: task.area,
       prio: task.prio,
-      done: task.done,
-      ...(task.due !== undefined ? { due: task.due } : {}),
+      done: !!task.done,
+      status: task.status || 'backlog',
+      ...(task.due ? { due: task.due } : {}),
+      ...(task.dueDate ? { duedate: task.dueDate } : {}),
+      ...(task.notes ? { notes: task.notes } : {}),
       ...(task.created_at ? { created_at: task.created_at } : {}),
     };
     const r = await fetch(`${SB_URL}/rest/v1/tasks`, {
@@ -2720,10 +2724,13 @@ async function loadFromCloud(silent = false) {
       TASKS = remoteTasks.map(rt => {
         const local = TASKS.find(t => t.id === rt.id);
         const merged = {...rt};
-        // Preservar status y done locales si Supabase no los tiene
-        if(local && local.status && !rt.status) { merged.status = local.status; merged.done = local.done; }
-        // Preservar notes locales si Supabase aún no tiene la columna
-        if(local && local.notes && !rt.notes) merged.notes = local.notes;
+        // Normalizar duedate (Supabase lowercase) → dueDate (camelCase usado en el código)
+        if(merged.duedate && !merged.dueDate) { merged.dueDate = merged.duedate; }
+        // Preservar campos locales si vienen vacíos de Supabase
+        if(local && local.status && !merged.status) { merged.status = local.status; merged.done = local.done; }
+        if(local && local.notes && !merged.notes) merged.notes = local.notes;
+        if(local && local.dueDate && !merged.dueDate) merged.dueDate = local.dueDate;
+        if(local && local.dueTime && !merged.dueTime) merged.dueTime = local.dueTime;
         return merged;
       });
       localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
