@@ -2629,8 +2629,6 @@ async function syncToCloud() {
     missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
     daily_log: ST.dailyLog || {},
     daily_missions: ST.dailyMissions || null,
-    last_day_close: ST.lastDayClose || null,
-    rpg_day_order: ST.rpgDayOrder || [],
     user_events: getUserEvents(),
     updated_at: ST.updated_at
   });
@@ -2682,17 +2680,16 @@ async function loadFromCloud(silent = false) {
       const localTs = ST.updated_at || '2000-01-01';
       const remoteTs = remote.updated_at || '2000-01-01';
       if(remoteTs > localTs) {
-        // Only restore remote.completed if cloud data is from today — prevents old completed coming back after day reset
+        // Only restore remote.completed if we haven't closed the day locally — prevents old completed restoring after reset
         const _syncToday = new Date().toISOString().split('T')[0];
-        const _remoteLastDayClose = remote.last_day_close || '';
-        const _safeCompleted = _remoteLastDayClose >= _syncToday ? (remote.completed||{}) : (ST.completed||{});
+        const _safeCompleted = (ST.lastDayClose||'') >= _syncToday ? (remote.completed||{}) : (ST.completed||{});
         ST = { xp: remote.xp||0, streak: remote.streak||0, day: remote.day||1,
                completed: _safeCompleted, history: remote.history||[],
                _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at,
                missions: (()=>{ const d=remote.missions||{}; const it=d.items||(Array.isArray(d)?d:[]); return it.some(m=>m&&m.name)?it:(ST.missions||[]); })(),
                missionsWeek: (()=>{ const d=remote.missions||{}; return d.week||remote.missions_week||ST.missionsWeek||null; })(),
-               lastDayClose: remote.last_day_close || ST.lastDayClose || null,
-               rpgDayOrder: remote.rpg_day_order || ST.rpgDayOrder || [],
+               lastDayClose: ST.lastDayClose || null,
+               rpgDayOrder: ST.rpgDayOrder || [],
                dailyLog: remote.daily_log || ST.dailyLog || {},
                dailyMissions: remote.daily_missions || ST.dailyMissions || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
