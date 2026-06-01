@@ -2536,12 +2536,16 @@ async function sbUpsertTask(task) {
   try {
     // Strip client-only fields not in Supabase schema
     const { inbox, _local, ...payload } = task;
-    await fetch(`${SB_URL}/rest/v1/tasks`, {
+    const r = await fetch(`${SB_URL}/rest/v1/tasks`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(payload)
     });
-  } catch(e) {}
+    if(!r.ok) {
+      const errTxt = await r.text().catch(()=>'');
+      console.error(`Supabase upsert tasks HTTP ${r.status}:`, errTxt);
+    }
+  } catch(e) { console.warn('sbUpsertTask failed:', e); }
 }
 
 async function sbDeleteTask(id) {
