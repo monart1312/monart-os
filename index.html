@@ -2844,8 +2844,8 @@ function renderSchedule() {
     .filter(e => e.d === todayStr)
     .sort((a,b) => (a.time||'00:00').localeCompare(b.time||'00:00'));
 
-  // Tareas del TODO con fecha hoy
-  const todayTasks = TASKS.filter(t => !t.done && t.dueDate === todayStr);
+  // Tareas del TODO: hoy + vencidas (no completadas)
+  const todayTasks = TASKS.filter(t => !t.done && t.dueDate && t.dueDate <= todayStr);
 
   // Hábitos del día
   const habits = getDaySchedule();
@@ -2892,6 +2892,27 @@ function renderSchedule() {
     html += `</div>`;
   }
 
+  // Misiones del día (inline en RPG, con checkbox)
+  const _rpgMissions = ST.dailyMissions?.items || [];
+  if(_rpgMissions.length) {
+    html += `<div class="sched-divider">MISIONES DEL DÍA</div>`;
+    html += `<div class="rpg-pill-list">`;
+    _rpgMissions.forEach((m, i) => {
+      html += `<div class="rpg-pill${m.done?' rpg-pill-done':''}">
+        <div style="width:22px;flex-shrink:0"></div>
+        <div class="rpg-pill-body" onclick="toggleDailyMission(${i});renderSchedule()">
+          <div class="rpg-pill-top">
+            <span class="rpg-pill-tag" style="background:${m.carried&&!m.done?'#e8a83a22':'var(--accent)22'};color:${m.carried&&!m.done?'#e8a83a':'var(--accent)'}">${m.carried&&!m.done?'⟳ PENDIENTE':'MISIÓN'}</span>
+            <span class="rpg-pill-check">${m.done?'✓':''}</span>
+          </div>
+          <div class="rpg-pill-name">${m.text}</div>
+        </div>
+        <div class="rpg-pill-xp">${m.done?'+50xp':'50xp'}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
   // Pills reordenables (hábitos + tareas del día)
   if(freeItems.length) {
     html += `<div class="sched-divider">OBJETIVOS DEL DÍA</div>`;
@@ -2927,7 +2948,7 @@ function renderSchedule() {
           <div class="rpg-pill-body" onclick="openTaskSheet('${t.id}')">
             <div class="rpg-pill-top">
               <span class="rpg-pill-tag" style="background:${col}22;color:${col}">TODO</span>
-              ${t.dueTime ? `<span class="rpg-pill-time">${t.dueTime}</span>` : ''}
+              ${t.dueDate < todayStr ? `<span style="font-family:var(--fm);font-size:8px;font-weight:800;color:var(--orange);margin-left:4px">VENCIDA</span>` : t.dueTime ? `<span class="rpg-pill-time">${t.dueTime}</span>` : ''}
             </div>
             <div class="rpg-pill-name">${t.name}</div>
           </div>
@@ -2980,8 +3001,9 @@ function nextDay(silent) {
   // Registrar fecha de cierre
   ST.lastDayClose = new Date().toISOString().split('T')[0];
 
-  // Resetear misiones diarias para el nuevo día
-  ST.dailyMissions = { date: ST.lastDayClose, items: [] };
+  // Misiones diarias: llevar las no completadas al día siguiente
+  const _pendingM = (ST.dailyMissions?.items || []).filter(m => !m.done);
+  ST.dailyMissions = { date: ST.lastDayClose, items: _pendingM.map(m => ({text: m.text, done: false, carried: true})) };
 
   save();
   updateAll();
@@ -3018,7 +3040,9 @@ function checkAutoClose() {
   }
   ST.completed = {};
   ST.lastDayClose = today;
-  ST.dailyMissions = { date: today, items: [] };
+  // Llevar misiones no completadas al nuevo día
+  const _pendingMA = (ST.dailyMissions?.items || []).filter(m => !m.done);
+  ST.dailyMissions = { date: today, items: _pendingMA.map(m => ({text: m.text, done: false, carried: true})) };
 
   const doneTasks = TASKS.filter(t => t.done);
   doneTasks.forEach(t => sbDeleteTask(t.id));
@@ -4949,7 +4973,9 @@ function showModal(contentHTML, withInput=false) {
 function initDailyMissions() {
   const today = new Date().toISOString().split('T')[0];
   if(!ST.dailyMissions || ST.dailyMissions.date !== today) {
-    ST.dailyMissions = { date: today, items: [] };
+    // Llevar las no completadas al nuevo día
+    const pending = (ST.dailyMissions?.items || []).filter(m => !m.done);
+    ST.dailyMissions = { date: today, items: pending.map(m => ({text: m.text, done: false, carried: true})) };
   }
 }
 
@@ -4959,13 +4985,14 @@ function renderDailyMissions() {
     if(!el) return;
     if(!ST.dailyMissions) initDailyMissions();
     const items = ST.dailyMissions.items || [];
-    const canAdd = items.length < 5;
+    const newItems = items.filter(m => !m.carried || m.done);
+    const canAdd = items.length < 7; // hasta 7: 5 nuevas + posibles carries
     const done = items.filter(m=>m.done).length;
 
     const itemsHTML = items.map((m,i) => `
       <div class="dmission-item${m.done?' dmission-done':''}">
         <div class="dmission-check${m.done?' dmission-checked':''}" onclick="toggleDailyMission(${i})">${m.done?'✓':''}</div>
-        <span class="dmission-name" onclick="startEditMission(${i},'${id}')">${m.text}</span>
+        <span class="dmission-name" onclick="startEditMission(${i},'${id}')">${m.carried&&!m.done?'<span style="font-size:10px;color:var(--orange)">⟳</span> ':''}${m.text}</span>
         <button class="dmission-action" onclick="deleteDailyMission(${i})">✕</button>
       </div>`).join('');
 
