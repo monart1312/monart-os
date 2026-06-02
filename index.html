@@ -1913,59 +1913,78 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .wreview-stat-val { font-family:var(--fm); font-size:20px; font-weight:800; }
 .wreview-btn { width:100%; padding:14px; border-radius:14px; background:var(--gold); border:none; color:#000; font-size:14px; font-weight:800; cursor:pointer; margin-top:16px; }
 
-/* ── ROADMAP / VISIÓN ── */
-.rl-phase-strip { display:flex; gap:6px; overflow-x:auto; padding:0 16px 14px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+/* ── ROADMAP / VISIÓN ── redesign ── */
+.rl-phase-strip { display:flex; gap:6px; overflow-x:auto; padding:0 16px 16px; scrollbar-width:none; }
 .rl-phase-strip::-webkit-scrollbar { display:none; }
-.rl-phase-chip { flex:none; padding:5px 12px; border-radius:20px; border:1.5px solid transparent; cursor:pointer; font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.06em; transition:all .15s; touch-action:manipulation; background:var(--s1); color:var(--muted); border-color:var(--border); }
-.rl-phase-chip.rl-chip-active { background:rgba(123,111,255,.12); border-color:var(--accent); color:var(--accent); }
-.rl-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; position:relative; padding:0 16px; }
+.rl-phase-chip { flex:none; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); cursor:pointer; font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.07em; transition:all .15s; background:var(--s1); color:var(--muted); touch-action:manipulation; }
+.rl-phase-chip.rl-chip-active { border-color:currentColor; }
+/* Scroll container */
+.rl-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; position:relative; }
 .rl-scroll::-webkit-scrollbar { display:none; }
-.rl-head-row,.rl-row { display:grid; grid-template-columns:76px repeat(18,34px); gap:2px; align-items:center; }
-.rl-head-row { margin-bottom:4px; }
-.rl-row { margin-bottom:3px; }
-.rl-row.rl-sep { margin-bottom:10px; }
-.rl-month { font-family:var(--fm); font-size:7px; font-weight:700; color:#1e1e35; text-align:center; letter-spacing:.04em; padding:3px 0; }
-.rl-month.rl-now { color:var(--accent); }
-.rl-month.rl-year-marker { color:#2a2a40; font-size:6px; }
-.rl-label { position:sticky; left:0; font-family:var(--fm); font-size:8px; font-weight:800; letter-spacing:.06em; background:var(--bg); z-index:2; text-align:right; padding-right:8px; white-space:nowrap; }
-.rl-bar { height:20px; border-radius:3px; display:flex; align-items:center; padding:0 6px; cursor:pointer; transition:all .15s; touch-action:manipulation; position:relative; overflow:visible; }
-.rl-bar:active { transform:scale(.97); }
-.rl-bar-text { font-size:7px; font-weight:700; color:rgba(255,255,255,.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; flex:1; min-width:0; }
-.rl-bar.rl-status-active { box-shadow:0 0 0 1.5px rgba(255,255,255,.25); }
-.rl-bar.rl-status-done { opacity:.4; }
-.rl-bar-badge { position:absolute; top:-5px; right:-3px; min-width:14px; height:14px; border-radius:7px; padding:0 3px; background:var(--accent2); font-family:var(--fm); font-size:7px; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center; z-index:3; }
-.rl-empty { height:20px; }
-.rl-now-indicator { position:absolute; top:0; bottom:0; width:1.5px; background:var(--accent); opacity:.4; pointer-events:none; z-index:4; border-radius:1px; }
-/* Roadmap Block Sheet */
-.rb-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:2200; opacity:0; pointer-events:none; transition:opacity .25s; }
+.rl-inner { width:max-content; padding:0 16px 24px; }
+/* Grid base — 92px label + 18 × 48px cols */
+.rl-grid-row { display:grid; grid-template-columns:92px repeat(18,48px); gap:3px; align-items:center; }
+/* Phase band */
+.rl-phase-band { margin-bottom:6px; }
+.rl-pb-lbl { height:22px; }
+.rl-pb-seg { height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; }
+.rl-pb-seg-txt { font-family:var(--fm); font-size:8px; font-weight:800; letter-spacing:.06em; color:rgba(255,255,255,.8); white-space:nowrap; overflow:hidden; padding:0 6px; }
+/* Month row */
+.rl-month-row { margin-bottom:14px; }
+.rl-mlbl-empty { height:24px; }
+.rl-mlbl { font-family:var(--fm); font-size:10px; font-weight:700; text-align:center; color:#252540; padding:4px 0; }
+.rl-mlbl.rl-mnow { color:var(--accent); font-size:11px; }
+.rl-mlbl.rl-myear { color:#3a3a60; font-size:8px; letter-spacing:.04em; padding-top:2px; }
+/* NOW line */
+.rl-now-line { position:absolute; top:0; bottom:24px; width:2px; background:var(--accent); opacity:.45; border-radius:1px; z-index:5; pointer-events:none; }
+.rl-now-top { position:absolute; top:0; left:-3px; width:8px; height:8px; border-radius:50%; background:var(--accent); }
+/* Track */
+.rl-track { margin-bottom:4px; }
+.rl-track-head { display:flex; align-items:center; gap:10px; padding:12px 0 10px 92px; }
+.rl-th-color { width:3px; height:18px; border-radius:2px; flex-shrink:0; }
+.rl-th-name { font-family:var(--fm); font-size:11px; font-weight:800; letter-spacing:.1em; }
+.rl-th-sep { flex:1; height:1px; background:var(--border); }
+/* Bar rows */
+.rl-bar-row { margin-bottom:4px; }
+.rl-sticky-lbl { position:sticky; left:0; background:var(--bg); z-index:2; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; height:40px; }
+.rl-bar { height:40px; border-radius:8px; display:flex; align-items:center; padding:0 14px; cursor:pointer; transition:filter .15s, transform .1s; touch-action:manipulation; position:relative; overflow:visible; }
+.rl-bar:active { transform:scale(.97); filter:brightness(1.1); }
+.rl-bar span { font-family:var(--fm); font-size:10px; font-weight:700; color:rgba(255,255,255,.92); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; flex:1; min-width:0; letter-spacing:.02em; }
+.rl-bar.rl-done { opacity:.35; }
+.rl-bar.rl-active { box-shadow:0 0 0 1.5px rgba(255,255,255,.3), 0 4px 16px rgba(0,0,0,.5); }
+.rl-bar-badge { position:absolute; top:-6px; right:-4px; min-width:18px; height:18px; border-radius:9px; padding:0 5px; background:var(--accent2); font-family:var(--fm); font-size:9px; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center; z-index:3; border:2px solid var(--bg); }
+.rl-cell-empty { height:40px; }
+/* Block sheet */
+.rb-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:2200; opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
 .rb-overlay.rb-open { opacity:1; pointer-events:all; }
-.rb-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--s1); border-radius:18px 18px 0 0; border-top:1px solid var(--border2); z-index:2201; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); max-height:82vh; overflow-y:auto; }
+.rb-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--s1); border-radius:22px 22px 0 0; border-top:1px solid var(--border2); z-index:2201; transform:translateY(100%); transition:transform .32s cubic-bezier(.4,0,.2,1); max-height:88vh; overflow-y:auto; }
 .rb-sheet.rb-open { transform:translateY(0); }
-.rb-handle { width:40px; height:4px; background:var(--border2); border-radius:2px; margin:10px auto 0; }
-.rb-phase-tag { font-family:var(--fm); font-size:8px; font-weight:800; letter-spacing:.1em; margin-bottom:5px; }
-.rb-title { font-size:17px; font-weight:800; color:var(--text); margin-bottom:4px; }
-.rb-dates { font-family:var(--fm); font-size:9px; color:var(--muted2); margin-bottom:12px; }
-.rb-status-row { display:flex; gap:6px; margin-bottom:14px; }
-.rb-stat-btn { flex:1; padding:6px 0; border-radius:8px; border:1.5px solid var(--border); background:transparent; font-family:var(--fm); font-size:8px; font-weight:800; letter-spacing:.05em; color:var(--muted2); cursor:pointer; transition:all .15s; }
+.rb-handle { width:40px; height:4px; background:var(--border2); border-radius:2px; margin:14px auto 0; }
+.rb-inner { padding:14px 20px 32px; }
+.rb-phase-tag { font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.12em; }
+.rb-title { font-size:22px; font-weight:800; color:var(--text); margin:6px 0 4px; line-height:1.2; }
+.rb-dates { font-family:var(--fm); font-size:10px; color:var(--muted2); margin-bottom:16px; }
+.rb-status-row { display:flex; gap:8px; margin-bottom:20px; }
+.rb-stat-btn { flex:1; padding:10px 0; border-radius:12px; border:1.5px solid var(--border); background:transparent; font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.06em; color:var(--muted2); cursor:pointer; transition:all .15s; }
 .rb-stat-btn.rs-pending.rs-sel { border-color:#555570; color:#555570; background:rgba(85,85,112,.12); }
 .rb-stat-btn.rs-active.rs-sel { border-color:var(--accent); color:var(--accent); background:rgba(0,212,180,.1); }
 .rb-stat-btn.rs-done.rs-sel { border-color:var(--green); color:var(--green); background:rgba(61,184,114,.1); }
-.rb-sec-label { font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); margin:14px 0 7px; }
-.rb-desc { font-size:12px; color:var(--muted2); font-family:var(--fm); line-height:1.55; margin-bottom:0; }
-.rb-notes-input { width:100%; background:var(--s2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-size:13px; font-family:var(--ff); resize:none; min-height:72px; }
-.rb-notes-input:focus { outline:none; border-color:var(--border2); }
-.rb-todo-item { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--s2); border-radius:8px; border:1px solid var(--border); margin-bottom:4px; }
-.rb-todo-chk { width:18px; height:18px; border-radius:5px; border:1.5px solid var(--border2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .15s; font-size:11px; color:transparent; }
+.rb-sec-label { font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.12em; color:var(--muted); margin:18px 0 8px; }
+.rb-desc { font-size:14px; color:var(--muted2); line-height:1.65; }
+.rb-notes-input { width:100%; background:var(--s2); border:1px solid var(--border); border-radius:12px; padding:13px 15px; color:var(--text); font-size:14px; font-family:var(--ff); resize:none; min-height:84px; }
+.rb-notes-input:focus { outline:none; border-color:var(--accent); }
+.rb-todo-item { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--s2); border-radius:10px; border:1px solid var(--border); margin-bottom:6px; }
+.rb-todo-chk { width:22px; height:22px; border-radius:7px; border:1.5px solid var(--border2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; color:transparent; transition:all .15s; }
 .rb-todo-chk.rb-chk-done { background:var(--accent); border-color:var(--accent); color:#031a16; }
-.rb-todo-txt { flex:1; font-size:13px; color:var(--text); }
+.rb-todo-txt { flex:1; font-size:14px; color:var(--text); }
 .rb-todo-txt.rb-txt-done { text-decoration:line-through; color:var(--muted); }
-.rb-todo-del { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:13px; padding:2px 4px; }
-.rb-add-row { display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--s2); border-radius:8px; border:1px dashed var(--border); margin-bottom:4px; }
-.rb-add-row input { flex:1; background:none; border:none; color:var(--text); font-size:12px; font-family:var(--fm); }
+.rb-todo-del { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:16px; padding:4px; }
+.rb-add-row { display:flex; gap:10px; align-items:center; padding:12px 14px; background:var(--s2); border-radius:10px; border:1px dashed var(--border2); margin-bottom:6px; }
+.rb-add-row input { flex:1; background:none; border:none; color:var(--text); font-size:14px; font-family:var(--ff); }
 .rb-add-row input::placeholder { color:var(--muted); }
 .rb-add-row input:focus { outline:none; }
-.rb-add-btn { background:var(--s3); border:none; border-radius:6px; padding:4px 9px; color:var(--accent); font-weight:800; font-size:13px; cursor:pointer; }
-.rb-save-btn { width:100%; padding:13px; border-radius:12px; background:var(--accent); border:none; color:#031a16; font-size:14px; font-weight:800; cursor:pointer; margin-top:14px; }
+.rb-add-btn { background:var(--s3); border:none; border-radius:8px; padding:6px 12px; color:var(--accent); font-weight:800; font-size:18px; cursor:pointer; line-height:1; }
+.rb-save-btn { width:100%; padding:16px; border-radius:14px; background:var(--accent); border:none; color:#031a16; font-size:15px; font-weight:800; cursor:pointer; margin-top:18px; }
 
 /* ── SWIPE FEEDBACK ── */
 .task-item.swiping-right { background:rgba(93,234,144,0.12) !important; border-color:var(--green) !important; }
@@ -5800,82 +5819,110 @@ function setRdBlock(id, data) {
 
 let _rlPhase = null;
 
-function renderVision() {
-  // Phase chips
-  const strip = document.getElementById('rlPhaseStrip');
-  if(strip) {
-    strip.innerHTML = RL_PHASES.map(p =>
-      `<div class="rl-phase-chip${_rlPhase===p.id?' rl-chip-active':''}" style="${_rlPhase===p.id?'border-color:'+p.color+';color:'+p.color+';background:'+p.color+'18':''}" onclick="_rlPhase=${_rlPhase===p.id?'null':p.id};renderVision()">${p.label}</div>`
-    ).join('');
+function layoutBlocks(blocks) {
+  const rows = [];
+  blocks.slice().sort((a,b)=>a.start-b.start).forEach(b => {
+    let placed = false;
+    for(const row of rows) {
+      if(!row.some(rb => b.start < rb.start+rb.dur && b.start+b.dur > rb.start)) {
+        row.push(b); placed = true; break;
+      }
+    }
+    if(!placed) rows.push([b]);
+  });
+  return rows;
+}
+
+function renderBarRow(rowBlocks, trackId) {
+  // Build a 18-slot cells array for this sub-row
+  const cells = Array(18).fill(null);
+  rowBlocks.forEach(b => {
+    for(let j=b.start; j<b.start+b.dur && j<18; j++) cells[j] = b;
+  });
+  let html = `<div class="rl-grid-row rl-bar-row">`;
+  html += `<div class="rl-sticky-lbl"></div>`;
+  let i=0;
+  while(i<18) {
+    const b = cells[i];
+    if(!b) {
+      let ec=0; while(i+ec<18 && !cells[i+ec]) ec++;
+      html += `<div class="rl-cell-empty" style="grid-column:span ${ec}"></div>`;
+      i+=ec;
+    } else if(b.start===i) {
+      const rd = getRdBlock(b.id);
+      const pending=(rd.todos||[]).filter(t=>!t.done).length;
+      const sc=rd.status==='done'?' rl-done':rd.status==='active'?' rl-active':'';
+      const phaseOk=_rlPhase===null||RL_PHASES.find(p=>p.id===_rlPhase&&b.start<=p.e&&b.start+b.dur>p.s);
+      const op=phaseOk?'':'opacity:.15;';
+      html+=`<div class="rl-bar${sc}" style="${op}background:${b.color};grid-column:span ${b.dur}" onclick="openRdBlock('${b.id}','${trackId}')">
+        <span>${b.name}</span>
+        ${pending>0?`<div class="rl-bar-badge">${pending}</div>`:''}
+      </div>`;
+      i+=b.dur;
+    } else { i++; }
   }
+  return html+'</div>';
+}
+
+function renderVision() {
+  const strip = document.getElementById('rlPhaseStrip');
+  if(strip) strip.innerHTML = RL_PHASES.map(p =>
+    `<div class="rl-phase-chip${_rlPhase===p.id?' rl-chip-active':''}"
+      style="${_rlPhase===p.id?`color:${p.color};border-color:${p.color};background:${p.color}18`:''}"
+      onclick="_rlPhase=${_rlPhase===p.id?'null':p.id};renderVision()">${p.label}</div>`
+  ).join('');
 
   const el = document.getElementById('vision-content');
   if(!el) return;
   if(!ST.roadmap) ST.roadmap = {};
 
-  const NOW = 0; // Jun 2026 = index 0
-  const COL = 34;
-  const LBL = 76;
+  const COL=48, GAP=3, LBL=92, PAD=16, NOW=0;
 
-  // Month header
-  let mHTML = `<div class="rl-label" style="color:var(--muted);font-size:6px">MES→</div>`;
-  RL_MONTHS.forEach((m,i) => {
-    const isNow = i===NOW;
-    mHTML += `<div class="rl-month${isNow?' rl-now':''}${m.y?' rl-year-marker':''}">${m.l}${m.y?'<br><span style="font-size:5px;opacity:.5">2027</span>':''}</div>`;
+  // Phase band
+  let pbHTML=`<div class="rl-grid-row rl-phase-band"><div class="rl-pb-lbl"></div>`;
+  RL_PHASES.forEach(p => {
+    const span=p.e-p.s+1;
+    pbHTML+=`<div class="rl-pb-seg" style="background:${p.color}30;border:1px solid ${p.color}55;grid-column:span ${span}">
+      <span class="rl-pb-seg-txt" style="color:${p.color}">${p.label}</span></div>`;
   });
+  pbHTML+='</div>';
+
+  // Month row
+  let mHTML=`<div class="rl-grid-row rl-month-row"><div class="rl-mlbl-empty"></div>`;
+  RL_MONTHS.forEach((m,i)=>{
+    mHTML+=`<div class="rl-mlbl${i===NOW?' rl-mnow':''}${m.y?' rl-myear':''}">${m.l}${m.y?'<br><small style="font-size:7px;opacity:.6">2027</small>':''}</div>`;
+  });
+  mHTML+='</div>';
 
   // Tracks
-  let tHTML = '';
-  RL_TRACKS.forEach((track, ti) => {
-    if(ti > 0) tHTML += `<div class="rl-row rl-sep" style="height:1px"></div>`;
-    const cells = Array(18).fill(null);
-    track.blocks.forEach(b => {
-      for(let j=b.start; j<b.start+b.dur && j<18; j++) cells[j] = b;
-    });
-
-    tHTML += `<div class="rl-row">`;
-    tHTML += `<div class="rl-label" style="color:${track.color}">${track.label}</div>`;
-
-    let i=0;
-    while(i<18) {
-      const b = cells[i];
-      if(!b) {
-        let ec=0; while(i+ec<18 && !cells[i+ec]) ec++;
-        tHTML += `<div class="rl-empty" style="grid-column:span ${ec}"></div>`;
-        i+=ec;
-      } else {
-        const rd = getRdBlock(b.id);
-        const pending = (rd.todos||[]).filter(t=>!t.done).length;
-        const statusCls = rd.status==='done'?' rl-status-done':rd.status==='active'?' rl-status-active':'';
-        const fade = rd.status==='done'?'88':'';
-        // Filter by phase if active
-        const phaseOk = _rlPhase===null || RL_PHASES.find(p=>p.id===_rlPhase && b.start<=p.e && b.start+b.dur>p.s);
-        const opacity = (!phaseOk) ? 'opacity:.2;' : '';
-        tHTML += `<div class="rl-bar${statusCls}" style="${opacity}background:${b.color}${fade};grid-column:span ${b.dur}" onclick="openRdBlock('${b.id}','${track.id}')">
-          <span class="rl-bar-text">${b.name}</span>
-          ${pending>0?`<div class="rl-bar-badge">${pending}</div>`:''}
-        </div>`;
-        i+=b.dur;
-      }
-    }
-    tHTML += `</div>`;
+  let tHTML='';
+  RL_TRACKS.forEach(track => {
+    tHTML+=`<div class="rl-track">
+      <div class="rl-track-head">
+        <div class="rl-th-color" style="background:${track.color}"></div>
+        <span class="rl-th-name" style="color:${track.color}">${track.label}</span>
+        <div class="rl-th-sep"></div>
+        <span style="font-family:var(--fm);font-size:9px;color:var(--muted)">${track.blocks.length} bloques</span>
+      </div>`;
+    const rows=layoutBlocks(track.blocks);
+    rows.forEach(rowBlocks => { tHTML+=renderBarRow(rowBlocks, track.id); });
+    tHTML+='</div>';
   });
 
-  el.innerHTML = `<div class="rl-scroll" id="rlScroll">
-    <div class="rl-head-row">${mHTML}</div>
-    <div id="rlNow" class="rl-now-indicator"></div>
-    ${tHTML}
+  el.innerHTML=`<div class="rl-scroll" id="rlScroll">
+    <div class="rl-inner">
+      <div style="position:relative">
+        <div id="rlNow" class="rl-now-line"><div class="rl-now-top"></div></div>
+        ${pbHTML}${mHTML}${tHTML}
+      </div>
+    </div>
   </div>`;
 
-  // Position NOW line
-  requestAnimationFrame(() => {
-    const wrap = document.getElementById('rlScroll');
-    const now = document.getElementById('rlNow');
-    if(wrap && now) {
-      const x = LBL + NOW*(COL+2) + COL/2;
-      now.style.left = (x+16)+'px'; // +16 for padding
-      now.style.top = '28px';
-      now.style.height = (wrap.scrollHeight-28)+'px';
+  requestAnimationFrame(()=>{
+    const now=document.getElementById('rlNow');
+    if(now) {
+      const x=PAD+LBL+NOW*(COL+GAP)+Math.floor(COL/2);
+      now.style.left=x+'px';
     }
   });
 }
@@ -5898,7 +5945,7 @@ function openRdBlock(blockId, trackId) {
   const sheet = document.getElementById('rbSheet');
   sheet.innerHTML = `
     <div class="rb-handle"></div>
-    <div style="padding:14px 18px 0">
+    <div class="rb-inner">
       <div class="rb-phase-tag" style="color:${track.color}">${track.label}</div>
       <div class="rb-title">${block.name}</div>
       <div class="rb-dates">${s} ${sy} → ${e} ${ey}</div>
