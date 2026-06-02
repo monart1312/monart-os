@@ -4160,7 +4160,7 @@ function toggleTask(id) {
 // ══════════════════════════════════
 // CALENDAR
 // ══════════════════════════════════
-let calDate = new Date(2026, 4, 1);
+let calDate = new Date(); calDate.setDate(1);
 
 function calNav(dir) {
   calDate = new Date(calDate.getFullYear(), calDate.getMonth()+dir, 1);
