@@ -2838,6 +2838,7 @@ async function loadFromCloud(silent = false) {
       localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
     }
   }
+  updateDailyLog(); // actualizar log con estado actual de TASKS tras sync
   updateAll(); renderTasks(); renderAreaStats();
   // Refresh calendar UI if visible
   if(document.getElementById('page-cal')?.classList.contains('active')) renderCal();
