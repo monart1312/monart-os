@@ -3105,6 +3105,7 @@ function moveRpgItem(id, dir) {
 }
 
 function nextDay(silent) {
+  updateDailyLog(); // guardar estado del día ANTES de limpiar completados y tareas
   const habsDone = ALL_HABITS.filter(h=>ST.completed[h]).length;
   if(habsDone === ALL_HABITS.length) ST.streak++;
   else if(habsDone === 0) ST.streak = 0;
