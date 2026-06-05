@@ -1986,6 +1986,58 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .rb-add-btn { background:var(--s3); border:none; border-radius:8px; padding:6px 12px; color:var(--accent); font-weight:800; font-size:18px; cursor:pointer; line-height:1; }
 .rb-save-btn { width:100%; padding:16px; border-radius:14px; background:var(--accent); border:none; color:#031a16; font-size:15px; font-weight:800; cursor:pointer; margin-top:18px; }
 
+/* ── PLANNING MODALS ── */
+.plan-overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:3000; display:flex; flex-direction:column; overflow:hidden; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.plan-header { padding:20px 20px 0; flex-shrink:0; }
+.plan-eyebrow { font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.14em; color:var(--accent); margin-bottom:6px; }
+.plan-title { font-size:22px; font-weight:800; color:var(--text); margin-bottom:4px; }
+.plan-sub { font-family:var(--fm); font-size:10px; color:var(--muted2); margin-bottom:18px; }
+.plan-body { flex:1; overflow-y:auto; padding:0 20px; scrollbar-width:none; }
+.plan-body::-webkit-scrollbar { display:none; }
+.plan-footer { padding:16px 20px 32px; flex-shrink:0; border-top:1px solid var(--border); }
+.plan-sec-label { font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); margin:16px 0 8px; }
+/* Pill items in planning */
+.pp-item { display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--s2); border-radius:10px; border:1px solid var(--border); margin-bottom:5px; cursor:pointer; transition:all .15s; touch-action:manipulation; }
+.pp-item:active { transform:scale(.98); }
+.pp-item.pp-selected { border-color:var(--accent); background:rgba(0,212,180,.08); }
+.pp-item.pp-fixed { opacity:.7; cursor:default; }
+.pp-item-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.pp-item-name { flex:1; font-size:13px; font-weight:600; color:var(--text); }
+.pp-item-meta { font-family:var(--fm); font-size:9px; color:var(--muted2); flex-shrink:0; }
+.pp-item-check { width:20px; height:20px; border-radius:6px; border:1.5px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+.pp-item.pp-selected .pp-item-check { background:var(--accent); border-color:var(--accent); color:#031a16; }
+/* Day plan pills (reorderable) */
+.dp-pill { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; margin-bottom:5px; border:1px solid var(--border); }
+.dp-pill.dp-fixed { background:var(--s2); }
+.dp-pill.dp-block { background:var(--s1); border-style:dashed; }
+.dp-pill-reorder { display:flex; flex-direction:column; gap:2px; flex-shrink:0; }
+.dp-move-btn { background:none; border:none; cursor:pointer; color:var(--muted2); font-size:12px; padding:1px 3px; line-height:1; touch-action:manipulation; border-radius:4px; }
+.dp-move-btn:active { color:var(--accent); background:var(--s3); }
+.dp-pill-icon { font-size:14px; flex-shrink:0; }
+.dp-pill-body { flex:1; min-width:0; }
+.dp-pill-name { font-size:13px; font-weight:700; color:var(--text); }
+.dp-pill-time { font-family:var(--fm); font-size:9px; color:var(--muted2); }
+.dp-pill-del { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:14px; padding:2px 4px; }
+.plan-add-row { display:flex; gap:8px; align-items:center; padding:10px 14px; background:var(--s2); border-radius:10px; border:1px dashed var(--border2); margin-bottom:5px; }
+.plan-add-row input { flex:1; background:none; border:none; color:var(--text); font-size:13px; font-family:var(--ff); }
+.plan-add-row input::placeholder { color:var(--muted); }
+.plan-add-row input:focus { outline:none; }
+.plan-confirm-btn { width:100%; padding:16px; border-radius:14px; background:var(--accent); border:none; color:#031a16; font-size:15px; font-weight:800; cursor:pointer; }
+.plan-skip-btn { width:100%; padding:10px; border-radius:10px; background:transparent; border:1px solid var(--border); color:var(--muted2); font-size:12px; font-weight:700; cursor:pointer; margin-top:8px; font-family:var(--fm); }
+.plan-task-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--s2); border-radius:10px; margin-bottom:8px; cursor:pointer; border:1px solid transparent; transition:border-color .15s; }
+.plan-task-item.selected { border-color:var(--accent); background:rgba(123,111,255,.08); }
+.plan-task-check { width:20px; height:20px; border-radius:6px; border:1px solid var(--border2); background:var(--s3); display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+.plan-task-item.selected .plan-task-check { background:var(--accent); border-color:var(--accent); color:#031a16; }
+.plan-task-name { font-size:13px; font-weight:600; line-height:1.3; }
+.plan-task-area { font-family:var(--fm); font-size:8px; letter-spacing:1px; margin-top:2px; }
+.plan-dp-block { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--s2); border-radius:10px; margin-bottom:6px; border-left:3px solid var(--border2); }
+.plan-dp-time { font-family:var(--fm); font-size:10px; color:var(--muted); width:38px; flex-shrink:0; }
+.plan-dp-label { flex:1; font-size:13px; font-weight:600; }
+.plan-dp-type { font-family:var(--fm); font-size:8px; color:var(--muted2); flex-shrink:0; letter-spacing:1px; }
+.plan-dp-btns { display:flex; flex-direction:column; gap:2px; flex-shrink:0; }
+.plan-dp-btns button { background:var(--s3); border:none; color:var(--muted2); border-radius:4px; padding:2px 7px; cursor:pointer; font-size:10px; line-height:1.4; touch-action:manipulation; }
+.plan-section-label { font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:3px; color:var(--muted); padding:14px 0 8px; text-transform:uppercase; }
+
 /* ── SWIPE FEEDBACK ── */
 .task-item.swiping-right { background:rgba(93,234,144,0.12) !important; border-color:var(--green) !important; }
 .task-item.swiping-left { background:rgba(255,144,64,0.12) !important; border-color:var(--orange) !important; }
@@ -2489,6 +2541,40 @@ button, a, [onclick], [ontouchstart] {
 <div class="rb-overlay" id="rbOverlay" onclick="closeRoadmapBlock()"></div>
 <div class="rb-sheet" id="rbSheet"></div>
 
+<!-- WEEKLY PLANNING MODAL -->
+<div class="plan-overlay" id="weekPlanModal" style="display:none">
+  <div class="plan-header">
+    <div class="plan-eyebrow">CADA LUNES · PLANIFICACIÓN</div>
+    <div class="plan-title">¿Qué hay que zanjar esta semana?</div>
+    <div class="plan-sub" id="wpModalSub">Elige las prioridades — no por día, sino por semana</div>
+  </div>
+  <div class="plan-body" id="wpModalBody"></div>
+  <div class="plan-footer">
+    <button class="plan-confirm-btn" onclick="confirmWeekPlan()">Confirmar semana →</button>
+    <button class="plan-skip-btn" onclick="skipWeekPlan()">Posponer (no recomendado)</button>
+  </div>
+</div>
+
+<!-- DAILY PLANNING MODAL -->
+<div class="plan-overlay" id="dayPlanModal" style="display:none">
+  <div class="plan-header">
+    <div class="plan-eyebrow">PLANIFICAR DÍA SIGUIENTE</div>
+    <div class="plan-title" id="dpModalTitle">Mañana</div>
+    <div class="plan-sub">Organiza los bloques — fijos + trabajo · Reordena con ▲▼</div>
+  </div>
+  <div class="plan-body" id="dpModalBody"></div>
+  <div class="plan-footer">
+    <div class="plan-add-row">
+      <input id="dpCustomInput" placeholder="+ Añadir bloque libre..."
+        onkeydown="if(event.key==='Enter'&&this.value.trim()){addDpCustomBlock(this.value.trim());this.value='';}" />
+      <button onclick="const v=document.getElementById('dpCustomInput');if(v.value.trim()){addDpCustomBlock(v.value.trim());v.value='';}"
+        style="background:var(--s3);border:none;border-radius:8px;padding:6px 12px;color:var(--accent);font-weight:800;font-size:16px;cursor:pointer">+</button>
+    </div>
+    <button class="plan-confirm-btn" onclick="confirmDayPlan()">Guardar plan del día →</button>
+    <button class="plan-skip-btn" onclick="closeDayPlanModal()">Cerrar sin guardar</button>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════
 // DATA
@@ -2521,7 +2607,13 @@ const LEVELS = [
 const AREA_COLORS = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
 
 
-const ALL_HABITS = ['notion','lectura','paseo-m','trabajo1','dibujo','agua1','paseo-d','agua2','trabajo2','entreno','marca','agua3','paseo-n','agua4'];
+const ALL_HABITS = ['estirar','paseo-m','agua1','paseo-d','agua2','agua3','paseo-n','agua4','cierre-dia'];
+const ALL_HABITS_ENTRENO = [...ALL_HABITS, 'entreno']; // entreno solo L·M·X·V
+function getActiveHabits() {
+  const dow = new Date().getDay();
+  // entreno: lun(1), mar(2), mie(3), vie(5)
+  return (dow===1||dow===2||dow===3||dow===5) ? ALL_HABITS_ENTRENO : ALL_HABITS;
+}
 const XP_MAP = {'notion':10,'lectura':10,'paseo-m':15,'trabajo1':25,'dibujo':10,'agua1':5,'paseo-d':15,'agua2':5,'trabajo2':25,'entreno':20,'marca':25,'agua3':5,'paseo-n':15,'agua4':5};
 
 const EVENTS = [
@@ -2742,6 +2834,8 @@ async function syncToCloud() {
     daily_missions: ST.dailyMissions || null,
     roadmap: ST.roadmap || {},
     user_events: getUserEvents(),
+    week_plan: ST.weekPlan || null,
+    day_plan: ST.dayPlan || null,
     updated_at: ST.updated_at
   });
 }
@@ -2785,6 +2879,9 @@ async function loadFromCloud(silent = false) {
         Object.keys(ST.roadmap || {}).forEach(k => { merged[k] = (ST.roadmap)[k]; });
         ST.roadmap = merged;
       }
+      // Merge week_plan / day_plan (remote gana si es más reciente)
+      if(remote.week_plan && (!ST.weekPlan || (remote.week_plan.week||0) >= (ST.weekPlan?.week||0))) ST.weekPlan = remote.week_plan;
+      if(remote.day_plan && (!ST.dayPlan || (remote.day_plan.date||'') >= (ST.dayPlan?.date||''))) ST.dayPlan = remote.day_plan;
       // Merge user events (unión por id, remote gana si mismo id)
       if(remote.user_events && Array.isArray(remote.user_events)) {
         const localEvs = getUserEvents();
@@ -2810,7 +2907,10 @@ async function loadFromCloud(silent = false) {
                rpgDayOrder: ST.rpgDayOrder || [],
                roadmap: remote.roadmap || ST.roadmap || {},
                dailyLog: remote.daily_log || ST.dailyLog || {},
-               dailyMissions: remote.daily_missions || ST.dailyMissions || null };
+               dailyMissions: remote.daily_missions || ST.dailyMissions || null,
+               weekPlan: remote.week_plan || ST.weekPlan || null,
+               weekPlanSkippedWeek: ST.weekPlanSkippedWeek || null,
+               dayPlan: remote.day_plan || ST.dayPlan || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
         if(remote.user_events && Array.isArray(remote.user_events) && remote.user_events.length > 0) {
           saveUserEvents(remote.user_events);
@@ -2880,53 +2980,25 @@ function goPage(id, btn) {
 // SCHEDULE DATA (por día de semana)
 // ══════════════════════════════════
 function getDaySchedule() {
-  const dow = new Date().getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
-  // Bloques fijos — iguales todos los días
+  const dow = new Date().getDay();
+  const isEntrenoDia = (dow===1||dow===2||dow===3||dow===5);
+  // Hábitos fijos diarios — filosofía estoica: cuerpo + mente + cierre consciente
   const base = [
-    {id:'notion',  time:'09:30',tag:'CHECK',cat:'gold',  name:'Check diario',            sub:'5 min · Abrir app · Ver tareas del día',           xp:10},
-    {id:'lectura', time:'09:45',tag:'READ', cat:'gold',  name:'Lectura diaria',          sub:'10 min · Saga o filosofía · Sin pantallas · Presente', xp:10},
-    {id:'paseo-m', time:'10:00',tag:'WALK', cat:'green', name:'Paseo mañana',            sub:'20 min · Correa, vuelta al bloque',                 xp:15},
-    {id:'dibujo',  time:'12:00',tag:'DRAW', cat:'gold',  name:'Dibujo diario',           sub:'20 min · Rápido · Sin juzgar · Solo trazar',       xp:10},
-    {id:'agua1',   time:'12:30',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 1',           sub:'500ml · Primer vaso del día',                       xp:5},
-    {id:'paseo-d', time:'13:30',tag:'WALK', cat:'green', name:'Paseo mediodía',          sub:'1h · Parque o ruta larga',                          xp:15},
-    {id:'agua2',   time:'14:30',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 2',           sub:'500ml · Con la comida o después',                   xp:5},
-    {id:'entreno', time:'17:00',tag:'GYM',  cat:'cyan',  name:'Entreno / Estiramientos', sub:'L·X·V gym 1h tarde · M·J·S estiramientos 20min',   xp:20},
-    {id:'agua3',   time:'19:00',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 3',           sub:'500ml · Por la tarde',                              xp:5},
-    {id:'paseo-n', time:'23:00',tag:'WALK', cat:'green', name:'Paseo noche',             sub:'40 min · Paseo tranquilo para desconectar',        xp:15},
-    {id:'agua4',   time:'23:30',tag:'H2O',  cat:'cyan',  name:'Agua — Vaso 4',           sub:'500ml · Último vaso del día',                       xp:5},
+    {id:'estirar',   time:'09:00',tag:'STRETCH',cat:'cyan',  name:'Estiramientos',          sub:'15 min · Movilidad · Sin prisa · Cada mañana',              xp:15},
+    {id:'paseo-m',   time:'10:00',tag:'WALK',   cat:'green', name:'Paseo mañana',           sub:'20 min · Kompis · Vuelta al bloque · Aire',                 xp:15},
+    {id:'agua1',     time:'11:00',tag:'H2O',    cat:'cyan',  name:'Agua — Vaso 1',          sub:'500ml',                                                     xp:5},
+    {id:'paseo-d',   time:'13:30',tag:'WALK',   cat:'green', name:'Paseo mediodía',         sub:'1h · Parque o ruta larga · Kompis',                         xp:15},
+    {id:'agua2',     time:'14:00',tag:'H2O',    cat:'cyan',  name:'Agua — Vaso 2',          sub:'500ml · Con la comida o después',                           xp:5},
+    {id:'agua3',     time:'17:00',tag:'H2O',    cat:'cyan',  name:'Agua — Vaso 3',          sub:'500ml · Por la tarde',                                      xp:5},
+    {id:'paseo-n',   time:'22:00',tag:'WALK',   cat:'green', name:'Paseo noche',            sub:'30-40 min · Tranquilo · Desconectar',                       xp:15},
+    {id:'agua4',     time:'22:30',tag:'H2O',    cat:'cyan',  name:'Agua — Vaso 4',          sub:'500ml · Último del día',                                    xp:5},
+    // Séneca: "Dum differtur vita transcurrit" — revisa el día antes de dormir
+    {id:'cierre-dia',time:'23:00',tag:'REVIEW', cat:'gold',  name:'Cierre del día',         sub:'¿Qué hice bien? ¿Qué cambiaría? · Plan mañana · Séneca',    xp:25},
   ];
-  // Bloques variables — trabajo1 (10:30), trabajo2 (16:00), marca/tarde (18:30)
-  const varBlocks = [
-    // 0 — DOMINGO
-    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Proyectos personales',        sub:'90 min · Sin presión · Cosas pendientes · Pila personal',        xp:25},
-     {id:'trabajo2',time:'15:30',tag:'WORK', cat:'purple',name:'Dibujo libre / Exploración',  sub:'90 min · Bocetos · Sin objetivo · Fluir',                        xp:25},
-     {id:'marca',   time:'18:30',tag:'CHECK',cat:'gold',  name:'Revisión semanal',            sub:'60 min · Repaso objetivos · Prepara la semana siguiente',        xp:25}],
-    // 1 — LUNES
-    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'El Contable — Trabajo profundo',  sub:'90 min · Móvil boca abajo · Tarea prioritaria del día',      xp:25},
-     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Houdini · Simulaciones FX',       sub:'2h · Nodo a nodo · Tutorial o proyecto propio',              xp:25},
-     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Trabajo personal marca',           sub:'90 min · Portfolio · Redes · Contenido · Clientes',          xp:25}],
-    // 2 — MARTES
-    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Despinsage — Trabajo profundo',   sub:'90 min · Carteles · Vídeo · Materiales pendientes',           xp:25},
-     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Blender · Modelado / Render',     sub:'2h · Continuar proyecto · Avanzar técnica',                   xp:25},
-     {id:'marca',   time:'18:30',tag:'MEET', cat:'cyan',  name:'Reunión Despinsage 🤝',            sub:'60 min · Reunión semanal de producción',                      xp:25}],
-    // 3 — MIÉRCOLES
-    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Monplan — Trabajo profundo',      sub:'90 min · Contenido · Estrategia · Entrega',                   xp:25},
-     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Houdini · VFX / Procedural',      sub:'2h · Profundizar nodos · Proyecto FX propio',                 xp:25},
-     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Trabajo personal marca',           sub:'90 min · Portfolio · Redes · Contenido · Clientes',           xp:25}],
-    // 4 — JUEVES
-    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Proyecto foco — Cerrar loops',    sub:'90 min · Revisar pendientes · Entregar · Documentar',          xp:25},
-     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'IA Generativa · Exploración',     sub:'2h · Midjourney · Runway · ComfyUI · Prompting',              xp:25},
-     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Trabajo personal marca',           sub:'90 min · Portfolio · Contenido · Admin marca',                xp:25}],
-    // 5 — VIERNES
-    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Cierre semana — Revisión',        sub:'90 min · Entregar · Cerrar · Documentar · Tareas sueltas',    xp:25},
-     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Blender · Render / Compositing',  sub:'2h · Revisión · Acabados · Subir a portfolio',                xp:25},
-     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Revisión semanal marca',           sub:'60 min · Métricas · Contenido · Plan siguiente semana',       xp:25}],
-    // 6 — SÁBADO
-    [{id:'trabajo1',time:'10:30',tag:'WORK', cat:'purple',name:'Proyecto libre / Experimentos',   sub:'90 min · Sin presión · Prueba algo nuevo · Explora',          xp:25},
-     {id:'trabajo2',time:'16:00',tag:'STUDY',cat:'gold',  name:'Exploración creativa',            sub:'2h · Houdini · Blender · IA · Lo que pida el cuerpo',         xp:25},
-     {id:'marca',   time:'18:30',tag:'MARCA',cat:'purple',name:'Contenido redes / Portfolio',     sub:'90 min · Publicar · Crear · Conectar · Crecer',               xp:25}],
-  ];
-  return [...base, ...varBlocks[dow]];
+  // Entreno solo L·M·X·V
+  const entreno = {id:'entreno',time:'17:30',tag:'GYM',cat:'cyan',name:'Entreno',sub:'1h · Gym o calistenia',xp:20};
+  if(isEntrenoDia) base.splice(6, 0, entreno); // insertar antes del paseo noche
+  return base;
 }
 
 // Sync ALL_HABITS con SCHEDULE
@@ -2947,6 +3019,7 @@ function toggleH(id, xpVal) {
     ST.xp += xp;
     showXpPop('+'+xp+' XP');
     updateDailyLog();
+    if(id === 'cierre-dia') setTimeout(() => openDayPlanModal(), 700);
   } else {
     ST.completed[id] = false;
     ST.xp = Math.max(0, ST.xp - xp);
@@ -3106,15 +3179,15 @@ function moveRpgItem(id, dir) {
 
 function nextDay(silent) {
   updateDailyLog(); // guardar estado del día ANTES de limpiar completados y tareas
-  const habsDone = ALL_HABITS.filter(h=>ST.completed[h]).length;
-  if(habsDone === ALL_HABITS.length) ST.streak++;
+  const habsDone = getActiveHabits().filter(h=>ST.completed[h]).length;
+  if(habsDone === getActiveHabits().length) ST.streak++;
   else if(habsDone === 0) ST.streak = 0;
   ST.streakRecord = Math.max(ST.streakRecord||0, ST.streak);
 
   ST.history.unshift({
     day: ST.day,
     done: habsDone,
-    total: ALL_HABITS.length,
+    total: getActiveHabits().length,
     xp: ST.xp,
     date: new Date().toLocaleDateString('es-ES',{day:'numeric',month:'short'})
   });
@@ -3161,10 +3234,10 @@ function checkAutoClose() {
     const dStr = d.toISOString().split('T')[0];
     const log = (ST.dailyLog||{})[dStr] || {};
     const habsDone = log.habitsDone || 0;
-    if(habsDone === ALL_HABITS.length) ST.streak++;
+    if(habsDone === getActiveHabits().length) ST.streak++;
     else if(habsDone === 0) ST.streak = Math.max(0, ST.streak - 1);
     ST.streakRecord = Math.max(ST.streakRecord||0, ST.streak);
-    ST.history.unshift({ day: ST.day, done: habsDone, total: ALL_HABITS.length, xp: ST.xp,
+    ST.history.unshift({ day: ST.day, done: habsDone, total: getActiveHabits().length, xp: ST.xp,
       date: d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}) });
     ST.day = Math.min(ST.day+1, 66);
   }
@@ -3199,8 +3272,8 @@ function updateAll() {
   const xpS = getXpStart(lvl);
   const xpE = getXpEnd(lvl);
   const barPct = Math.min(100, Math.round(((xp-xpS)/(xpE-xpS))*100));
-  const done = ALL_HABITS.filter(h=>ST.completed[h]).length;
-  const pct = Math.round((done/ALL_HABITS.length)*100);
+  const done = getActiveHabits().filter(h=>ST.completed[h]).length;
+  const pct = Math.round((done/getActiveHabits().length)*100);
 
   // Streak record
   const curStreak = computeStreak();
@@ -3231,7 +3304,7 @@ function updateAll() {
   const rpgFill = document.getElementById('rpg-xp-fill');
   const rpgXpLbl = document.getElementById('rpg-xp-lbl');
   if(rpgPct) rpgPct.textContent = pct+'%';
-  if(rpgSub) rpgSub.textContent = done+' / '+ALL_HABITS.length;
+  if(rpgSub) rpgSub.textContent = done+' / '+getActiveHabits().length;
   if(rpgLvl) rpgLvl.textContent = getLvlName(lvl).toUpperCase();
   if(rpgFill) rpgFill.style.width = barPct+'%';
   if(rpgXpLbl) rpgXpLbl.textContent = xp+' XP';
@@ -4916,6 +4989,157 @@ function getWeekNum(d) {
 
 
 // ══════════════════════════════════
+// WEEK PLAN & DAY PLAN
+// ══════════════════════════════════
+let _wpSelected = new Set();
+let _dpBlocks = [];
+
+// ── Week Plan ──
+function checkWeekPlanModal() {
+  if(new Date().getDay() !== 1) return;
+  const week = getWeekNum(new Date());
+  if((ST.weekPlan?.week||0) >= week) return;
+  if(ST.weekPlanSkippedWeek === week) return;
+  setTimeout(() => openWeekPlanModal(), 900);
+}
+
+function openWeekPlanModal() {
+  _wpSelected = new Set(ST.weekPlan?.tasks || []);
+  _renderWpBody();
+  document.getElementById('wpModalSub').textContent = `Semana ${getWeekNum(new Date())} · Elige qué zanjamos esta semana`;
+  document.getElementById('weekPlanModal').style.display = 'flex';
+}
+
+function _renderWpBody() {
+  const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
+  const AREA_C = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
+  const urgent = TASKS.filter(t => !t.done && (getStatus(t)==='ontheline'||getStatus(t)==='forreview'||t.prio==='alta'));
+  const rest = TASKS.filter(t => !t.done && !urgent.includes(t));
+  function row(t) {
+    const sel = _wpSelected.has(t.id);
+    return `<div class="plan-task-item${sel?' selected':''}" onclick="toggleWpTask('${t.id}')">
+      <div class="plan-task-check">${sel?'✓':''}</div>
+      <div style="flex:1;min-width:0">
+        <div class="plan-task-name">${t.name}</div>
+        <div class="plan-task-area" style="color:${AREA_C[t.area]||'#888'}">${AREA_NAMES[t.area]||t.area}</div>
+      </div>
+    </div>`;
+  }
+  let html = '';
+  if(urgent.length) html += `<div class="plan-section-label">⚡ Prioritarias</div>`+urgent.map(row).join('');
+  if(rest.length) html += `<div class="plan-section-label">Backlog</div>`+rest.map(row).join('');
+  document.getElementById('wpModalBody').innerHTML = html || '<div style="color:var(--muted);font-size:13px;padding:12px 0">Sin tareas pendientes 🎉</div>';
+}
+
+function toggleWpTask(id) {
+  if(_wpSelected.has(id)) _wpSelected.delete(id); else _wpSelected.add(id);
+  _renderWpBody();
+}
+
+function confirmWeekPlan() {
+  ST.weekPlan = { week: getWeekNum(new Date()), tasks: [..._wpSelected] };
+  save(); syncToCloud();
+  document.getElementById('weekPlanModal').style.display = 'none';
+  showToast(`⚡ Plan semanal — ${_wpSelected.size} prioridades`);
+}
+
+function skipWeekPlan() {
+  ST.weekPlanSkippedWeek = getWeekNum(new Date());
+  save();
+  document.getElementById('weekPlanModal').style.display = 'none';
+  showToast('⏭ Plan semanal pospuesto');
+}
+
+// ── Day Plan ──
+function openDayPlanModal() {
+  const tom = new Date(); tom.setDate(tom.getDate()+1);
+  const tomStr = tom.toISOString().split('T')[0];
+  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  document.getElementById('dpModalTitle').textContent = DOW_NAMES[tom.getDay()]+' '+tom.getDate();
+
+  if(ST.dayPlan?.date === tomStr) {
+    _dpBlocks = [...ST.dayPlan.blocks];
+  } else {
+    const dow = tom.getDay();
+    const isE = (dow===1||dow===2||dow===3||dow===5);
+    const habitDef = [
+      {id:'estirar',   time:'09:00', name:'Estiramientos'},
+      {id:'paseo-m',   time:'10:00', name:'Paseo mañana'},
+      {id:'agua1',     time:'11:00', name:'Agua — Vaso 1'},
+      {id:'paseo-d',   time:'13:30', name:'Paseo mediodía'},
+      {id:'agua2',     time:'14:00', name:'Agua — Vaso 2'},
+      {id:'agua3',     time:'17:00', name:'Agua — Vaso 3'},
+      ...(isE?[{id:'entreno',time:'17:30',name:'Entreno'}]:[]),
+      {id:'paseo-n',   time:'22:00', name:'Paseo noche'},
+      {id:'agua4',     time:'22:30', name:'Agua — Vaso 4'},
+      {id:'cierre-dia',time:'23:00', name:'Cierre del día'},
+    ];
+    _dpBlocks = habitDef.map(h => ({type:'habit',id:h.id,label:h.name,time:h.time}));
+    allEvents().filter(e => e.d === tomStr).forEach(ev => {
+      _dpBlocks.push({type:'cal',id:ev.id||('cal_'+Math.random()),label:ev.n,time:ev.time||null});
+    });
+    _dpBlocks.sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
+  }
+  _renderDpBody();
+  document.getElementById('dayPlanModal').style.display = 'flex';
+}
+
+function _renderDpBody() {
+  const typeColor = {habit:'var(--accent)',cal:'#e8c56a',task:'#9b65e0',custom:'var(--muted2)'};
+  const typeLabel = {habit:'HÁBITO',cal:'EVENTO',task:'TAREA',custom:'LIBRE'};
+  const AREA_C = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
+  let html = `<div class="plan-section-label">Bloques del día</div>`;
+  _dpBlocks.forEach((b,i) => {
+    const col = typeColor[b.type]||'var(--muted2)';
+    const isFixed = b.type === 'habit';
+    html += `<div class="plan-dp-block" style="border-left-color:${col}">
+      <div class="plan-dp-time">${b.time||'—'}</div>
+      <div class="plan-dp-label">${b.label}</div>
+      <div class="plan-dp-type" style="color:${col}">${typeLabel[b.type]||''}</div>
+      ${!isFixed ? `<div class="plan-dp-btns">
+        <button onclick="moveDpBlock(${i},-1)"${i===0?' disabled':''}>▲</button>
+        <button onclick="moveDpBlock(${i},1)"${i===_dpBlocks.length-1?' disabled':''}>▼</button>
+        <button onclick="removeDpBlock(${i})" style="color:var(--accent2)">✕</button>
+      </div>` : ''}
+    </div>`;
+  });
+  const wpTaskIds = ST.weekPlan?.tasks || [];
+  const available = TASKS.filter(t => wpTaskIds.includes(t.id) && !t.done && !_dpBlocks.some(b => b.id===t.id && b.type==='task'));
+  if(available.length) {
+    html += `<div class="plan-section-label">+ Añadir desde plan semanal</div>`;
+    available.forEach(t => {
+      const col = AREA_C[t.area]||'#888';
+      html += `<div class="plan-dp-block" style="border-left-color:${col};opacity:.65;cursor:pointer" onclick="addDpTask('${t.id}')">
+        <div class="plan-dp-time">＋</div>
+        <div class="plan-dp-label">${t.name}</div>
+        <div class="plan-dp-type" style="color:${col}">${t.area.toUpperCase()}</div>
+      </div>`;
+    });
+  }
+  document.getElementById('dpModalBody').innerHTML = html;
+}
+
+function moveDpBlock(i, dir) {
+  const j = i+dir; if(j<0||j>=_dpBlocks.length) return;
+  [_dpBlocks[i],_dpBlocks[j]] = [_dpBlocks[j],_dpBlocks[i]]; _renderDpBody();
+}
+function removeDpBlock(i) { _dpBlocks.splice(i,1); _renderDpBody(); }
+function addDpTask(id) { const t = TASKS.find(x=>x.id===id); if(!t) return; _dpBlocks.push({type:'task',id,label:t.name,time:null}); _renderDpBody(); }
+function addDpCustomBlock(text) { _dpBlocks.push({type:'custom',id:'c'+Date.now(),label:text,time:null}); _renderDpBody(); }
+
+function confirmDayPlan() {
+  const tom = new Date(); tom.setDate(tom.getDate()+1);
+  ST.dayPlan = { date: tom.toISOString().split('T')[0], blocks: [..._dpBlocks] };
+  save(); syncToCloud();
+  document.getElementById('dayPlanModal').style.display = 'none';
+  showToast('✅ Plan del día guardado');
+}
+
+function closeDayPlanModal() {
+  document.getElementById('dayPlanModal').style.display = 'none';
+}
+
+// ══════════════════════════════════
 // USER EVENTS (voice-added, localStorage)
 // ══════════════════════════════════
 function getUserEvents() {
@@ -5002,7 +5226,7 @@ function updateDailyLog() {
   const today = new Date().toISOString().split('T')[0];
   if(!ST.dailyLog) ST.dailyLog = {};
   if(!ST.dailyLog[today]) ST.dailyLog[today] = {habitsDone:0, tasks:[]};
-  ST.dailyLog[today].habitsDone = ALL_HABITS.filter(h=>ST.completed[h]).length;
+  ST.dailyLog[today].habitsDone = getActiveHabits().filter(h=>ST.completed[h]).length;
   const doneTasks = TASKS.filter(t => t.done || getStatus(t)==='done');
   ST.dailyLog[today].tasks = doneTasks.map(t=>({name:t.name, area:t.area}));
 }
@@ -5029,7 +5253,7 @@ function renderDailyProgress() {
 
     // Habits segment (gold, on top)
     if(log.habitsDone > 0) {
-      const h = Math.max(3, Math.round((log.habitsDone / ALL_HABITS.length) * 20));
+      const h = Math.max(3, Math.round((log.habitsDone / getActiveHabits().length) * 20));
       segments.push({color:'#e8c56a', h});
     }
     // Tasks by area
@@ -5094,7 +5318,7 @@ function showDayStats(dateStr) {
         <span style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-left:auto">${t.area||''}</span>
       </div>`).join('')
     : '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:8px 0">Sin tareas registradas</div>';
-  const habLine = `<div style="font-family:var(--fm);font-size:10px;color:#e8c56a;margin-bottom:10px">🌟 ${habsDone} / ${ALL_HABITS.length} hábitos completados</div>`;
+  const habLine = `<div style="font-family:var(--fm);font-size:10px;color:#e8c56a;margin-bottom:10px">🌟 ${habsDone} / ${getActiveHabits().length} hábitos completados</div>`;
   showModal(`<div style="font-weight:800;font-size:15px;margin-bottom:12px">${label}</div>${habLine}${tasksHTML}`, false);
 }
 
@@ -5262,7 +5486,7 @@ function saveTaskNotes() {
 // ══════════════════════════════════
 function computeStreak() {
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayHabits = ALL_HABITS.filter(h=>ST.completed[h]).length;
+  const todayHabits = getActiveHabits().filter(h=>ST.completed[h]).length;
   let streak = 0;
   for(let i=0; i<365; i++) {
     const d = new Date(); d.setDate(d.getDate()-i);
@@ -5738,7 +5962,7 @@ function showWeeklyReview() {
   const now = new Date();
   const weekHistory = (ST.history||[]).slice(0,7);
   const totalHabits = weekHistory.reduce((s,e)=>s+(e.done||0),0);
-  const maxHabits = weekHistory.reduce((s,e)=>s+(e.total||ALL_HABITS.length),0);
+  const maxHabits = weekHistory.reduce((s,e)=>s+(e.total||getActiveHabits().length),0);
   const doneTasks = (ST.history[0]||{}).tasksCompleted || 0;
   const pct = maxHabits > 0 ? Math.round(totalHabits/maxHabits*100) : 0;
   const weekNum = getISOWeek(now);
@@ -6074,6 +6298,7 @@ async function init() {
 
   // Luego sincronizar con la nube
   await loadFromCloud();
+  checkWeekPlanModal();
 }
 
 init();
