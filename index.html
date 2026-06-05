@@ -2845,9 +2845,11 @@ async function loadFromCloud(silent = false) {
   const remote = await sbGet('habits', 'sergi');
   if(remote && remote.completed !== undefined) {
     if(!silent) {
-      const merged = Object.assign({}, remote.completed);
-      Object.keys(ST.completed || {}).forEach(k => { if(ST.completed[k]) merged[k] = true; });
-      ST.completed = merged;
+      const _today = new Date().toISOString().split('T')[0];
+      const _remoteToday = (remote.updated_at||'').slice(0,10) >= _today;
+      const base = _remoteToday ? Object.assign({}, remote.completed) : {};
+      Object.keys(ST.completed || {}).forEach(k => { if(ST.completed[k]) base[k] = true; });
+      ST.completed = base;
       ST.xp = Math.max(ST.xp || 0, remote.xp || 0);
       ST.streak = Math.max(ST.streak || 0, remote.streak || 0);
       ST.day = Math.max(ST.day || 1, remote.day || 1);
@@ -2897,7 +2899,8 @@ async function loadFromCloud(silent = false) {
       if(remoteTs > localTs) {
         // Only restore remote.completed if we haven't closed the day locally — prevents old completed restoring after reset
         const _syncToday = new Date().toISOString().split('T')[0];
-        const _safeCompleted = (ST.lastDayClose||'') >= _syncToday ? (remote.completed||{}) : (ST.completed||{});
+        const _remoteUpdatedToday = (remote.updated_at||'').slice(0,10) >= _syncToday;
+        const _safeCompleted = _remoteUpdatedToday ? (remote.completed||{}) : (ST.completed||{});
         ST = { xp: remote.xp||0, streak: remote.streak||0, day: remote.day||1,
                completed: _safeCompleted, history: remote.history||[],
                _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at,
