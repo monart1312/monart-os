@@ -3718,9 +3718,19 @@ function sendToRiding(id) {
   if(!t) return;
   t.status = 'ontheline';
   t.done = false;
-  sbUpsertTask(t); // sync to cloud immediately so 30s poll doesn't revert
+  sbUpsertTask(t);
   save(); renderTasks();
   showToast('→ En Riding: On the Line');
+}
+
+function limpiarDone() {
+  const done = TASKS.filter(t => getStatus(t) === 'done');
+  if(!done.length) return;
+  done.forEach(t => sbDeleteTask(t.id));
+  TASKS = TASKS.filter(t => getStatus(t) !== 'done');
+  updateDailyLog();
+  save(); updateAll(); renderTasks();
+  showToast(`🗑 ${done.length} tarea${done.length>1?'s':''} archivada${done.length>1?'s':''}`);
 }
 
 // ══════════════════════════════════
@@ -4024,6 +4034,14 @@ function renderTodoAll() {
     </div>`;
   }
 
+  function rColDone(items) {
+    const limpBtn = items.length ? `<button onclick="limpiarDone()" ontouchend="event.preventDefault();limpiarDone()" style="font-family:var(--fm);font-size:8px;padding:1px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;margin-left:6px;touch-action:manipulation">LIMPIAR</button>` : '';
+    return `<div class="kanban-col" style="border-top:2px solid #3db872" ${da('done')}>
+      <div class="kanban-col-header" style="color:#3db872">DONE<span class="kanban-col-count">${items.length}</span>${limpBtn}</div>
+      <div class="kanban-cards">${items.map(rCard).join('')||'<div class="col-empty">&#8212;</div>'}</div>
+    </div>`;
+  }
+
   function mcCol(area) {
     const col = AREA_COLORS[area];
     const items = backlog[area];
@@ -4039,7 +4057,7 @@ function renderTodoAll() {
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px">
       <span style="font-size:13px;font-weight:700;flex:1;color:var(--text)">${t.name}</span>
       <button onclick="event.stopPropagation();openCategorizeModal('${t.id}')" style="font-family:var(--fm);font-size:10px;font-weight:700;padding:4px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--s3);color:var(--muted2);cursor:pointer">+ Catalogar</button>
-      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" title="Borrar">✕</button>
+      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
     </div>`;
   }
 
@@ -4091,12 +4109,13 @@ function renderTodoAll() {
       <div class="todo-sec-head">
         <span class="todo-sec-label">RIDING</span>
         <span class="todo-sec-sub">trabajo activo</span>
+        ${(ST.weekPlan?.week||0) < getWeekNum(new Date()) ? `<button onclick="openWeekPlanModal()" ontouchend="event.preventDefault();openWeekPlanModal()" style="font-family:var(--fm);font-size:9px;font-weight:700;padding:3px 10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;margin-left:auto;touch-action:manipulation">⚡ Planificar semana</button>` : ''}
       </div>
       <div class="kanban-wrap todo-kanban">
         ${rCol('ontheline','ON THE LINE','#e05c6e',riding.ontheline)}
         ${rCol('ongoing','ONGOING','#5b7cf6',riding.ongoing)}
         ${rCol('forreview','FOR REVIEW','#e8c56a',riding.forreview)}
-        ${rCol('done','DONE','#3db872',riding.done)}
+        ${rColDone(riding.done)}
       </div>
     </div>
 
@@ -4173,12 +4192,10 @@ function renderKanban() {
   const prioOrder = {alta:0, media:1, baja:2};
   todo.sort((a,b) => (prioOrder[a.prio]??3) - (prioOrder[b.prio]??3));
 
-  const AREA_COLORS_K = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
-
   function cardHTML(t, extraClass='') {
     const badgeClass = prioBadgeClass(t.prio);
     const label = prioLabel(t.prio);
-    const dot = AREA_COLORS_K[t.area] || '#6a6a8a';
+    const dot = AREA_COLORS[t.area] || '#6a6a8a';
     return `<div class="kanban-card ${extraClass}" onclick="toggleTask('${t.id}')">
       <div class="kanban-card-name">${t.name}</div>
       <div class="kanban-card-meta">
@@ -5001,7 +5018,8 @@ let _dpBlocks = [];
 
 // ── Week Plan ──
 function checkWeekPlanModal() {
-  if(new Date().getDay() !== 1) return;
+  const dow = new Date().getDay();
+  if(dow < 1 || dow > 3) return;
   const week = getWeekNum(new Date());
   if((ST.weekPlan?.week||0) >= week) return;
   if(ST.weekPlanSkippedWeek === week) return;
@@ -5237,7 +5255,6 @@ function updateDailyLog() {
 }
 
 function renderDailyProgress() {
-  const AREA_COLORS_DP = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
   if(!ST.dailyLog) ST.dailyLog = {};
   const today = new Date().toISOString().split('T')[0];
   const days = [];
@@ -5270,7 +5287,7 @@ function renderDailyProgress() {
       // Stack area colors proportionally within bar height
       Object.entries(areaMap).forEach(([area, count]) => {
         const h = Math.max(2, Math.round((count / taskCount) * barH));
-        segments.push({color: AREA_COLORS_DP[area]||'#5b7cf6', h});
+        segments.push({color: AREA_COLORS[area]||'#5b7cf6', h});
       });
     }
 
@@ -5315,10 +5332,9 @@ function showDayStats(dateStr) {
   const habsDone = log.habitsDone || 0;
   const d = new Date(dateStr+'T12:00:00');
   const label = d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
-  const AREA_COLORS_DS = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
   const tasksHTML = tasks.length
     ? tasks.map(t=>`<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)">
-        <span style="width:8px;height:8px;border-radius:50%;background:${AREA_COLORS_DS[t.area]||'#6a6a8a'};flex-shrink:0"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:${AREA_COLORS[t.area]||'#6a6a8a'};flex-shrink:0"></span>
         <span style="font-size:13px;color:var(--text)">${t.name}</span>
         <span style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-left:auto">${t.area||''}</span>
       </div>`).join('')
