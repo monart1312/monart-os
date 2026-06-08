@@ -2237,9 +2237,10 @@ button, a, [onclick], [ontouchstart] {
     <span class="nav-label">2027</span>
   </button>
   <div class="nav-spacer"></div>
-  <button class="nav-btn" onclick="loadFromCloud()" title="Sincronizar">
+  <button class="nav-btn" id="syncNavBtn" onclick="loadFromCloud()" title="Sincronizar">
     <span class="nav-icon" style="font-family:var(--fm);font-size:12px;font-weight:700">↑↓</span>
     <span class="nav-label">SYNC</span>
+    <span id="syncDot" style="display:none;width:7px;height:7px;border-radius:50%;background:#3db872;position:absolute;top:6px;right:6px"></span>
   </button>
   <button class="nav-btn" onclick="resetAll()" title="Reset">
     <span class="nav-icon" style="font-family:var(--fm);font-size:13px;font-weight:700">⟳</span>
@@ -2704,8 +2705,10 @@ async function sbUpsert(table, row) {
     if(!r.ok) {
       const errTxt = await r.text().catch(()=>'');
       console.error(`Supabase upsert ${table} HTTP ${r.status}:`, errTxt);
+      return false;
     }
-  } catch(e) { console.warn('Supabase save failed, using localStorage fallback', e); }
+    return true;
+  } catch(e) { console.warn('Supabase save failed, using localStorage fallback', e); return false; }
 }
 
 async function sbGetAllTasks() {
@@ -2807,21 +2810,34 @@ if(localStorage.getItem('monart-tasks')) {
 }
 
 let _saveTimer = null;
+let _syncFailed = false;
 
 function save() {
   ST.updated_at = new Date().toISOString();
-  // Guardar siempre en local como fallback inmediato
   localStorage.setItem('monart-os', JSON.stringify(ST));
   localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
-  // Debounce sync a Supabase (evita llamadas en ráfaga)
   clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(() => syncToCloud(), 800);
+  _setSyncIndicator('pending');
+  _saveTimer = setTimeout(() => syncToCloud(), 300);
+}
+
+function _syncPayload() {
+  return {
+    id: 'sergi',
+    completed: ST.completed, xp: ST.xp, streak: ST.streak, day: ST.day,
+    prev_lvl: ST._prevLvl || 1, history: ST.history,
+    missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
+    daily_log: ST.dailyLog || {}, daily_missions: ST.dailyMissions || null,
+    roadmap: ST.roadmap || {}, user_events: getUserEvents(),
+    week_plan: ST.weekPlan || null, day_plan: ST.dayPlan || null,
+    updated_at: ST.updated_at
+  };
 }
 
 async function syncToCloud() {
   ST.updated_at = new Date().toISOString();
   localStorage.setItem('monart-os', JSON.stringify(ST));
-  await sbUpsert('habits', {
+  const ok = await sbUpsert('habits', {
     id: 'sergi',
     completed: ST.completed,
     xp: ST.xp,
@@ -2838,6 +2854,14 @@ async function syncToCloud() {
     day_plan: ST.dayPlan || null,
     updated_at: ST.updated_at
   });
+  if(!ok) {
+    _syncFailed = true;
+    _setSyncIndicator('error');
+    if(document.visibilityState !== 'hidden') showToast('⚠️ Sin conexión — datos guardados en local');
+  } else {
+    _syncFailed = false;
+    _setSyncIndicator('ok');
+  }
 }
 
 async function loadFromCloud(silent = false) {
@@ -2847,6 +2871,9 @@ async function loadFromCloud(silent = false) {
     if(!silent) {
       const _today = new Date().toISOString().split('T')[0];
       const _remoteToday = (remote.updated_at||'').slice(0,10) >= _today;
+      // Si local es más reciente que Supabase, mantener datos locales para misiones/planes
+      // Esto previene que un sync fallido en Supabase sobreescriba cambios que sí están en localStorage
+      const _localIsNewer = !!(ST.updated_at && remote.updated_at && ST.updated_at > remote.updated_at);
       const base = _remoteToday ? Object.assign({}, remote.completed) : {};
       Object.keys(ST.completed || {}).forEach(k => { if(ST.completed[k]) base[k] = true; });
       ST.completed = base;
@@ -2856,7 +2883,7 @@ async function loadFromCloud(silent = false) {
       if((remote.history||[]).length > (ST.history||[]).length) ST.history = remote.history;
       const rmd = remote.missions || {};
       const rmItems = rmd.items || (Array.isArray(rmd) ? rmd : []);
-      if(rmItems.some(m=>m&&m.name)) {
+      if(rmItems.some(m=>m&&m.name) && !_localIsNewer) {
         ST.missions = rmItems;
         ST.missionsWeek = rmd.week || remote.missions_week || ST.missionsWeek;
       }
@@ -2870,7 +2897,7 @@ async function loadFromCloud(silent = false) {
       // Merge dailyMissions (tomar el de hoy con más items, o remote si local no tiene hoy)
       const todayStr = new Date().toISOString().split('T')[0];
       const remoteDM = remote.daily_missions;
-      if(remoteDM && remoteDM.date === todayStr) {
+      if(remoteDM && remoteDM.date === todayStr && !_localIsNewer) {
         if(!ST.dailyMissions || ST.dailyMissions.date !== todayStr || (remoteDM.items||[]).length > (ST.dailyMissions.items||[]).length) {
           ST.dailyMissions = remoteDM;
         }
@@ -2881,9 +2908,9 @@ async function loadFromCloud(silent = false) {
         Object.keys(ST.roadmap || {}).forEach(k => { merged[k] = (ST.roadmap)[k]; });
         ST.roadmap = merged;
       }
-      // Merge week_plan / day_plan (remote gana si es más reciente)
-      if(remote.week_plan && (!ST.weekPlan || (remote.week_plan.week||0) >= (ST.weekPlan?.week||0))) ST.weekPlan = remote.week_plan;
-      if(remote.day_plan && (!ST.dayPlan || (remote.day_plan.date||'') >= (ST.dayPlan?.date||''))) ST.dayPlan = remote.day_plan;
+      // Merge week_plan / day_plan (remote gana solo si Supabase es más reciente)
+      if(remote.week_plan && !_localIsNewer && (!ST.weekPlan || (remote.week_plan.week||0) >= (ST.weekPlan?.week||0))) ST.weekPlan = remote.week_plan;
+      if(remote.day_plan && !_localIsNewer && (!ST.dayPlan || (remote.day_plan.date||'') >= (ST.dayPlan?.date||''))) ST.dayPlan = remote.day_plan;
       // Merge user events (unión por id, remote gana si mismo id)
       if(remote.user_events && Array.isArray(remote.user_events)) {
         const localEvs = getUserEvents();
@@ -6321,6 +6348,37 @@ async function init() {
   await loadFromCloud();
   checkWeekPlanModal();
 }
+
+function _setSyncIndicator(state) {
+  const dot = document.getElementById('syncDot');
+  if(!dot) return;
+  if(state === 'error') {
+    dot.style.display = 'block';
+    dot.style.background = '#e05c6e';
+    dot.title = 'Sin conexión — datos guardados local';
+  } else if(state === 'pending') {
+    dot.style.display = 'block';
+    dot.style.background = '#e8c56a';
+    dot.title = 'Guardando...';
+  } else {
+    dot.style.display = 'none';
+  }
+}
+
+// Keepalive sync al cerrar/navegar — previene pérdida de datos si el debounce no había disparado
+window.addEventListener('beforeunload', () => {
+  clearTimeout(_saveTimer);
+  ST.updated_at = new Date().toISOString();
+  localStorage.setItem('monart-os', JSON.stringify(ST));
+  try {
+    fetch(`${SB_URL}/rest/v1/habits`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(_syncPayload()),
+      keepalive: true
+    });
+  } catch(e) {}
+});
 
 init();
 setInterval(() => loadFromCloud(true), 30000);
