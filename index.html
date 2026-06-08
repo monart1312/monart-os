@@ -3113,6 +3113,7 @@ function renderSchedule() {
           <div class="rpg-pill-name">${m.text}</div>
         </div>
         <div class="rpg-pill-xp">${m.done?'+50xp':'50xp'}</div>
+        <button class="t-del" onclick="deleteDailyMission(${i});renderSchedule()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteDailyMission(${i});renderSchedule()" title="Eliminar misión">✕</button>
       </div>`;
     });
     html += `</div>`;
@@ -4007,7 +4008,8 @@ function renderTodoAll() {
         ${t.notes?`<div style="font-family:var(--fm);font-size:9px;color:var(--muted);margin-top:2px">📝 ${t.notes.slice(0,40)}${t.notes.length>40?'…':''}</div>`:''}
         ${dueTxt}
       </div>
-      <button class="mc-send-btn" onclick="event.stopPropagation();sendToRiding('${t.id}')" title="Enviar a Riding">&#8594;</button>
+      <button class="mc-send-btn" onclick="event.stopPropagation();sendToRiding('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();sendToRiding('${t.id}')" title="Enviar a Riding">&#8594;</button>
+      <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
     </div>`;
   }
 
