@@ -2758,6 +2758,16 @@ async function sbDeleteTask(id) {
   } catch(e) {}
 }
 
+// ── Track deleted task IDs so sync doesn't restore them ──
+function getDeletedTaskIds() {
+  try { return new Set(JSON.parse(localStorage.getItem('monart-deleted-tasks')||'[]')); } catch(e){ return new Set(); }
+}
+function markTaskDeleted(id) {
+  const set = getDeletedTaskIds();
+  set.add(id);
+  localStorage.setItem('monart-deleted-tasks', JSON.stringify([...set].slice(-200)));
+}
+
 let _deleteTarget = null;
 
 function openDeleteModal(id) {
@@ -2783,6 +2793,7 @@ function confirmDelete() {
   if(!_deleteTarget) return;
   const id = _deleteTarget;
   closeDeleteModal();
+  markTaskDeleted(id);
   TASKS = TASKS.filter(t => t.id !== id);
   sbDeleteTask(id);
   save();
@@ -2828,8 +2839,8 @@ function _syncPayload() {
     prev_lvl: ST._prevLvl || 1, history: ST.history,
     missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
     daily_log: ST.dailyLog || {}, daily_missions: ST.dailyMissions || null,
-    roadmap: ST.roadmap || {}, user_events: getUserEvents(),
-    week_plan: ST.weekPlan || null, day_plan: ST.dayPlan || null,
+    roadmap: { ...(ST.roadmap || {}), __weekPlan: ST.weekPlan || null, __dayPlan: ST.dayPlan || null },
+    user_events: getUserEvents(),
     updated_at: ST.updated_at
   };
 }
@@ -2848,10 +2859,8 @@ async function syncToCloud() {
     missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
     daily_log: ST.dailyLog || {},
     daily_missions: ST.dailyMissions || null,
-    roadmap: ST.roadmap || {},
+    roadmap: { ...(ST.roadmap || {}), __weekPlan: ST.weekPlan || null, __dayPlan: ST.dayPlan || null },
     user_events: getUserEvents(),
-    week_plan: ST.weekPlan || null,
-    day_plan: ST.dayPlan || null,
     updated_at: ST.updated_at
   });
   if(!ok) {
@@ -2908,9 +2917,11 @@ async function loadFromCloud(silent = false) {
         Object.keys(ST.roadmap || {}).forEach(k => { merged[k] = (ST.roadmap)[k]; });
         ST.roadmap = merged;
       }
-      // Merge week_plan / day_plan (remote gana solo si Supabase es más reciente)
-      if(remote.week_plan && !_localIsNewer && (!ST.weekPlan || (remote.week_plan.week||0) >= (ST.weekPlan?.week||0))) ST.weekPlan = remote.week_plan;
-      if(remote.day_plan && !_localIsNewer && (!ST.dayPlan || (remote.day_plan.date||'') >= (ST.dayPlan?.date||''))) ST.dayPlan = remote.day_plan;
+      // Merge weekPlan / dayPlan (stored inside roadmap.__weekPlan / __dayPlan)
+      const rwp = (remote.roadmap||{}).__weekPlan;
+      const rdp = (remote.roadmap||{}).__dayPlan;
+      if(rwp && !_localIsNewer && (!ST.weekPlan || (rwp.week||0) >= (ST.weekPlan?.week||0))) ST.weekPlan = rwp;
+      if(rdp && !_localIsNewer && (!ST.dayPlan || (rdp.date||'') >= (ST.dayPlan?.date||''))) ST.dayPlan = rdp;
       // Merge user events (unión por id, remote gana si mismo id)
       if(remote.user_events && Array.isArray(remote.user_events)) {
         const localEvs = getUserEvents();
@@ -2938,9 +2949,9 @@ async function loadFromCloud(silent = false) {
                roadmap: remote.roadmap || ST.roadmap || {},
                dailyLog: remote.daily_log || ST.dailyLog || {},
                dailyMissions: remote.daily_missions || ST.dailyMissions || null,
-               weekPlan: remote.week_plan || ST.weekPlan || null,
+               weekPlan: (remote.roadmap||{}).__weekPlan || ST.weekPlan || null,
                weekPlanSkippedWeek: ST.weekPlanSkippedWeek || null,
-               dayPlan: remote.day_plan || ST.dayPlan || null };
+               dayPlan: (remote.roadmap||{}).__dayPlan || ST.dayPlan || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
         if(remote.user_events && Array.isArray(remote.user_events) && remote.user_events.length > 0) {
           saveUserEvents(remote.user_events);
@@ -2953,7 +2964,8 @@ async function loadFromCloud(silent = false) {
   if(!document.body.classList.contains('drag-active')) {
     const remoteTasks = await sbGetAllTasks();
     if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
-      TASKS = remoteTasks.map(rt => {
+      const _deletedIds = getDeletedTaskIds();
+      TASKS = remoteTasks.filter(rt => !_deletedIds.has(rt.id)).map(rt => {
         const local = TASKS.find(t => t.id === rt.id);
         const merged = {...rt};
         // Normalizar duedate (Supabase lowercase) → dueDate (camelCase usado en el código)
@@ -5088,6 +5100,8 @@ function toggleWpTask(id) {
 
 function confirmWeekPlan() {
   ST.weekPlan = { week: getWeekNum(new Date()), tasks: [..._wpSelected] };
+  if(!ST.roadmap) ST.roadmap = {};
+  ST.roadmap.__weekPlan = ST.weekPlan;
   save(); syncToCloud();
   document.getElementById('weekPlanModal').style.display = 'none';
   showToast(`⚡ Plan semanal — ${_wpSelected.size} prioridades`);
@@ -5180,6 +5194,8 @@ function addDpCustomBlock(text) { _dpBlocks.push({type:'custom',id:'c'+Date.now(
 function confirmDayPlan() {
   const tom = new Date(); tom.setDate(tom.getDate()+1);
   ST.dayPlan = { date: tom.toISOString().split('T')[0], blocks: [..._dpBlocks] };
+  if(!ST.roadmap) ST.roadmap = {};
+  ST.roadmap.__dayPlan = ST.dayPlan;
   save(); syncToCloud();
   document.getElementById('dayPlanModal').style.display = 'none';
   showToast('✅ Plan del día guardado');
@@ -6309,6 +6325,55 @@ function closeRoadmapBlock() {
 }
 
 // ══════════════════════════════════
+// WEEK INJECTION — Despinsage W23
+// ══════════════════════════════════
+function injectDespinsageWeek2026() {
+  if(ST.w23_injected) return;
+
+  // Events
+  const existing = getUserEvents();
+  const existingIds = new Set(existing.map(e => e.id));
+  const newEvs = [
+    {id:'w23_01', n:'Reunió nucli + Pul·lus correbars', d:'2026-06-09', time:'18:30', t:'despinsage', notes:'Fins les ~23h'},
+    {id:'w23_02', n:'Muntatge packs Despinsage', d:'2026-06-10', time:'17:00', t:'despinsage', notes:'Tothom qui pugui'},
+    {id:'w23_03', n:'Entrega packs + Repartir samarretes', d:'2026-06-10', time:'18:00', t:'despinsage', notes:'Sergi, Joan, Naima, Cris'},
+    {id:'w23_04', n:'Tall de cabell (pendent confirmar)', d:'2026-06-11', time:'11:30', t:'personal'},
+    {id:'w23_05', n:'Psicòloga — Barcelona', d:'2026-06-11', time:'13:00', t:'personal'},
+    {id:'w23_06', n:'Furgo + Nus Despinsage', d:'2026-06-11', time:'16:00', t:'despinsage', notes:'Gui, Joan, Monfi · Xibeces fred casta'},
+    {id:'w23_07', n:'Packs: Viu i Pau — Formació Naima i Cris', d:'2026-06-11', time:'18:00', t:'despinsage'},
+    {id:'w23_08', n:'Dinar al mercat', d:'2026-06-12', time:'14:30', t:'despinsage'},
+    {id:'w23_09', n:'Muntatge Paradeta Despinsage', d:'2026-06-12', time:'18:00', t:'despinsage'},
+    {id:'w23_10', n:'Desmuntatge furgo al local', d:'2026-06-13', time:'02:00', t:'despinsage'},
+    {id:'w23_11', n:'Devolver furgo + descargar', d:'2026-06-13', time:'16:00', t:'despinsage', notes:'Joan i Monfi busquen furgo a FFC'},
+  ].filter(e => !existingIds.has(e.id));
+  if(newEvs.length) saveUserEvents([...existing, ...newEvs]);
+
+  // Task: animació coches juguete (si no existe ya)
+  const animExists = TASKS.some(t => t.id === 'w23_anim');
+  if(!animExists) {
+    const animTask = {id:'w23_anim', name:'Acabar animació coches de juguete', area:'marca', prio:'alta', done:false, status:'ontheline'};
+    TASKS.push(animTask);
+    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+    sbUpsertTask(animTask);
+  }
+
+  // Set week plan priorities for W23
+  if(!ST.weekPlan || ST.weekPlan.week < 23) {
+    const wpTasks = [
+      'w23_anim',
+      ...TASKS.filter(t => t.area === 'despinsage' && !t.done).map(t => t.id).slice(0,3)
+    ];
+    ST.weekPlan = { week: 23, tasks: wpTasks };
+    if(!ST.roadmap) ST.roadmap = {};
+    ST.roadmap.__weekPlan = ST.weekPlan;
+  }
+
+  ST.w23_injected = true;
+  save();
+  syncToCloud();
+}
+
+// ══════════════════════════════════
 // INIT
 // ══════════════════════════════════
 async function init() {
@@ -6346,6 +6411,7 @@ async function init() {
 
   // Luego sincronizar con la nube
   await loadFromCloud();
+  injectDespinsageWeek2026();
   checkWeekPlanModal();
 }
 
