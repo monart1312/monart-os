@@ -2764,9 +2764,11 @@ function getDeletedTaskIds() {
   try { return new Set(JSON.parse(localStorage.getItem('monart-deleted-tasks')||'[]')); } catch(e){ return new Set(); }
 }
 function markTaskDeleted(id) {
-  const set = getDeletedTaskIds();
-  set.add(id);
-  localStorage.setItem('monart-deleted-tasks', JSON.stringify([...set].slice(-200)));
+  try {
+    const set = getDeletedTaskIds();
+    set.add(id);
+    localStorage.setItem('monart-deleted-tasks', JSON.stringify([...set].slice(-200)));
+  } catch(e) { console.warn('[markTaskDeleted]', e); }
 }
 
 let _deleteTarget = null;
@@ -2805,16 +2807,26 @@ function confirmDelete() {
 
 let _lastDelTask = null;
 function deleteTask(id) {
-  const t = TASKS.find(x => x.id === id);
-  if(!t) return;
-  _lastDelTask = JSON.parse(JSON.stringify(t)); // snapshot
-  markTaskDeleted(id);
-  TASKS = TASKS.filter(x => x.id !== id);
-  sbDeleteTask(id);
-  save();
-  updateAll();
-  renderTasks();
-  showToast('🗑 Eliminada · <span onclick="undoDelTask()" style="color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:700">Deshacer</span>');
+  try {
+    // 1. Quitar del DOM inmediatamente — garantiza feedback visual sin importar el estado de TASKS
+    document.querySelectorAll(`[data-rpg-id="task_${id}"]`).forEach(el => el.remove());
+
+    // 2. Limpiar datos
+    const t = TASKS.find(x => x.id === id);
+    if(t) _lastDelTask = JSON.parse(JSON.stringify(t));
+    markTaskDeleted(id);
+    TASKS = TASKS.filter(x => x.id !== id);
+    sbDeleteTask(id);
+    save();
+
+    // 3. Re-render (en try separado para no bloquear el toast si algo falla)
+    try { updateAll(); renderTasks(); } catch(re) { console.error('[deleteTask] render error:', re); }
+
+    showToast('🗑 Eliminada · <span onclick="undoDelTask()" style="color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:700">Deshacer</span>');
+  } catch(e) {
+    console.error('[deleteTask] error:', e);
+    showToast('❌ Error: ' + e.message);
+  }
 }
 function undoDelTask() {
   if(!_lastDelTask) return;
