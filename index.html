@@ -845,9 +845,10 @@ body::after {
   font-size: 11px;
   color: var(--text);
   letter-spacing: 1px;
-  z-index: 400;
+  z-index: 9999;
   transition: transform .3s cubic-bezier(.34,1.2,.64,1);
   white-space: nowrap;
+  pointer-events: auto;
 }
 
 .toast.show { transform: translateX(-50%) translateY(0); }
@@ -2802,8 +2803,28 @@ function confirmDelete() {
   showToast('🗑 Tarea borrada');
 }
 
+let _lastDelTask = null;
 function deleteTask(id) {
-  openDeleteModal(id);
+  const t = TASKS.find(x => x.id === id);
+  if(!t) return;
+  _lastDelTask = JSON.parse(JSON.stringify(t)); // snapshot
+  markTaskDeleted(id);
+  TASKS = TASKS.filter(x => x.id !== id);
+  sbDeleteTask(id);
+  save();
+  updateAll();
+  renderTasks();
+  showToast('🗑 Eliminada · <span onclick="undoDelTask()" style="color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:700">Deshacer</span>');
+}
+function undoDelTask() {
+  if(!_lastDelTask) return;
+  const set = getDeletedTaskIds(); set.delete(_lastDelTask.id);
+  localStorage.setItem('monart-deleted-tasks', JSON.stringify([...set]));
+  TASKS.push(_lastDelTask);
+  sbUpsertTask(_lastDelTask);
+  save(); updateAll(); renderTasks();
+  _lastDelTask = null;
+  showToast('↩ Restaurada');
 }
 
 // ══════════════════════════════════
@@ -2903,14 +2924,16 @@ async function loadFromCloud(silent = false) {
         if(!mergedDL[date] || (log.tasks||[]).length > (mergedDL[date].tasks||[]).length) mergedDL[date] = log;
       });
       ST.dailyLog = mergedDL;
-      // Merge dailyMissions (tomar el de hoy con más items, o remote si local no tiene hoy)
+      // Merge dailyMissions — local ALWAYS wins if it has today's date (carries over pending missions)
       const todayStr = new Date().toISOString().split('T')[0];
       const remoteDM = remote.daily_missions;
-      if(remoteDM && remoteDM.date === todayStr && !_localIsNewer) {
-        if(!ST.dailyMissions || ST.dailyMissions.date !== todayStr || (remoteDM.items||[]).length > (ST.dailyMissions.items||[]).length) {
+      if(!ST.dailyMissions || ST.dailyMissions.date !== todayStr) {
+        // No local missions for today — take remote only if it's for today or newer
+        if(remoteDM && (remoteDM.date||'') >= (ST.dailyMissions?.date||'')) {
           ST.dailyMissions = remoteDM;
         }
       }
+      // If local already has today's missions, NEVER overwrite — prevents sync from erasing carries
       // Merge roadmap (local gana para bloques ya modificados)
       if(remote.roadmap) {
         const merged = { ...remote.roadmap };
@@ -2948,7 +2971,7 @@ async function loadFromCloud(silent = false) {
                rpgDayOrder: ST.rpgDayOrder || [],
                roadmap: remote.roadmap || ST.roadmap || {},
                dailyLog: remote.daily_log || ST.dailyLog || {},
-               dailyMissions: remote.daily_missions || ST.dailyMissions || null,
+               dailyMissions: (()=>{ const td=new Date().toISOString().split('T')[0]; if(ST.dailyMissions?.date===td) return ST.dailyMissions; const rd=remote.daily_missions; return (rd&&(rd.date||'')>=(ST.dailyMissions?.date||''))?rd:(ST.dailyMissions||null); })(),
                weekPlan: (remote.roadmap||{}).__weekPlan || ST.weekPlan || null,
                weekPlanSkippedWeek: ST.weekPlanSkippedWeek || null,
                dayPlan: (remote.roadmap||{}).__dayPlan || ST.dayPlan || null };
@@ -4736,11 +4759,12 @@ function showLvlUp(lvl) {
 
 function closeLvl() { document.getElementById('lvlup').classList.remove('show'); }
 
-function showToast(msg) {
+function showToast(msg, dur=3000) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  t.innerHTML = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
+  clearTimeout(t._toastTimer);
+  t._toastTimer = setTimeout(()=>t.classList.remove('show'), dur);
 }
 
 function resetAll() {
