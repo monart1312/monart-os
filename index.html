@@ -2759,14 +2759,14 @@ async function sbDeleteTask(id) {
   } catch(e) {}
 }
 
-// ── Track deleted task IDs so sync doesn't restore them ──
+// ── Track deleted task IDs — siempre STRING para evitar int/string mismatch ──
 function getDeletedTaskIds() {
-  try { return new Set(JSON.parse(localStorage.getItem('monart-deleted-tasks')||'[]')); } catch(e){ return new Set(); }
+  try { return new Set((JSON.parse(localStorage.getItem('monart-deleted-tasks')||'[]')).map(String)); } catch(e){ return new Set(); }
 }
 function markTaskDeleted(id) {
   try {
     const set = getDeletedTaskIds();
-    set.add(id);
+    set.add(String(id));
     localStorage.setItem('monart-deleted-tasks', JSON.stringify([...set].slice(-200)));
   } catch(e) { console.warn('[markTaskDeleted]', e); }
 }
@@ -2807,26 +2807,37 @@ function confirmDelete() {
 
 let _lastDelTask = null;
 function deleteTask(id) {
+  const sid = String(id); // normalizar siempre a string — Supabase puede devolver int o string
   try {
-    // 1. Quitar del DOM inmediatamente — garantiza feedback visual sin importar el estado de TASKS
-    document.querySelectorAll(`[data-rpg-id="task_${id}"]`).forEach(el => el.remove());
+    // 1. Quitar del DOM inmediatamente
+    document.querySelectorAll(`[data-rpg-id="task_${sid}"]`).forEach(el => el.remove());
 
-    // 2. Limpiar datos
-    const t = TASKS.find(x => x.id === id);
+    // 2. Limpiar datos — comparación STRING para evitar 42 !== '42'
+    const t = TASKS.find(x => String(x.id) === sid);
     if(t) _lastDelTask = JSON.parse(JSON.stringify(t));
-    markTaskDeleted(id);
-    TASKS = TASKS.filter(x => x.id !== id);
-    sbDeleteTask(id);
+    markTaskDeleted(sid);
+    TASKS = TASKS.filter(x => String(x.id) !== sid);
+    sbDeleteTask(sid);
     save();
 
-    // 3. Re-render (en try separado para no bloquear el toast si algo falla)
-    try { updateAll(); renderTasks(); } catch(re) { console.error('[deleteTask] render error:', re); }
+    // 3. Re-render
+    try { updateAll(); renderTasks(); } catch(re) { console.error('[deleteTask] render:', re); }
 
-    showToast('🗑 Eliminada · <span onclick="undoDelTask()" style="color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:700">Deshacer</span>');
+    showToast('🗑 Eliminada · <span onclick="undoDelTask()" style="color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:700">Deshacer</span>', 4000);
   } catch(e) {
     console.error('[deleteTask] error:', e);
     showToast('❌ Error: ' + e.message);
   }
+}
+function undoDelTask() {
+  if(!_lastDelTask) return;
+  const set = getDeletedTaskIds(); set.delete(String(_lastDelTask.id));
+  localStorage.setItem('monart-deleted-tasks', JSON.stringify([...set]));
+  TASKS.push(_lastDelTask);
+  sbUpsertTask(_lastDelTask);
+  save(); updateAll(); renderTasks();
+  _lastDelTask = null;
+  showToast('↩ Restaurada');
 }
 function undoDelTask() {
   if(!_lastDelTask) return;
@@ -3000,8 +3011,8 @@ async function loadFromCloud(silent = false) {
     const remoteTasks = await sbGetAllTasks();
     if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
       const _deletedIds = getDeletedTaskIds();
-      TASKS = remoteTasks.filter(rt => !_deletedIds.has(rt.id)).map(rt => {
-        const local = TASKS.find(t => t.id === rt.id);
+      TASKS = remoteTasks.filter(rt => !_deletedIds.has(String(rt.id))).map(rt => {
+        const local = TASKS.find(t => String(t.id) === String(rt.id));
         const merged = {...rt};
         // Normalizar duedate (Supabase lowercase) → dueDate (camelCase usado en el código)
         if(merged.duedate && !merged.dueDate) { merged.dueDate = merged.duedate; }
