@@ -2364,6 +2364,7 @@ button, a, [onclick], [ontouchstart] {
     <!-- generado por JS -->
   </div>
 
+  <button onclick="openDayPlanModal()" style="width:100%;margin:10px 0 4px;padding:11px;border-radius:10px;border:1px solid rgba(91,124,246,.35);background:rgba(91,124,246,.08);color:var(--accent);font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.06em;cursor:pointer;touch-action:manipulation">📋 PLANIFICAR MAÑANA</button>
   <button class="next-day-btn" onclick="nextDay()">⏭ CERRAR DÍA Y PASAR AL SIGUIENTE</button>
 
   <!-- Daily missions -->
@@ -3129,31 +3130,42 @@ function renderSchedule() {
   const DOW_EMOJIS = ['😴','🔨','🎸','⚡','🤖','✅','🎨'];
   const DOW_LABELS = ['DOMINGO','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
 
-  // Eventos de calendario HOY (fijos, con hora)
+  // Eventos HOY — incluye eventos multi-día que abarcan hoy
   const todayEvs = allEvents()
-    .filter(e => e.d === todayStr)
+    .filter(e => {
+      if(e.endDate && e.endDate > e.d) return todayStr >= e.d && todayStr <= e.endDate;
+      return e.d === todayStr;
+    })
     .sort((a,b) => (a.time||'00:00').localeCompare(b.time||'00:00'));
 
-  // Tareas del TODO: hoy + vencidas (no completadas)
+  // Tareas del TODO: hoy + vencidas
   const todayTasks = TASKS.filter(t => !t.done && t.dueDate && t.dueDate <= todayStr);
 
   // Hábitos del día
   const habits = getDaySchedule();
 
-  // Items libres (hábitos + tareas hoy), reordenables
-  const freeItems = [
-    ...habits.map(h => ({ id: h.id, type: 'habit', data: h })),
-    ...todayTasks.map(t => ({ id: 'task_'+t.id, type: 'task', data: t }))
-  ];
+  // Separar ítems CON hora (van al timeline) vs SIN hora (van a objetivos reordenables)
+  const timedFree = [];
+  const untimedFree = [];
+  habits.forEach(h => {
+    (h.time ? timedFree : untimedFree).push({ id: h.id, type: 'habit', data: h });
+  });
+  todayTasks.forEach(t => {
+    (t.dueTime ? timedFree : untimedFree).push({ id: 'task_'+t.id, type: 'task', data: t });
+  });
 
-  // Aplicar orden guardado
+  // Timeline unificado: eventos + hábitos/tareas con hora, ordenados cronológicamente
+  const timedAll = [
+    ...todayEvs.map(ev => ({ type: 'event', data: ev, time: ev.time || null })),
+    ...timedFree.map(item => ({ ...item, time: item.type==='habit' ? item.data.time : item.data.dueTime }))
+  ].sort((a, b) => (a.time||'00:00').localeCompare(b.time||'00:00'));
+
+  // Ítems sin hora: orden guardado
   const savedOrder = ST.rpgDayOrder || [];
-  freeItems.sort((a, b) => {
-    const ai = savedOrder.indexOf(a.id);
-    const bi = savedOrder.indexOf(b.id);
-    if(ai === -1 && bi === -1) return 0;
-    if(ai === -1) return 1;
-    if(bi === -1) return -1;
+  untimedFree.sort((a, b) => {
+    const ai = savedOrder.indexOf(a.id), bi = savedOrder.indexOf(b.id);
+    if(ai===-1&&bi===-1) return 0;
+    if(ai===-1) return 1; if(bi===-1) return -1;
     return ai - bi;
   });
 
@@ -3163,26 +3175,7 @@ function renderSchedule() {
     ${todayEvs.length ? `<span class="sched-day-focus">📅 ${todayEvs.length} cita${todayEvs.length>1?'s':''}</span>` : ''}
   </div>`;
 
-  // Eventos de calendario (pills fijos)
-  if(todayEvs.length) {
-    html += `<div class="rpg-events-section">`;
-    todayEvs.forEach(ev => {
-      const col = tagColors[ev.t] || '#5b7cf6';
-      const isUser = ev.id && ev.id.startsWith('ev');
-      const clickFn = isUser ? `openEventModalById('${ev.id}')` : `openEventModal(allEvents().find(e=>e.id==='${ev.id}'), false)`;
-      html += `<div class="rpg-cal-event" style="border-left:3px solid ${col}" onclick="${clickFn}">
-        <div class="rpg-ev-header">
-          <span class="rpg-ev-icon">📅</span>
-          ${ev.time ? `<span class="rpg-ev-time">${ev.time}</span>` : ''}
-          <span class="rpg-ev-name">${ev.n}</span>
-        </div>
-        ${ev.notes ? `<div class="rpg-ev-notes">${ev.notes}</div>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
-  }
-
-  // Misiones del día (inline en RPG, con checkbox)
+  // Misiones del día
   const _rpgMissions = ST.dailyMissions?.items || [];
   if(_rpgMissions.length) {
     html += `<div class="sched-divider">MISIONES DEL DÍA</div>`;
@@ -3204,13 +3197,70 @@ function renderSchedule() {
     html += `</div>`;
   }
 
-  // Pills reordenables (hábitos + tareas del día)
-  if(freeItems.length) {
+  // ── HORARIO: eventos + ítems con hora, ordenados cronológicamente ──
+  if(timedAll.length) {
+    html += `<div class="sched-divider">HORARIO</div>`;
+    html += `<div class="rpg-pill-list">`;
+    timedAll.forEach(item => {
+      if(item.type === 'event') {
+        const ev = item.data;
+        const col = tagColors[ev.t] || '#5b7cf6';
+        const isUser = ev.id && (ev.id.startsWith('ev') || ev.id.startsWith('w'));
+        const clickFn = isUser ? `openEventModalById('${ev.id}')` : `openEventModalHardcoded('${ev.d.replace(/'/g,"\\'")}','${ev.n.replace(/'/g,"\\'")}')`;
+        const isSpan = ev.endDate && ev.endDate > ev.d;
+        html += `<div class="rpg-pill" style="cursor:pointer" onclick="${clickFn}">
+          <div style="width:22px;flex-shrink:0"></div>
+          <div class="rpg-pill-body">
+            <div class="rpg-pill-top">
+              <span class="rpg-pill-tag" style="background:${col}22;color:${col}">${isSpan?'↔':'📅'} EVENTO</span>
+              ${ev.time ? `<span class="rpg-pill-time">${ev.time}</span>` : ''}
+            </div>
+            <div class="rpg-pill-name">${ev.n}</div>
+            ${ev.notes ? `<div class="rpg-pill-sub">${ev.notes}</div>` : ''}
+          </div>
+        </div>`;
+      } else if(item.type === 'habit') {
+        const h = item.data;
+        const done = ST.completed[h.id];
+        const col = catColors[h.cat] || '#5b7cf6';
+        html += `<div class="rpg-pill${done?' rpg-pill-done':''}">
+          <div style="width:22px;flex-shrink:0"></div>
+          <div class="rpg-pill-body" onclick="toggleH('${h.id}', ${h.xp})">
+            <div class="rpg-pill-top">
+              <span class="rpg-pill-tag" style="background:${col}22;color:${col}">${h.tag}</span>
+              ${h.time ? `<span class="rpg-pill-time">${h.time}</span>` : ''}
+              <span class="rpg-pill-check">${done?'✓':''}</span>
+            </div>
+            <div class="rpg-pill-name">${h.name}</div>
+            ${h.sub ? `<div class="rpg-pill-sub">${h.sub}</div>` : ''}
+          </div>
+          <div class="rpg-pill-xp">${done?'+'+h.xp+'xp':h.xp+'xp'}</div>
+        </div>`;
+      } else {
+        const t = item.data;
+        const col = AREA_COLORS[t.area] || '#6a6a8a';
+        html += `<div class="rpg-pill">
+          <div style="width:22px;flex-shrink:0"></div>
+          <div class="rpg-pill-body" onclick="openTaskSheet('${t.id}')">
+            <div class="rpg-pill-top">
+              <span class="rpg-pill-tag" style="background:${col}22;color:${col}">TODO</span>
+              ${t.dueTime ? `<span class="rpg-pill-time">${t.dueTime}</span>` : ''}
+            </div>
+            <div class="rpg-pill-name">${t.name}</div>
+          </div>
+          <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" style="margin-left:4px">✕</button>
+        </div>`;
+      }
+    });
+    html += `</div>`;
+  }
+
+  // ── OBJETIVOS DEL DÍA: ítems sin hora, reordenables ──
+  if(untimedFree.length) {
     html += `<div class="sched-divider">OBJETIVOS DEL DÍA</div>`;
     html += `<div class="rpg-pill-list">`;
-    freeItems.forEach((item, idx) => {
-      const isFirst = idx === 0;
-      const isLast = idx === freeItems.length - 1;
+    untimedFree.forEach((item, idx) => {
+      const isFirst = idx === 0, isLast = idx === untimedFree.length - 1;
       const upBtn = !isFirst ? `<button class="rpg-move-btn" onclick="moveRpgItem('${item.id}',-1)">▲</button>` : `<span style="display:inline-block;width:22px"></span>`;
       const downBtn = !isLast ? `<button class="rpg-move-btn" onclick="moveRpgItem('${item.id}',1)">▼</button>` : `<span style="display:inline-block;width:22px"></span>`;
 
@@ -3223,7 +3273,6 @@ function renderSchedule() {
           <div class="rpg-pill-body" onclick="toggleH('${h.id}', ${h.xp})">
             <div class="rpg-pill-top">
               <span class="rpg-pill-tag" style="background:${col}22;color:${col}">${h.tag}</span>
-              ${h.time ? `<span class="rpg-pill-time">${h.time}</span>` : ''}
               <span class="rpg-pill-check">${done?'✓':''}</span>
             </div>
             <div class="rpg-pill-name">${h.name}</div>
@@ -3239,11 +3288,11 @@ function renderSchedule() {
           <div class="rpg-pill-body" onclick="openTaskSheet('${t.id}')">
             <div class="rpg-pill-top">
               <span class="rpg-pill-tag" style="background:${col}22;color:${col}">TODO</span>
-              ${t.dueDate < todayStr ? `<span style="font-family:var(--fm);font-size:8px;font-weight:800;color:var(--orange);margin-left:4px">VENCIDA</span>` : t.dueTime ? `<span class="rpg-pill-time">${t.dueTime}</span>` : ''}
+              ${t.dueDate < todayStr ? `<span style="font-family:var(--fm);font-size:8px;font-weight:800;color:var(--orange);margin-left:4px">VENCIDA</span>` : ''}
             </div>
             <div class="rpg-pill-name">${t.name}</div>
           </div>
-          <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar" style="margin-left:4px">✕</button>
+          <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" style="margin-left:4px">✕</button>
         </div>`;
       }
     });
@@ -4372,11 +4421,14 @@ function renderCal() {
     eventsByDate[ev.d].push(ev);
   });
 
-  // Eventos multi-día
+  // Eventos multi-día (hardcoded + user events con endDate)
   const SPAN_EVENTS = [
     {start:'2026-05-06', end:'2026-05-12', n:'Cartell Seguici', t:'despinsage'},
     {start:'2026-07-31', end:'2026-08-02', n:'Cumple Cris', t:'cumple'},
     {start:'2026-10-01', end:'2026-11-30', n:'Torneig Esports', t:'despinsage'},
+    ...getUserEvents()
+      .filter(ev => ev.endDate && ev.endDate > ev.d)
+      .map(ev => ({start: ev.d, end: ev.endDate, n: ev.n, t: ev.t || 'personal'}))
   ];
 
   const grid = document.getElementById('calGrid');
@@ -5102,6 +5154,16 @@ function getWeekNum(d) {
 let _wpSelected = new Set();
 let _dpBlocks = [];
 
+// ── Day Plan ── auto-trigger por la noche si mañana no está planificado
+function checkDayPlanModal() {
+  const hour = new Date().getHours();
+  if(hour < 20) return; // solo a partir de las 20h
+  const tom = new Date(); tom.setDate(tom.getDate()+1);
+  const tomStr = tom.toISOString().split('T')[0];
+  if(ST.dayPlan?.date === tomStr) return; // ya planificado
+  setTimeout(() => openDayPlanModal(), 2000);
+}
+
 // ── Week Plan ──
 function checkWeekPlanModal() {
   const dow = new Date().getDay();
@@ -5288,6 +5350,8 @@ function openEventModal(ev, isUser) {
   dateEl.value = ev.d; dateEl.readOnly = !isUser;
   timeEl.value = ev.time || ''; timeEl.readOnly = !isUser;
   typeEl.value = ev.t; typeEl.disabled = !isUser;
+  const endDateEl = document.getElementById('evModalEndDate');
+  if(endDateEl) { endDateEl.value = ev.endDate || ''; endDateEl.readOnly = !isUser; }
   const notes = isUser ? (ev.notes || '') : (getEventNotes()[ev.d+':'+ev.n] || '');
   document.getElementById('evModalNotes').value = notes;
   document.getElementById('evModalDeleteBtn').style.display = isUser ? 'block' : 'none';
@@ -5303,12 +5367,15 @@ function saveEventModal() {
   const time = document.getElementById('evModalTime').value;
   const type = document.getElementById('evModalType').value;
   const notes = document.getElementById('evModalNotes').value.trim();
+  const endDate = document.getElementById('evModalEndDate')?.value || '';
   if(_evModalIsUser && _evModalId) {
     const evs = getUserEvents();
     const idx = evs.findIndex(e => e.id === _evModalId);
     if(idx !== -1) {
       evs[idx] = { ...evs[idx], n: name || evs[idx].n, d: date || evs[idx].d, t: type, notes };
       if(time) evs[idx].time = time; else delete evs[idx].time;
+      if(endDate && endDate > (date || evs[idx].d)) evs[idx].endDate = endDate;
+      else delete evs[idx].endDate;
       saveUserEvents(evs);
     }
     syncToCloud(); // sync event changes to cloud
@@ -6460,6 +6527,7 @@ async function init() {
   await loadFromCloud();
   injectDespinsageWeek2026();
   checkWeekPlanModal();
+  checkDayPlanModal();
 }
 
 function _setSyncIndicator(state) {
@@ -6536,13 +6604,17 @@ setInterval(check2amAutoClose, 60000);
     </div>
     <div class="ev-modal-row">
       <div>
-        <div class="ev-modal-label">Fecha</div>
+        <div class="ev-modal-label">Fecha inicio</div>
         <input class="ev-modal-input" id="evModalDate" type="date" />
       </div>
       <div>
-        <div class="ev-modal-label">Hora (opcional)</div>
-        <input class="ev-modal-input" id="evModalTime" type="time" />
+        <div class="ev-modal-label">Fecha fin (opcional)</div>
+        <input class="ev-modal-input" id="evModalEndDate" type="date" />
       </div>
+    </div>
+    <div>
+      <div class="ev-modal-label">Hora (opcional)</div>
+      <input class="ev-modal-input" id="evModalTime" type="time" style="max-width:140px" />
     </div>
     <div>
       <div class="ev-modal-label">Tipo</div>
