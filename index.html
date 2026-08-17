@@ -8,19 +8,20 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
-  /* ── FONDOS — océano profundo (calma ADHD) ── */
-  --bg: #090f1a;
-  --s1: #0e1929;
-  --s2: #152338;
-  --s3: #1c2e47;
-  --s4: #233856;
-  --border: #2a4a6a;
-  --border2: #386080;
-  --border3: #4a7898;
+  /* ── FONDOS — viewport de trabajo (antes: océano navy) ── */
+  --bg: #101216;
+  --s1: #14161a;
+  --s2: #1b1e24;
+  --s3: #22262e;
+  --s4: #2a2f38;
+  --border: #2b2f38;
+  --border2: #3a4048;
+  --border3: #4c545f;
 
   /* ── ACENTOS ── */
-  --accent: #00d4b4;   /* teal brillante */
+  --accent: #00d4b4;   /* teal — ahora reservado como "wireframe": estructura, bordes activos */
   --accent2: #f06878;  /* rojo alerta */
+  --select: #f0a83c;   /* NUEVO — ámbar de selección/foco, inspirado en el contorno de objeto activo de un viewport 3D */
 
   /* ── COLORES SEMÁNTICOS ── */
   --gold: #ffd830;     /* ámbar máximo */
@@ -37,6 +38,28 @@
   --ff: 'Syne', sans-serif;
   --fm: 'JetBrains Mono', monospace;
   --nav-w: 64px;
+
+  /* ── MOVIMIENTO — antes 15+ combinaciones sueltas, ahora 3 tokens ── */
+  --dur-fast: .12s;
+  --dur-base: .2s;
+  --dur-slow: .5s;
+  --ease: cubic-bezier(.4,0,.2,1);
+}
+
+/* Respeta la preferencia de movimiento reducido del sistema operativo (antes: sin soporte) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Foco de teclado visible en cualquier elemento interactivo (antes: solo 9 inputs lo tenían) */
+:focus-visible {
+  outline: 2px solid var(--select);
+  outline-offset: 2px;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -101,7 +124,7 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
   position: relative;
 }
 
@@ -336,7 +359,7 @@ body::after {
   padding: 10px 4px;
   text-align: center;
   border: 1px solid var(--border);
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
 }
 
 .week-day.today {
@@ -364,7 +387,7 @@ body::after {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all .15s;
+  transition:all var(--dur-fast) var(--ease);
   user-select: none;
 }
 
@@ -457,7 +480,7 @@ body::after {
   text-transform: uppercase;
   cursor: pointer;
   margin-top: 8px;
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
 }
 
 .next-day-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -486,7 +509,7 @@ body::after {
   font-size: 10px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
   letter-spacing: 1px;
 }
 
@@ -506,7 +529,7 @@ body::after {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all .15s;
+  transition:all var(--dur-fast) var(--ease);
 }
 
 .task-item:active { transform: scale(.99); }
@@ -526,7 +549,7 @@ body::after {
   border: 2px solid var(--border2);
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
   font-size: 11px;
 }
 
@@ -572,7 +595,7 @@ body::after {
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   color: var(--muted2);
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
   font-size: 14px;
 }
 
@@ -613,7 +636,7 @@ body::after {
   justify-content: flex-start;
   padding: 5px 4px 4px;
   cursor: pointer;
-  transition: all .15s;
+  transition:all var(--dur-fast) var(--ease);
   border: 1px solid var(--border);
   background: var(--s1);
   min-height: 72px;
@@ -642,7 +665,7 @@ body::after {
   display: block;
   width: 100%;
   font-family: var(--fm);
-  font-size: 8px;
+  font-size:10px;
   font-weight: 700;
   padding: 2px 4px;
   border-radius: 4px;
@@ -1017,7 +1040,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   background: var(--s1);
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: all .15s;
+  transition:all var(--dur-fast) var(--ease);
   border-left: 3px solid transparent;
   user-select: none;
 }
@@ -1101,7 +1124,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   display: flex; align-items: center; justify-content: center;
   font-size: 10px;
   flex-shrink: 0;
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
 }
 
 .sched-item.done .sched-check {
@@ -1125,7 +1148,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .rpg-cal-event {
   display:flex; flex-direction:column; gap:5px;
   background:var(--s2); border-radius:12px; padding:13px 14px;
-  cursor:pointer; transition:all .15s;
+  cursor:pointer; transition:all var(--dur-fast) var(--ease);
   border: 1px solid var(--border);
 }
 .rpg-cal-event:active { transform:scale(.98); }
@@ -1141,7 +1164,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 /* ── RPG PILL LIST ── */
 .rpg-pill-list { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
-.rpg-pill { display:flex; align-items:center; gap:8px; background:var(--s2); border-radius:12px; padding:10px 12px; border:1px solid var(--border); transition:all .15s; }
+.rpg-pill { display:flex; align-items:center; gap:8px; background:var(--s2); border-radius:12px; padding:10px 12px; border:1px solid var(--border); transition:all var(--dur-fast) var(--ease); }
 .rpg-pill.rpg-pill-done { opacity:.5; }
 .rpg-pill-reorder { display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
 .rpg-move-btn { background:none; border:none; cursor:pointer; color:var(--muted2); font-size:11px; padding:2px 4px; line-height:1; touch-action:manipulation; border-radius:4px; }
@@ -1178,7 +1201,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   font-weight: 700;
   letter-spacing: 2px;
   cursor: pointer;
-  transition: all .2s;
+  transition:all var(--dur-base) var(--ease);
 }
 
 .rpg-tab.active {
@@ -1282,7 +1305,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .wg-time {
   padding: 6px 4px;
   font-family: var(--fm);
-  font-size: 8px;
+  font-size:10px;
   color: var(--muted);
   text-align: right;
   border-right: 1px solid var(--border2);
@@ -1306,7 +1329,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   padding: 3px 5px;
   margin-bottom: 2px;
   font-family: var(--fm);
-  font-size: 8px;
+  font-size:10px;
   font-weight: 700;
   line-height: 1.4;
   cursor: default;
@@ -1340,20 +1363,20 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .week-ev-item:last-child { border-bottom: none; }
 .week-ev-day { font-family: var(--fm); font-size: 10px; color: var(--muted2); width: 40px; flex-shrink: 0; }
 .week-ev-name { flex: 1; font-weight: 600; }
-.week-ev-tag { font-family: var(--fm); font-size: 8px; padding: 2px 6px; border-radius: 5px; }
+.week-ev-tag { font-family: var(--fm); font-size:10px; padding: 2px 6px; border-radius: 5px; }
 
 
 /* ── FAB + BUTTON ── */
-.fab-universal { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:var(--accent); border:none; color:#031a16; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,196,167,.4); z-index:200; transition:transform .15s,box-shadow .15s; line-height:1; }
+.fab-universal { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:var(--accent); border:none; color:#031a16; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,196,167,.4); z-index:200; transition:transform var(--dur-fast) var(--ease),box-shadow var(--dur-fast) var(--ease); line-height:1; }
 .fab-universal:hover { transform:scale(1.08); box-shadow:0 6px 28px rgba(0,196,167,.65); }
 
 /* ── ADD WIZARD ── */
 .wiz-step-indicator { display:flex; gap:4px; justify-content:center; margin-bottom:4px; }
-.wiz-dot { width:6px; height:6px; border-radius:50%; background:var(--border2); transition:background .2s; }
+.wiz-dot { width:6px; height:6px; border-radius:50%; background:var(--border2); transition:background var(--dur-base) var(--ease); }
 .wiz-dot.active { background:var(--accent); }
 .wiz-dot.done { background:var(--green); }
 .wiz-area-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
-.wiz-btn { padding:10px 6px; border-radius:10px; border:1px solid var(--border2); background:var(--s3); color:var(--muted2); font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:1px; cursor:pointer; text-align:center; transition:all .15s; }
+.wiz-btn { padding:10px 6px; border-radius:10px; border:1px solid var(--border2); background:var(--s3); color:var(--muted2); font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:1px; cursor:pointer; text-align:center; transition:all var(--dur-fast) var(--ease); }
 .wiz-btn:hover { border-color:var(--accent); color:var(--accent); }
 .wiz-btn.selected { background:rgba(123,111,255,.15); border-color:var(--accent); color:var(--accent); }
 .wiz-btn.sel-alta { background:rgba(224,92,110,.15); border-color:#e05c6e; color:#e05c6e; }
@@ -1394,7 +1417,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .now-badge {
   display: inline-block;
   font-family: var(--fm);
-  font-size: 7px;
+  font-size:10px;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--accent);
@@ -1458,7 +1481,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .qc-input:focus { border-color: var(--accent); }
 .qc-input::placeholder { color: var(--muted); }
 .qc-footer { display: flex; gap: 8px; justify-content: space-between; align-items: center; }
-.qc-hint { font-family: var(--fm); font-size: 8px; color: var(--muted); letter-spacing: 1px; }
+.qc-hint { font-family: var(--fm); font-size:10px; color: var(--muted); letter-spacing: 1px; }
 .qc-actions { display: flex; gap: 8px; }
 .qc-btn-secondary {
   background: transparent;
@@ -1471,7 +1494,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: all .15s;
+  transition:all var(--dur-fast) var(--ease);
 }
 .qc-btn-secondary:hover { color: var(--text); border-color: var(--border3); }
 .qc-btn-primary {
@@ -1485,7 +1508,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
   font-weight: 700;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: filter .15s;
+  transition:filter var(--dur-fast) var(--ease);
 }
 .qc-btn-primary:hover { filter: brightness(1.1); }
 
@@ -1516,7 +1539,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 }
 
 /* ── DELETE BUTTON ── */
-.t-del { opacity:0; background:transparent; border:none; color:var(--accent2); font-size:13px; cursor:pointer; padding:10px 8px; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:opacity .15s,background .15s; flex-shrink:0; line-height:1; touch-action:manipulation; }
+.t-del { opacity:0; background:transparent; border:none; color:var(--accent2); font-size:13px; cursor:pointer; padding:10px 8px; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:opacity var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease); flex-shrink:0; line-height:1; touch-action:manipulation; }
 .task-item:hover .t-del, .r-card:hover .t-del, .kanban-card:hover .t-del, .mc-pill:hover .t-del { opacity:1; }
 .t-del:hover { background:rgba(255,77,109,.15); }
 @media (max-width:600px) { .t-del { opacity:1 !important; } }
@@ -1587,7 +1610,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .ss-val.gold { color: var(--gold); }
 .ss-val.pink { color: var(--accent2); }
 .ss-val.cyan { color: var(--cyan); }
-.ss-key { font-family: var(--fm); font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+.ss-key { font-family: var(--fm); font-size:10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
 .ss-sep { width: 1px; height: 36px; background: var(--border2); flex-shrink: 0; }
 
 .lvl-strip {
@@ -1659,13 +1682,28 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .kanban-cards::-webkit-scrollbar-thumb { background: var(--border2); }
 
 .kanban-card {
+  position: relative;
   background: var(--s2);
   border: 1px solid var(--border2);
   border-radius: 10px;
   padding: 10px 12px;
   cursor: pointer;
-  transition: all .15s;
+  transition:all var(--dur-fast) var(--ease);
 }
+/* Firma visual: esquinas tipo visor, visibles al interactuar (ver prototipo TODO) */
+.kanban-card::before, .kanban-card::after {
+  content: '';
+  position: absolute;
+  width: 9px; height: 9px;
+  border-color: var(--accent);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease);
+  pointer-events: none;
+}
+.kanban-card::before { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; border-radius: 4px 0 0 0; }
+.kanban-card::after { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; border-radius: 0 0 4px 0; }
+.kanban-card:hover::before, .kanban-card:hover::after,
+.kanban-card:focus-visible::before, .kanban-card:focus-visible::after { opacity: 1; }
 .kanban-card:hover { border-color: var(--border3); background: var(--s3); }
 .kanban-card-name { font-size: 12px; font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
 .kanban-card-meta { display: flex; align-items: center; gap: 6px; }
@@ -1684,35 +1722,35 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 /* Backlog tabs por área */
 .bl-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
 .bl-tabs::-webkit-scrollbar { display:none; }
-.bl-tab { flex:none; display:flex; align-items:center; gap:5px; padding:6px 12px; border-radius:20px; border:1.5px solid transparent; cursor:pointer; transition:all .18s; background:var(--s1); touch-action:manipulation; }
+.bl-tab { flex:none; display:flex; align-items:center; gap:5px; padding:6px 12px; border-radius:20px; border:1.5px solid transparent; cursor:pointer; transition:all var(--dur-fast) var(--ease); background:var(--s1); touch-action:manipulation; }
 .bl-tab-name { font-family:var(--fm); font-size:10px; font-weight:800; letter-spacing:.06em; }
 .bl-tab-count { font-family:var(--fm); font-size:9px; font-weight:700; opacity:.7; }
 .bl-tab.bl-active { background:var(--bl-tab-color,#5b7cf6)22; border-color:var(--bl-tab-color,#5b7cf6); }
 .bl-tab.bl-active .bl-tab-name { color:var(--bl-tab-color,#5b7cf6); }
 .bl-content { min-height:60px; }
 .bl-pills { display:flex; flex-direction:column; gap:5px; }
-.r-card { background:var(--s2); border:1px solid var(--border2); border-radius:10px; padding:10px 12px; cursor:grab; transition:all .15s; margin-bottom:0; touch-action:none; }
+.r-card { background:var(--s2); border:1px solid var(--border2); border-radius:10px; padding:10px 12px; cursor:grab; transition:all var(--dur-fast) var(--ease); margin-bottom:0; touch-action:none; }
 .r-card:hover { border-color:var(--border3); background:var(--s3); }
 .r-card:active { cursor:grabbing; }
 .r-card-name { font-size:12px; font-weight:600; margin-bottom:4px; line-height:1.3; }
 .r-card-meta { display:flex; align-items:center; gap:6px; }
-.mc-pill { border-radius:10px; padding:8px 10px; cursor:grab; display:flex; align-items:center; gap:6px; transition:all .15s; touch-action:none; }
+.mc-pill { border-radius:10px; padding:8px 10px; cursor:grab; display:flex; align-items:center; gap:6px; transition:all var(--dur-fast) var(--ease); touch-action:none; }
 .mc-pill:hover { filter:brightness(1.15); }
 .mc-pill:active { cursor:grabbing; }
 .mc-pill-name { font-size:11px; font-weight:600; line-height:1.3; color:var(--text); }
-.mc-pill-due { font-family:var(--fm); font-size:8px; opacity:.7; color:var(--text); margin-top:2px; }
-.mc-send-btn { background:rgba(255,255,255,.15); border:none; border-radius:6px; color:white; font-size:14px; width:26px; height:26px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:background .15s; padding:0; }
+.mc-pill-due { font-family:var(--fm); font-size:10px; opacity:.7; color:var(--text); margin-top:2px; }
+.mc-send-btn { background:rgba(255,255,255,.15); border:none; border-radius:6px; color:white; font-size:14px; width:26px; height:26px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:background var(--dur-fast) var(--ease); padding:0; }
 .mc-send-btn:hover { background:rgba(255,255,255,.35); }
 .kanban-col.drag-over { background:rgba(123,111,255,.07) !important; border-color:var(--accent) !important; }
 .col-empty { font-family:var(--fm); font-size:10px; color:var(--muted); padding:8px 4px; }
-.fab-add { position:absolute; bottom:10px; right:4px; width:36px; height:36px; border-radius:50%; background:var(--accent); border:none; color:#031a16; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(0,196,167,.35); transition:all .2s; z-index:10; line-height:1; }
+.fab-add { position:absolute; bottom:10px; right:4px; width:36px; height:36px; border-radius:50%; background:var(--accent); border:none; color:#031a16; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(0,196,167,.35); transition:all var(--dur-base) var(--ease); z-index:10; line-height:1; }
 .fab-add:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(0,196,167,.55); }
 .todo-two-sec .kanban-cards { max-height:none !important; overflow-y:visible !important; }
 .todo-two-sec .kanban-col { height:auto; }
 .drop-placeholder { height:52px; border:2px dashed var(--accent); border-radius:10px; background:rgba(123,111,255,.06); animation:phPulse .9s ease infinite; flex-shrink:0; }
 @keyframes phPulse { 0%,100%{opacity:.5}50%{opacity:1} }
 .r-card.dragging,.mc-pill.dragging { opacity:.3; }
-.week-prio-item { cursor:grab; border-radius:8px; padding:7px 6px; transition:background .15s; }
+.week-prio-item { cursor:grab; border-radius:8px; padding:7px 6px; transition:background var(--dur-fast) var(--ease); }
 .week-prio-item:last-child { border-bottom:none; }
 .week-prio-item.wpi-over { background:rgba(123,111,255,.12); border-bottom-color:transparent; }
 .todo-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:500; backdrop-filter:blur(6px); }
@@ -1726,7 +1764,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .todo-modal-confirm { padding:8px 20px; border-radius:8px; border:none; background:var(--accent); color:white; font-family:var(--fm); font-size:11px; cursor:pointer; font-weight:700; }
 
 /* ── SEMANA INTERACTIVA (HUB) ── */
-.week-day { cursor:pointer; transition:all .15s; }
+.week-day { cursor:pointer; transition:all var(--dur-fast) var(--ease); }
 .week-day.selected { border-color:var(--accent) !important; background:rgba(123,111,255,.18) !important; transform:translateY(-2px); }
 .hub-day-panel { background:var(--s2); border:1px solid var(--border2); border-radius:12px; padding:12px 14px; margin-top:10px; animation:fadeIn .2s ease; }
 .hub-dp-title { font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:2px; color:var(--muted2); text-transform:uppercase; margin-bottom:8px; }
@@ -1735,17 +1773,17 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .hub-dp-empty { font-family:var(--fm); font-size:10px; color:var(--muted); padding:3px 0; }
 
 /* ── 5 MISIONES SEMANALES ── */
-.mission-item { display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--border); cursor:pointer; transition:opacity .15s; }
+.mission-item { display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--border); cursor:pointer; transition:opacity var(--dur-fast) var(--ease); }
 .mission-item:last-child { border-bottom:none; }
 .mission-item.done-m { opacity:.45; }
-.mission-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .2s; }
+.mission-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; transition:all var(--dur-base) var(--ease); }
 .mission-item.done-m .mission-check { background:var(--gold); border-color:var(--gold); color:#000; }
-.mission-slot-add { width:22px; height:22px; border-radius:6px; border:1px dashed var(--border2); background:transparent; color:var(--muted); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.mission-slot-add { width:22px; height:22px; border-radius:6px; border:1px dashed var(--border2); background:transparent; color:var(--muted); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all var(--dur-base) var(--ease); }
 .mission-slot-add:hover { border-color:var(--gold); color:var(--gold); }
 .mission-name { flex:1; font-size:12px; font-weight:600; }
 .mission-area-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .mission-xp-tag { font-family:var(--fm); font-size:9px; color:var(--gold); background:rgba(255,204,0,.1); border:1px solid rgba(255,204,0,.2); border-radius:6px; padding:1px 5px; }
-.mission-edit-btn { background:transparent; border:none; color:var(--muted); font-size:11px; cursor:pointer; padding:2px 6px; border-radius:4px; transition:color .15s; }
+.mission-edit-btn { background:transparent; border:none; color:var(--muted); font-size:11px; cursor:pointer; padding:2px 6px; border-radius:4px; transition:color var(--dur-fast) var(--ease); }
 .mission-edit-btn:hover { color:var(--text); }
 .missions-footer { display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-top:8px; border-top:1px solid var(--border); }
 .missions-prog { display:flex; align-items:center; gap:8px; }
@@ -1805,7 +1843,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .dprog-bar { width:100%; height:60px; background:var(--s3); border:1px solid var(--border); border-radius:4px 4px 0 0; overflow:hidden; display:flex; flex-direction:column-reverse; align-items:stretch; }
 .dprog-today .dprog-bar { border-color:var(--accent); box-shadow:0 0 6px rgba(123,111,255,.3); }
 .dprog-segment { width:100%; flex-shrink:0; }
-.dprog-label { font-family:var(--fm); font-size:6px; color:var(--muted2); text-align:center; white-space:nowrap; }
+.dprog-label { font-family:var(--fm); font-size:10px; color:var(--muted2); text-align:center; white-space:nowrap; }
 .dprog-today .dprog-label { color:var(--accent); }
 
 /* ── DAILY MISSIONS ── */
@@ -1814,23 +1852,23 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .dmission-add-icon { color:var(--accent); font-size:16px; font-weight:700; flex-shrink:0; line-height:1; }
 .dmission-add-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--ff); font-size:13px; }
 .dmission-add-input::placeholder { color:var(--muted2); }
-.dmission-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; background:var(--s2); border:1px solid var(--border); margin-bottom:6px; transition:border-color .15s; }
+.dmission-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; background:var(--s2); border:1px solid var(--border); margin-bottom:6px; transition:border-color var(--dur-fast) var(--ease); }
 .dmission-item:hover { border-color:var(--border2); }
 .dmission-item.dmission-done { opacity:.6; }
-.dmission-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer; transition:all .2s; }
+.dmission-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer; transition:all var(--dur-base) var(--ease); }
 .dmission-done .dmission-check { background:var(--green); border-color:var(--green); color:#000; }
 .dmission-name { flex:1; font-size:13px; font-weight:600; cursor:pointer; }
 .dmission-done .dmission-name { text-decoration:line-through; opacity:.5; }
 .dmission-edit-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--ff); font-size:13px; font-weight:600; border-bottom:1px solid var(--accent); padding-bottom:1px; }
-.dmission-action { background:transparent; border:none; color:var(--muted2); cursor:pointer; font-size:13px; padding:4px 6px; line-height:1; border-radius:4px; transition:color .15s,background .15s; }
+.dmission-action { background:transparent; border:none; color:var(--muted2); cursor:pointer; font-size:13px; padding:4px 6px; line-height:1; border-radius:4px; transition:color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease); }
 .dmission-action:hover { color:var(--accent2); background:rgba(255,77,109,.1); }
 .dmission-full-msg { font-family:var(--fm); font-size:10px; color:var(--muted2); text-align:center; padding:4px; letter-spacing:1px; }
 
 /* ── TASK NOTES ── */
-.t-notes-btn { opacity:0.35; background:transparent; border:none; color:var(--muted2); font-size:13px; cursor:pointer; padding:6px; min-width:32px; min-height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:all .15s; flex-shrink:0; line-height:1; }
+.t-notes-btn { opacity:0.35; background:transparent; border:none; color:var(--muted2); font-size:13px; cursor:pointer; padding:6px; min-width:32px; min-height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; transition:all var(--dur-fast) var(--ease); flex-shrink:0; line-height:1; }
 .task-item:hover .t-notes-btn { opacity:1; background:var(--s3); }
 .t-notes-btn.has-notes { opacity:1 !important; color:var(--accent); background:rgba(0,212,180,0.12) !important; border:1px solid rgba(0,212,180,0.25); }
-.t-date-btn { opacity:0.35; background:transparent; border:none; color:var(--muted2); font-size:12px; cursor:pointer; padding:4px 6px; min-height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:all .15s; flex-shrink:0; line-height:1; font-family:var(--fm); font-weight:700; white-space:nowrap; }
+.t-date-btn { opacity:0.35; background:transparent; border:none; color:var(--muted2); font-size:12px; cursor:pointer; padding:4px 6px; min-height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:all var(--dur-fast) var(--ease); flex-shrink:0; line-height:1; font-family:var(--fm); font-weight:700; white-space:nowrap; }
 .task-item:hover .t-date-btn { opacity:1; background:var(--s3); }
 @media (max-width:600px) { .t-notes-btn { opacity:0.7 !important; } .t-date-btn { opacity:0.7 !important; } }
 
@@ -1844,10 +1882,10 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .pomo-time { position:absolute; font-size:36px; font-weight:800; font-family:var(--fm); color:var(--text); }
 .pomo-sub { position:absolute; bottom:24px; font-size:9px; color:var(--muted); font-family:var(--fm); letter-spacing:2px; text-transform:uppercase; }
 .pomo-controls { display:flex; gap:10px; justify-content:center; margin-bottom:20px; }
-.pomo-btn { padding:10px 20px; border-radius:12px; border:1px solid var(--border2); background:var(--s2); color:var(--text); font-family:var(--fm); font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; }
+.pomo-btn { padding:10px 20px; border-radius:12px; border:1px solid var(--border2); background:var(--s2); color:var(--text); font-family:var(--fm); font-size:12px; font-weight:700; cursor:pointer; transition:all var(--dur-fast) var(--ease); }
 .pomo-btn:hover { background:var(--s3); border-color:var(--accent); }
 .pomo-btn.primary { background:var(--accent); color:#031a16; border-color:var(--accent); }
-.focus-done-btn { width:100%; padding:16px; border-radius:14px; background:var(--green); border:none; color:#000; font-size:16px; font-weight:800; cursor:pointer; letter-spacing:1px; transition:all .15s; margin-bottom:10px; }
+.focus-done-btn { width:100%; padding:16px; border-radius:14px; background:var(--green); border:none; color:#000; font-size:16px; font-weight:800; cursor:pointer; letter-spacing:1px; transition:all var(--dur-fast) var(--ease); margin-bottom:10px; }
 .focus-done-btn:hover { filter:brightness(1.1); }
 .focus-skip-btn { background:transparent; border:none; color:var(--muted); font-family:var(--fm); font-size:11px; cursor:pointer; padding:8px; letter-spacing:1px; width:100%; text-align:center; }
 .focus-all-done { text-align:center; padding:60px 24px; }
@@ -1862,7 +1900,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .mboot-event-item { display:flex; align-items:center; gap:10px; padding:8px 10px; background:var(--s2); border-radius:8px; margin-bottom:6px; font-size:13px; }
 .mboot-event-time { font-family:var(--fm); font-size:10px; color:var(--accent); font-weight:700; width:44px; flex-shrink:0; }
 .mboot-energy { display:flex; gap:8px; }
-.mboot-e-btn { flex:1; padding:14px 8px; border-radius:12px; border:1px solid var(--border); background:var(--s2); color:var(--text); font-size:18px; font-weight:700; cursor:pointer; transition:all .15s; text-align:center; line-height:1.4; }
+.mboot-e-btn { flex:1; padding:14px 8px; border-radius:12px; border:1px solid var(--border); background:var(--s2); color:var(--text); font-size:18px; font-weight:700; cursor:pointer; transition:all var(--dur-fast) var(--ease); text-align:center; line-height:1.4; }
 .mboot-e-btn.selected { border-color:var(--accent); background:rgba(0,212,180,0.12); box-shadow:0 0 0 1px var(--accent); }
 .mboot-e-label { font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:1px; display:block; margin-top:4px; color:var(--muted); }
 .mboot-start-btn { width:100%; padding:16px; border-radius:14px; background:var(--accent); border:none; color:#031a16; font-size:15px; font-weight:800; cursor:pointer; letter-spacing:2px; margin-top:8px; }
@@ -1870,7 +1908,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 
 /* ── ENERGY FILTER ── */
 .energy-filter { display:flex; gap:6px; margin-bottom:14px; }
-.ef-btn { flex:1; padding:9px 6px; border-radius:10px; border:1px solid var(--border); background:var(--s2); color:var(--muted2); font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; text-align:center; font-family:var(--fm); }
+.ef-btn { flex:1; padding:9px 6px; border-radius:10px; border:1px solid var(--border); background:var(--s2); color:var(--muted2); font-size:12px; font-weight:700; cursor:pointer; transition:all var(--dur-fast) var(--ease); text-align:center; font-family:var(--fm); }
 .ef-btn:hover { border-color:var(--border2); color:var(--text); }
 .ef-btn.ef-active { border-color:var(--accent); background:rgba(0,212,180,0.1); color:var(--accent); }
 
@@ -1892,10 +1930,10 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .heatmap-wrap { background:var(--s1); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; overflow-x:auto; }
 .heatmap-grid { display:flex; gap:2px; align-items:flex-start; }
 .heatmap-days-col { display:flex; flex-direction:column; gap:2px; margin-right:4px; padding-top:0; }
-.heatmap-day-label { font-family:var(--fm); font-size:7px; color:var(--muted); width:12px; text-align:right; height:10px; line-height:10px; }
+.heatmap-day-label { font-family:var(--fm); font-size:10px; color:var(--muted); width:12px; text-align:right; height:10px; line-height:10px; }
 .heatmap-weeks { display:flex; gap:2px; }
 .heatmap-week { display:flex; flex-direction:column; gap:2px; }
-.heatmap-cell { width:10px; height:10px; border-radius:2px; cursor:default; transition:transform .1s; }
+.heatmap-cell { width:10px; height:10px; border-radius:2px; cursor:default; transition:transform var(--dur-fast) var(--ease); }
 .heatmap-cell:hover { transform:scale(1.4); }
 .hc-0 { background:var(--s3); }
 .hc-1 { background:rgba(0,212,180,0.2); }
@@ -1917,7 +1955,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 /* ── ROADMAP / VISIÓN ── redesign ── */
 .rl-phase-strip { display:flex; gap:6px; overflow-x:auto; padding:0 16px 16px; scrollbar-width:none; }
 .rl-phase-strip::-webkit-scrollbar { display:none; }
-.rl-phase-chip { flex:none; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); cursor:pointer; font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.07em; transition:all .15s; background:var(--s1); color:var(--muted); touch-action:manipulation; }
+.rl-phase-chip { flex:none; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); cursor:pointer; font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.07em; transition:all var(--dur-fast) var(--ease); background:var(--s1); color:var(--muted); touch-action:manipulation; }
 .rl-phase-chip.rl-chip-active { border-color:currentColor; }
 /* Scroll container */
 .rl-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; position:relative; }
@@ -1929,13 +1967,13 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .rl-phase-band { margin-bottom:6px; }
 .rl-pb-lbl { height:22px; }
 .rl-pb-seg { height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; }
-.rl-pb-seg-txt { font-family:var(--fm); font-size:8px; font-weight:800; letter-spacing:.06em; color:rgba(255,255,255,.8); white-space:nowrap; overflow:hidden; padding:0 6px; }
+.rl-pb-seg-txt { font-family:var(--fm); font-size:10px; font-weight:800; letter-spacing:.06em; color:rgba(255,255,255,.8); white-space:nowrap; overflow:hidden; padding:0 6px; }
 /* Month row */
 .rl-month-row { margin-bottom:14px; }
 .rl-mlbl-empty { height:24px; }
 .rl-mlbl { font-family:var(--fm); font-size:10px; font-weight:700; text-align:center; color:#252540; padding:4px 0; }
 .rl-mlbl.rl-mnow { color:var(--accent); font-size:11px; }
-.rl-mlbl.rl-myear { color:#3a3a60; font-size:8px; letter-spacing:.04em; padding-top:2px; }
+.rl-mlbl.rl-myear { color:#3a3a60; font-size:10px; letter-spacing:.04em; padding-top:2px; }
 /* NOW line */
 .rl-now-line { position:absolute; top:0; bottom:24px; width:2px; background:var(--accent); opacity:.45; border-radius:1px; z-index:5; pointer-events:none; }
 .rl-now-top { position:absolute; top:0; left:-3px; width:8px; height:8px; border-radius:50%; background:var(--accent); }
@@ -1948,7 +1986,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 /* Bar rows */
 .rl-bar-row { margin-bottom:4px; }
 .rl-sticky-lbl { position:sticky; left:0; background:var(--bg); z-index:2; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; height:40px; }
-.rl-bar { height:40px; border-radius:8px; display:flex; align-items:center; padding:0 14px; cursor:pointer; transition:filter .15s, transform .1s; touch-action:manipulation; position:relative; overflow:visible; }
+.rl-bar { height:40px; border-radius:8px; display:flex; align-items:center; padding:0 14px; cursor:pointer; transition:filter var(--dur-fast) var(--ease), transform .1s; touch-action:manipulation; position:relative; overflow:visible; }
 .rl-bar:active { transform:scale(.97); filter:brightness(1.1); }
 .rl-bar span { font-family:var(--fm); font-size:10px; font-weight:700; color:rgba(255,255,255,.92); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; flex:1; min-width:0; letter-spacing:.02em; }
 .rl-bar.rl-done { opacity:.35; }
@@ -1956,7 +1994,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .rl-bar-badge { position:absolute; top:-6px; right:-4px; min-width:18px; height:18px; border-radius:9px; padding:0 5px; background:var(--accent2); font-family:var(--fm); font-size:9px; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center; z-index:3; border:2px solid var(--bg); }
 .rl-cell-empty { height:40px; }
 /* Block sheet */
-.rb-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:2200; opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.rb-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:2200; opacity:0; pointer-events:none; transition:opacity var(--dur-base) var(--ease); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
 .rb-overlay.rb-open { opacity:1; pointer-events:all; }
 .rb-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--s1); border-radius:22px 22px 0 0; border-top:1px solid var(--border2); z-index:2201; transform:translateY(100%); transition:transform .32s cubic-bezier(.4,0,.2,1); max-height:88vh; overflow-y:auto; }
 .rb-sheet.rb-open { transform:translateY(0); }
@@ -1966,7 +2004,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .rb-title { font-size:22px; font-weight:800; color:var(--text); margin:6px 0 4px; line-height:1.2; }
 .rb-dates { font-family:var(--fm); font-size:10px; color:var(--muted2); margin-bottom:16px; }
 .rb-status-row { display:flex; gap:8px; margin-bottom:20px; }
-.rb-stat-btn { flex:1; padding:10px 0; border-radius:12px; border:1.5px solid var(--border); background:transparent; font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.06em; color:var(--muted2); cursor:pointer; transition:all .15s; }
+.rb-stat-btn { flex:1; padding:10px 0; border-radius:12px; border:1.5px solid var(--border); background:transparent; font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.06em; color:var(--muted2); cursor:pointer; transition:all var(--dur-fast) var(--ease); }
 .rb-stat-btn.rs-pending.rs-sel { border-color:#555570; color:#555570; background:rgba(85,85,112,.12); }
 .rb-stat-btn.rs-active.rs-sel { border-color:var(--accent); color:var(--accent); background:rgba(0,212,180,.1); }
 .rb-stat-btn.rs-done.rs-sel { border-color:var(--green); color:var(--green); background:rgba(61,184,114,.1); }
@@ -1975,7 +2013,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .rb-notes-input { width:100%; background:var(--s2); border:1px solid var(--border); border-radius:12px; padding:13px 15px; color:var(--text); font-size:14px; font-family:var(--ff); resize:none; min-height:84px; }
 .rb-notes-input:focus { outline:none; border-color:var(--accent); }
 .rb-todo-item { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--s2); border-radius:10px; border:1px solid var(--border); margin-bottom:6px; }
-.rb-todo-chk { width:22px; height:22px; border-radius:7px; border:1.5px solid var(--border2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; color:transparent; transition:all .15s; }
+.rb-todo-chk { width:22px; height:22px; border-radius:7px; border:1.5px solid var(--border2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; color:transparent; transition:all var(--dur-fast) var(--ease); }
 .rb-todo-chk.rb-chk-done { background:var(--accent); border-color:var(--accent); color:#031a16; }
 .rb-todo-txt { flex:1; font-size:14px; color:var(--text); }
 .rb-todo-txt.rb-txt-done { text-decoration:line-through; color:var(--muted); }
@@ -1998,7 +2036,7 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .plan-footer { padding:16px 20px 32px; flex-shrink:0; border-top:1px solid var(--border); }
 .plan-sec-label { font-family:var(--fm); font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); margin:16px 0 8px; }
 /* Pill items in planning */
-.pp-item { display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--s2); border-radius:10px; border:1px solid var(--border); margin-bottom:5px; cursor:pointer; transition:all .15s; touch-action:manipulation; }
+.pp-item { display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--s2); border-radius:10px; border:1px solid var(--border); margin-bottom:5px; cursor:pointer; transition:all var(--dur-fast) var(--ease); touch-action:manipulation; }
 .pp-item:active { transform:scale(.98); }
 .pp-item.pp-selected { border-color:var(--accent); background:rgba(0,212,180,.08); }
 .pp-item.pp-fixed { opacity:.7; cursor:default; }
@@ -2025,16 +2063,16 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .plan-add-row input:focus { outline:none; }
 .plan-confirm-btn { width:100%; padding:16px; border-radius:14px; background:var(--accent); border:none; color:#031a16; font-size:15px; font-weight:800; cursor:pointer; }
 .plan-skip-btn { width:100%; padding:10px; border-radius:10px; background:transparent; border:1px solid var(--border); color:var(--muted2); font-size:12px; font-weight:700; cursor:pointer; margin-top:8px; font-family:var(--fm); }
-.plan-task-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--s2); border-radius:10px; margin-bottom:8px; cursor:pointer; border:1px solid transparent; transition:border-color .15s; }
+.plan-task-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--s2); border-radius:10px; margin-bottom:8px; cursor:pointer; border:1px solid transparent; transition:border-color var(--dur-fast) var(--ease); }
 .plan-task-item.selected { border-color:var(--accent); background:rgba(123,111,255,.08); }
 .plan-task-check { width:20px; height:20px; border-radius:6px; border:1px solid var(--border2); background:var(--s3); display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
 .plan-task-item.selected .plan-task-check { background:var(--accent); border-color:var(--accent); color:#031a16; }
 .plan-task-name { font-size:13px; font-weight:600; line-height:1.3; }
-.plan-task-area { font-family:var(--fm); font-size:8px; letter-spacing:1px; margin-top:2px; }
+.plan-task-area { font-family:var(--fm); font-size:10px; letter-spacing:1px; margin-top:2px; }
 .plan-dp-block { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--s2); border-radius:10px; margin-bottom:6px; border-left:3px solid var(--border2); }
 .plan-dp-time { font-family:var(--fm); font-size:10px; color:var(--muted); width:38px; flex-shrink:0; }
 .plan-dp-label { flex:1; font-size:13px; font-weight:600; }
-.plan-dp-type { font-family:var(--fm); font-size:8px; color:var(--muted2); flex-shrink:0; letter-spacing:1px; }
+.plan-dp-type { font-family:var(--fm); font-size:10px; color:var(--muted2); flex-shrink:0; letter-spacing:1px; }
 .plan-dp-btns { display:flex; flex-direction:column; gap:2px; flex-shrink:0; }
 .plan-dp-btns button { background:var(--s3); border:none; color:var(--muted2); border-radius:4px; padding:2px 7px; cursor:pointer; font-size:10px; line-height:1.4; touch-action:manipulation; }
 .plan-section-label { font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:3px; color:var(--muted); padding:14px 0 8px; text-transform:uppercase; }
@@ -2151,7 +2189,7 @@ button, a, [onclick], [ontouchstart] {
   padding: 6px 13px; border-radius: 20px;
   border: 1px solid var(--border); background: var(--s2);
   color: var(--muted2); font-family: var(--fm); font-size: 11px; font-weight: 700;
-  cursor: pointer; transition: all .15s; white-space: nowrap;
+  cursor: pointer; transition:all var(--dur-fast) var(--ease); white-space: nowrap;
   touch-action: manipulation;
 }
 .tsc.active {
@@ -2185,7 +2223,7 @@ button, a, [onclick], [ontouchstart] {
   background: var(--accent); border: none;
   color: #031a16; font-family: var(--fm); font-size: 14px;
   font-weight: 800; cursor: pointer; touch-action: manipulation;
-  transition: filter .15s;
+  transition:filter var(--dur-fast) var(--ease);
 }
 .tsheet-save-btn:active { filter: brightness(1.1); }
 
@@ -2713,6 +2751,58 @@ async function sbUpsert(table, row) {
   } catch(e) { console.warn('Supabase save failed, using localStorage fallback', e); return false; }
 }
 
+// ── Tabla EVENTS (dedicada, una fila por evento) ──
+// Antes los eventos vivían dentro de habits.user_events (un solo JSON gigante,
+// riesgo de que dos escrituras casi simultáneas se pisen entre sí). Ahora cada
+// evento es su propia fila, igual que ya funciona 'tasks'.
+async function sbUpsertEvent(ev) {
+  return sbUpsert('events', {
+    id: ev.id, name: ev.n, date: ev.d, time: ev.time || null,
+    end_date: ev.endDate || null, area: ev.t, notes: ev.notes || '',
+    gcal_id: ev.gcalId || null, updated_at: new Date().toISOString()
+  });
+}
+async function sbDeleteEvent(id) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/events?id=eq.${id}`, { method: 'DELETE', headers: SB_HEADERS });
+    return r.ok;
+  } catch(e) { console.warn('Supabase delete event failed', e); return false; }
+}
+async function sbFetchAllEvents() {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/events?select=*`, { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } });
+    if(!r.ok) return null;
+    const rows = await r.json();
+    // Traducir de vuelta al formato interno {id,d,n,t,time,notes,gcalId,endDate}
+    return rows.map(row => {
+      const e = { id: row.id, d: row.date, n: row.name, t: row.area, notes: row.notes || '' };
+      if(row.time) e.time = row.time;
+      if(row.end_date) e.endDate = row.end_date;
+      if(row.gcal_id) e.gcalId = row.gcal_id;
+      return e;
+    });
+  } catch(e) { console.warn('Supabase fetch events failed', e); return null; }
+}
+// Migración de una sola vez: si la tabla events está vacía pero el blob viejo
+// (habits.user_events) tiene datos, los copia. Se ejecuta sola al cargar, no
+// requiere que Sergi haga nada manualmente salvo crear la tabla (ver SQL aparte).
+async function migrateLegacyEventsIfNeeded() {
+  if(localStorage.getItem('monart-events-migrated')) return;
+  try {
+    const remoteEvents = await sbFetchAllEvents();
+    if(remoteEvents === null) return; // tabla aún no existe — reintentará la próxima carga
+    if(remoteEvents.length === 0) {
+      const legacy = await sbGet('habits', 'sergi');
+      const legacyEvs = (legacy && Array.isArray(legacy.user_events)) ? legacy.user_events : [];
+      if(legacyEvs.length > 0) {
+        for(const ev of legacyEvs) { await sbUpsertEvent(ev); }
+        console.log(`Migrados ${legacyEvs.length} eventos de habits.user_events a la tabla events`);
+      }
+    }
+    localStorage.setItem('monart-events-migrated', '1');
+  } catch(e) { console.warn('migrateLegacyEventsIfNeeded failed', e); }
+}
+
 async function sbGetAllTasks() {
   try {
     const r = await fetch(`${SB_URL}/rest/v1/tasks?order=created_at.asc`, {
@@ -2885,7 +2975,6 @@ function _syncPayload() {
     missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
     daily_log: ST.dailyLog || {}, daily_missions: ST.dailyMissions || null,
     roadmap: { ...(ST.roadmap || {}), __weekPlan: ST.weekPlan || null, __dayPlan: ST.dayPlan || null },
-    user_events: getUserEvents(),
     updated_at: ST.updated_at
   };
 }
@@ -2905,7 +2994,6 @@ async function syncToCloud() {
     daily_log: ST.dailyLog || {},
     daily_missions: ST.dailyMissions || null,
     roadmap: { ...(ST.roadmap || {}), __weekPlan: ST.weekPlan || null, __dayPlan: ST.dayPlan || null },
-    user_events: getUserEvents(),
     updated_at: ST.updated_at
   });
   if(!ok) {
@@ -2920,6 +3008,16 @@ async function syncToCloud() {
 
 async function loadFromCloud(silent = false) {
   if(!silent) showToast('☁️ Sincronizando...');
+  await migrateLegacyEventsIfNeeded(); // una sola vez: copia habits.user_events → tabla events, si hace falta
+  const remoteEvents = await sbFetchAllEvents();
+  if(remoteEvents !== null) {
+    // Merge por id, remoto gana en empate — igual criterio que ya usaba el merge viejo
+    const localEvs = getUserEvents();
+    const localMap = {};
+    localEvs.forEach(e => { localMap[e.id] = e; });
+    remoteEvents.forEach(e => { localMap[e.id] = e; });
+    saveUserEvents(Object.values(localMap));
+  }
   const remote = await sbGet('habits', 'sergi');
   if(remote && remote.completed !== undefined) {
     if(!silent) {
@@ -2969,14 +3067,9 @@ async function loadFromCloud(silent = false) {
       const rdp = (remote.roadmap||{}).__dayPlan;
       if(rwp && !_localIsNewer && (!ST.weekPlan || (rwp.week||0) >= (ST.weekPlan?.week||0))) ST.weekPlan = rwp;
       if(rdp && !_localIsNewer && (!ST.dayPlan || (rdp.date||'') >= (ST.dayPlan?.date||''))) ST.dayPlan = rdp;
-      // Merge user events (unión por id, remote gana si mismo id)
-      if(remote.user_events && Array.isArray(remote.user_events)) {
-        const localEvs = getUserEvents();
-        const localMap = {};
-        localEvs.forEach(e => { localMap[e.id] = e; });
-        remote.user_events.forEach(e => { localMap[e.id] = e; }); // remote overwrites
-        saveUserEvents(Object.values(localMap));
-      }
+      // Los eventos ya se sincronizaron arriba contra la tabla 'events' dedicada —
+      // no se leen más de remote.user_events (blob congelado tras la migración,
+      // reintroduciría eventos ya borrados si se siguiera usando).
       await syncToCloud();
     } else {
       const localTs = ST.updated_at || '2000-01-01';
@@ -3000,9 +3093,7 @@ async function loadFromCloud(silent = false) {
                weekPlanSkippedWeek: ST.weekPlanSkippedWeek || null,
                dayPlan: (remote.roadmap||{}).__dayPlan || ST.dayPlan || null };
         localStorage.setItem('monart-os', JSON.stringify(ST));
-        if(remote.user_events && Array.isArray(remote.user_events) && remote.user_events.length > 0) {
-          saveUserEvents(remote.user_events);
-        }
+        // Eventos ya sincronizados arriba contra la tabla 'events' — no tocar aquí.
       }
     }
   } else if(!silent) {
@@ -3288,7 +3379,7 @@ function renderSchedule() {
           <div class="rpg-pill-body" onclick="openTaskSheet('${t.id}')">
             <div class="rpg-pill-top">
               <span class="rpg-pill-tag" style="background:${col}22;color:${col}">TODO</span>
-              ${t.dueDate < todayStr ? `<span style="font-family:var(--fm);font-size:8px;font-weight:800;color:var(--orange);margin-left:4px">VENCIDA</span>` : ''}
+              ${t.dueDate < todayStr ? `<span style="font-family:var(--fm);font-size:10px;font-weight:800;color:var(--orange);margin-left:4px">VENCIDA</span>` : ''}
             </div>
             <div class="rpg-pill-name">${t.name}</div>
           </div>
@@ -4025,12 +4116,13 @@ function confirmAdd() {
     if(dueTime) ev.time = dueTime;
     const evs = getUserEvents(); evs.push(ev); saveUserEvents(evs);
     syncToCloud(); // sync immediately — don't rely solely on debounce
+    sbUpsertEvent(ev); // tabla events dedicada — fila propia, no el blob de habits
     renderCal();
     if(dueTime) {
       gcalSyncEvent(ev, gcalId => {
         const evs2 = getUserEvents();
         const i2 = evs2.findIndex(e => e.id === ev.id);
-        if(i2 !== -1) { evs2[i2].gcalId = gcalId; saveUserEvents(evs2); syncToCloud(); }
+        if(i2 !== -1) { evs2[i2].gcalId = gcalId; saveUserEvents(evs2); sbUpsertEvent(evs2[i2]); syncToCloud(); }
       });
     }
   }
@@ -4180,7 +4272,7 @@ function renderTodoAll() {
       if(dueLabel < _todayISO2) dueColor = 'var(--accent2)';
       else if(dueLabel === _todayISO2) dueColor = 'var(--orange)';
     }
-    const dueTxt = dueLabel ? `<span style="font-family:var(--fm);font-size:8px;color:${dueColor};margin-left:auto">${dueLabel === _todayISO2?'HOY':dueLabel < _todayISO2?'VENCIDA':dueLabel.slice(5).replace('-','/')}</span>` : '';
+    const dueTxt = dueLabel ? `<span style="font-family:var(--fm);font-size:10px;color:${dueColor};margin-left:auto">${dueLabel === _todayISO2?'HOY':dueLabel < _todayISO2?'VENCIDA':dueLabel.slice(5).replace('-','/')}</span>` : '';
     return `<div class="r-card${t.notes?' r-card-has-notes':''}" draggable="true"
       data-id="${t.id}"
       ondragstart="tdragStart(event,'${t.id}')" ondragend="tdragEnd()"
@@ -4188,7 +4280,7 @@ function renderTodoAll() {
       onclick="if(!_dragReady&&!_touchMoved)openTaskSheet('${t.id}')">
       <div class="r-card-name">${t.name}</div>
       <div class="r-card-meta">
-        <span style="font-family:var(--fm);font-size:8px;color:${col}">${AREA_NAMES[t.area]||t.area}</span>
+        <span style="font-family:var(--fm);font-size:10px;color:${col}">${AREA_NAMES[t.area]||t.area}</span>
         ${dueTxt}
         <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
       </div>
@@ -4226,7 +4318,7 @@ function renderTodoAll() {
   }
 
   function rColDone(items) {
-    const limpBtn = items.length ? `<button onclick="limpiarDone()" ontouchend="event.preventDefault();limpiarDone()" style="font-family:var(--fm);font-size:8px;padding:1px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;margin-left:6px;touch-action:manipulation">LIMPIAR</button>` : '';
+    const limpBtn = items.length ? `<button onclick="limpiarDone()" ontouchend="event.preventDefault();limpiarDone()" style="font-family:var(--fm);font-size:10px;padding:1px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;margin-left:6px;touch-action:manipulation">LIMPIAR</button>` : '';
     return `<div class="kanban-col" style="border-top:2px solid #3db872" ${da('done')}>
       <div class="kanban-col-header" style="color:#3db872">DONE<span class="kanban-col-count">${items.length}</span>${limpBtn}</div>
       <div class="kanban-cards">${items.map(rCard).join('')||'<div class="col-empty">&#8212;</div>'}</div>
@@ -4350,7 +4442,7 @@ function renderAllColumns_REMOVED() {
       <div class="kanban-card-name">${t.name}</div>
       <div class="kanban-card-meta">
         <div class="kanban-area-dot" style="background:${dot}"></div>
-        <span style="font-family:var(--fm);font-size:8px;color:var(--muted2)">${areaShort}</span>
+        <span style="font-family:var(--fm);font-size:10px;color:var(--muted2)">${areaShort}</span>
         <span class="prio-badge ${prioBadgeClass(t.prio)}" style="margin-left:auto">${prioLabel(t.prio)}</span>
       </div>
     </div>`;
@@ -4391,7 +4483,7 @@ function renderKanban() {
       <div class="kanban-card-name">${t.name}</div>
       <div class="kanban-card-meta">
         <div class="kanban-area-dot" style="background:${dot}"></div>
-        <span style="font-family:var(--fm);font-size:8px;color:var(--muted2)">${areaLabel(t.area).split(' ')[1]||t.area}</span>
+        <span style="font-family:var(--fm);font-size:10px;color:var(--muted2)">${areaLabel(t.area).split(' ')[1]||t.area}</span>
         ${t.prio !== 'prog' ? `<span class="prio-badge ${badgeClass}" style="margin-left:auto">${label}</span>` : '<span class="prio-badge pb-prog" style="margin-left:auto">▶</span>'}
         <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar">✕</button>
       </div>
@@ -5029,7 +5121,7 @@ function renderWeekPlan() {
     const isToday = d.toDateString()===today.toDateString();
     const dateStr = d.toISOString().split('T')[0];
     const hasEv = weekEvents.some(e=>e.d===dateStr);
-    html += `<div class="wg-header${isToday?' today-col':''}">${dayNames[i]}<br><span style="color:var(--muted);font-size:8px">${d.getDate()}</span>${hasEv?'<br><span style="color:#e8c56a;font-size:8px">●</span>':''}</div>`;
+    html += `<div class="wg-header${isToday?' today-col':''}">${dayNames[i]}<br><span style="color:var(--muted);font-size:10px">${d.getDate()}</span>${hasEv?'<br><span style="color:#e8c56a;font-size:10px">●</span>':''}</div>`;
   });
 
   // Time rows
@@ -5434,11 +5526,12 @@ function saveEventModal() {
       if(endDate && endDate > (date || evs[idx].d)) evs[idx].endDate = endDate;
       else delete evs[idx].endDate;
       saveUserEvents(evs);
+      sbUpsertEvent(evs[idx]); // tabla events dedicada
       // Sincronizar con Google Calendar (crea si es nuevo, actualiza si ya tenía gcalId)
       gcalSyncEvent(evs[idx], gcalId => {
         const evs2 = getUserEvents();
         const i2 = evs2.findIndex(e => e.id === _evModalId);
-        if(i2 !== -1) { evs2[i2].gcalId = gcalId; saveUserEvents(evs2); syncToCloud(); }
+        if(i2 !== -1) { evs2[i2].gcalId = gcalId; saveUserEvents(evs2); sbUpsertEvent(evs2[i2]); syncToCloud(); }
       });
     }
     syncToCloud(); // sync event changes to cloud
@@ -5456,6 +5549,7 @@ function deleteEventFromModal() {
   if(!_evModalIsUser || !_evModalId) return;
   const target = getUserEvents().find(e => e.id === _evModalId);
   if(target?.gcalId) gcalDeleteEvent(target.gcalId);
+  sbDeleteEvent(_evModalId); // tabla events dedicada
   saveUserEvents(getUserEvents().filter(e => e.id !== _evModalId));
   syncToCloud(); // sync deletion to cloud
   closeEventModal();
@@ -5518,7 +5612,7 @@ function renderDailyProgress() {
       : '';
     const d = new Date(dateStr+'T12:00:00');
     const label = d.getDate()+'/'+(d.getMonth()+1);
-    const taskLabel = taskCount > 0 ? `<div style="font-family:var(--fm);font-size:8px;color:var(--muted2);margin-bottom:1px" title="${taskCount} tareas">${taskCount}t</div>` : '';
+    const taskLabel = taskCount > 0 ? `<div style="font-family:var(--fm);font-size:10px;color:var(--muted2);margin-bottom:1px" title="${taskCount} tareas">${taskCount}t</div>` : '';
     return `<div class="dprog-bar-row${isToday?' dprog-today':''}" onclick="showDayStats('${dateStr}')" style="cursor:pointer">
       ${taskLabel}
       <div class="dprog-bar">${segsHTML}</div>
@@ -5534,7 +5628,7 @@ function renderDailyProgress() {
     <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:6px;display:flex;gap:10px;align-items:center">
       <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#e8c56a;border-radius:2px;display:inline-block"></span>hábitos</span>
       <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#5b7cf6;border-radius:2px;display:inline-block"></span>tareas (Nt = nº ese día)</span>
-      <span style="color:var(--muted);font-size:8px">toca un día ↓</span>
+      <span style="color:var(--muted);font-size:10px">toca un día ↓</span>
     </div>
     <div class="dprog-scroll">${barsHTML}</div>
   </div>`;
@@ -6360,7 +6454,7 @@ function renderVision() {
   // Month row
   let mHTML=`<div class="rl-grid-row rl-month-row"><div class="rl-mlbl-empty"></div>`;
   RL_MONTHS.forEach((m,i)=>{
-    mHTML+=`<div class="rl-mlbl${i===NOW?' rl-mnow':''}${m.y?' rl-myear':''}">${m.l}${m.y?'<br><small style="font-size:7px;opacity:.6">2027</small>':''}</div>`;
+    mHTML+=`<div class="rl-mlbl${i===NOW?' rl-mnow':''}${m.y?' rl-myear':''}">${m.l}${m.y?'<br><small style="font-size:10px;opacity:.6">2027</small>':''}</div>`;
   });
   mHTML+='</div>';
 
