@@ -4026,18 +4026,28 @@ function confirmAdd() {
     const evs = getUserEvents(); evs.push(ev); saveUserEvents(evs);
     syncToCloud(); // sync immediately — don't rely solely on debounce
     renderCal();
+    if(dueTime) {
+      gcalSyncEvent(ev, gcalId => {
+        const evs2 = getUserEvents();
+        const i2 = evs2.findIndex(e => e.id === ev.id);
+        if(i2 !== -1) { evs2[i2].gcalId = gcalId; saveUserEvents(evs2); syncToCloud(); }
+      });
+    }
   }
 
   closeAddPanel();
   updateAll();
   renderTasks();
   showToast(hasDate && dueDate ? '✅ Tarea + evento añadidos' : '✅ Tarea añadida');
-  if(hasDate && dueDate && dueTime) gcalCreateEvent(task);
 }
 
 // ── GOOGLE CALENDAR ──────────────────────────────────────────
+// Token se guarda en localStorage (no sessionStorage) para no perder la sesión
+// entre pestañas/recargas. Sigue caducando por horas (es un access token de
+// Google, no un refresh token) — cuando caduca, se repide consentimiento silencioso.
 const _GC_CID   = '1002615306694-db3fffsbbic0qp82eku7n1f2ng95scct.apps.googleusercontent.com';
 const _GC_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+const _GC_COLOR_MAP = { trabajo:'9', marca:'3', despinsage:'7', casa:'2', yo:'6', estudios:'5', work:'9', personal:'2' };
 let _gcClient = null, _gcToken = null, _gcPending = null;
 
 function _gcInit() {
@@ -4048,50 +4058,97 @@ function _gcInit() {
     callback: resp => {
       if(resp.error) { showToast('⚠ Google Calendar: ' + resp.error); return; }
       _gcToken = resp.access_token;
-      sessionStorage.setItem('gc-tok', _gcToken);
-      if(_gcPending) { _gcPost(_gcPending); _gcPending = null; }
+      localStorage.setItem('gc-tok', _gcToken);
+      if(_gcPending) { _gcRun(_gcPending); _gcPending = null; }
     }
   });
   return true;
 }
 
-function gcalCreateEvent(task) {
-  if(!task.dueDate || !task.dueTime) return;
-  const cached = sessionStorage.getItem('gc-tok');
+function _gcEnsureToken(job) {
+  const cached = localStorage.getItem('gc-tok');
   if(cached) _gcToken = cached;
-  if(_gcToken) { _gcPost(task); return; }
-  _gcPending = task;
+  if(_gcToken) { _gcRun(job); return; }
+  _gcPending = job;
   _gcInit();
   if(_gcClient) _gcClient.requestAccessToken({ prompt: 'consent' });
 }
 
-async function _gcPost(task) {
+// Punto de entrada único para crear/actualizar un evento en Google Calendar.
+// `item` acepta tanto tareas del TODO (dueDate/dueTime/area) como eventos
+// del CAL (d/time/t), y opcionalmente `gcalId` si ya existe (para hacer PATCH
+// en vez de crear un duplicado). Devuelve el id de Google vía `onSynced`.
+function gcalSyncEvent(item, onSynced) {
+  const date = item.dueDate || item.d;
+  const time = item.dueTime || item.time;
+  if(!date || !time) return; // sin hora exacta no sincronizamos (igual que antes)
+  _gcEnsureToken({ ...item, _date: date, _time: time, _onSynced: onSynced });
+}
+
+function gcalDeleteEvent(gcalId) {
+  if(!gcalId) return;
+  _gcEnsureToken({ _delete: true, gcalId });
+}
+
+async function _gcRun(job) {
+  if(job._delete) { await _gcDelete(job.gcalId); return; }
   const tz  = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const [h, m] = task.dueTime.split(':').map(Number);
+  const [h, m] = job._time.split(':').map(Number);
   const pad = n => String(n).padStart(2, '0');
-  const colorMap = { trabajo:'9', marca:'3', despinsage:'7', casa:'2', yo:'6', estudios:'5' };
+  const areaOrType = job.area || job.t;
   const body = {
-    summary: task.name,
-    colorId: colorMap[task.area] || '9',
-    start: { dateTime: `${task.dueDate}T${pad(h)}:${pad(m)}:00`, timeZone: tz },
-    end:   { dateTime: `${task.dueDate}T${pad((h+1)%24)}:${pad(m)}:00`, timeZone: tz },
+    summary: job.name || job.n,
+    colorId: _GC_COLOR_MAP[areaOrType] || '9',
+    start: { dateTime: `${job._date}T${pad(h)}:${pad(m)}:00`, timeZone: tz },
+    end:   { dateTime: `${job._date}T${pad((h+1)%24)}:${pad(m)}:00`, timeZone: tz },
     reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 30 }] }
   };
+  const isUpdate = !!job.gcalId;
+  const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events' + (isUpdate ? '/' + job.gcalId : '');
   try {
-    const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
-      method: 'POST',
+    const r = await fetch(url, {
+      method: isUpdate ? 'PATCH' : 'POST',
       headers: { 'Authorization': 'Bearer ' + _gcToken, 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     if(r.status === 401) {
-      _gcToken = null; sessionStorage.removeItem('gc-tok');
-      _gcPending = task; _gcInit();
+      _gcToken = null; localStorage.removeItem('gc-tok');
+      _gcPending = job; _gcInit();
       if(_gcClient) _gcClient.requestAccessToken({ prompt: '' });
       return;
     }
-    showToast(r.ok ? '📅 Evento en Google Calendar' : '⚠ Error Google Calendar');
+    if(r.status === 404 && isUpdate) {
+      // el evento fue borrado en Google manualmente: recrear
+      delete job.gcalId;
+      await _gcRun(job);
+      return;
+    }
+    if(r.ok) {
+      const data = await r.json().catch(()=>null);
+      if(data?.id && job._onSynced) job._onSynced(data.id);
+      showToast('📅 Evento en Google Calendar');
+    } else {
+      showToast('⚠ Error Google Calendar');
+    }
   } catch(e) { console.warn('gcal', e); }
 }
+
+async function _gcDelete(gcalId) {
+  try {
+    const r = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${gcalId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + _gcToken }
+    });
+    if(r.status === 401) {
+      _gcToken = null; localStorage.removeItem('gc-tok');
+      _gcPending = { _delete: true, gcalId }; _gcInit();
+      if(_gcClient) _gcClient.requestAccessToken({ prompt: '' });
+      return;
+    }
+    if(!r.ok && r.status !== 404 && r.status !== 410) showToast('⚠ Error al borrar de Google Calendar');
+  } catch(e) { console.warn('gcal delete', e); }
+}
+
 // ─────────────────────────────────────────────────────────────
 
 function renderTodoAll() {
@@ -5377,6 +5434,12 @@ function saveEventModal() {
       if(endDate && endDate > (date || evs[idx].d)) evs[idx].endDate = endDate;
       else delete evs[idx].endDate;
       saveUserEvents(evs);
+      // Sincronizar con Google Calendar (crea si es nuevo, actualiza si ya tenía gcalId)
+      gcalSyncEvent(evs[idx], gcalId => {
+        const evs2 = getUserEvents();
+        const i2 = evs2.findIndex(e => e.id === _evModalId);
+        if(i2 !== -1) { evs2[i2].gcalId = gcalId; saveUserEvents(evs2); syncToCloud(); }
+      });
     }
     syncToCloud(); // sync event changes to cloud
   } else if(!_evModalIsUser) {
@@ -5391,6 +5454,8 @@ function saveEventModal() {
 }
 function deleteEventFromModal() {
   if(!_evModalIsUser || !_evModalId) return;
+  const target = getUserEvents().find(e => e.id === _evModalId);
+  if(target?.gcalId) gcalDeleteEvent(target.gcalId);
   saveUserEvents(getUserEvents().filter(e => e.id !== _evModalId));
   syncToCloud(); // sync deletion to cloud
   closeEventModal();
