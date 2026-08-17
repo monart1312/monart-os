@@ -691,7 +691,6 @@ body::after {
   letter-spacing: 0;
 }
 
-.chip-despinsage { background: rgba(34,184,207,0.18); color: #22b8cf; border-left: 2px solid #22b8cf; }
 .chip-personal   { background: rgba(61,184,114,0.18); color: #3db872; border-left: 2px solid #3db872; }
 .chip-cumple     { background: rgba(196,125,168,0.2); color: #c47da8; border-left: 2px solid #c47da8; }
 .chip-work       { background: rgba(232,197,106,0.18); color: #e8c56a; border-left: 2px solid #e8c56a; }
@@ -711,7 +710,6 @@ body::after {
   gap: 12px;
 }
 
-.event-item.ev-despinsage { border-left-color: var(--cyan); }
 .event-item.ev-personal { border-left-color: var(--green); }
 .event-item.ev-cumple { border-left-color: var(--accent2); }
 .event-item.ev-work { border-left-color: var(--gold); }
@@ -728,7 +726,6 @@ body::after {
   flex-shrink: 0;
 }
 
-.ev-despinsage .ev-tag { background: rgba(78,205,196,.1); color: var(--cyan); }
 .ev-personal .ev-tag { background: rgba(6,214,160,.1); color: var(--green); }
 .ev-cumple .ev-tag { background: rgba(255,101,132,.1); color: var(--accent2); }
 .ev-work .ev-tag { background: rgba(255,209,102,.1); color: var(--gold); }
@@ -953,10 +950,9 @@ body::after {
 /* Task area tabs colores */
 .atab:nth-child(2).active { background: #ff8c42 !important; border-color: #ff8c42 !important; }
 .atab:nth-child(3).active { background: #9b65e0 !important; border-color: #9b65e0 !important; }
-.atab:nth-child(4).active { background: #22b8cf !important; border-color: #22b8cf !important; color: #031a16 !important; }
-.atab:nth-child(5).active { background: #3db872 !important; border-color: #3db872 !important; color: #031a16 !important; }
-.atab:nth-child(6).active { background: #c47da8 !important; border-color: #c47da8 !important; }
-.atab:nth-child(7).active { background: #e8a83a !important; border-color: #e8a83a !important; color: #031a16 !important; }
+.atab:nth-child(4).active { background: #3db872 !important; border-color: #3db872 !important; color: #031a16 !important; }
+.atab:nth-child(5).active { background: #c47da8 !important; border-color: #c47da8 !important; }
+.atab:nth-child(6).active { background: #e8a83a !important; border-color: #e8a83a !important; color: #031a16 !important; }
 
 /* Calendar today highlight */
 .cal-cell.today {
@@ -1005,7 +1001,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 }
 
 /* Event items */
-.ev-despinsage { border-left-color: #22b8cf !important; }
 .ev-personal   { border-left-color: #3db872 !important; }
 .ev-cumple     { border-left-color: #c47da8 !important; }
 .ev-work       { border-left-color: #e8c56a !important; }
@@ -1357,7 +1352,6 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .wg-block.gold    { background: rgba(232,197,106,.12); color: #e8c56a; }
 .wg-block.pink    { background: rgba(196,125,168,.12); color: #c47da8; }
 .wg-block.event   { background: rgba(232,197,106,.2);  color: #e8c56a; border-left: 2px solid #e8c56a; }
-.wg-block.despins { background: rgba(34,184,207,.2);   color: #22b8cf; border-left: 2px solid #22b8cf; }
 
 .week-events-card {
   background: var(--s1);
@@ -1855,11 +1849,14 @@ svg circle:first-child { stroke: #0e0e1e !important; }
 .dprog-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
 .dprog-title { font-family:var(--fm); font-size:9px; color:var(--muted2); letter-spacing:2px; text-transform:uppercase; }
 .dprog-total { font-family:var(--fm); font-size:10px; color:var(--gold); font-weight:700; }
-.dprog-scroll { display:flex; align-items:flex-end; gap:4px; overflow-x:auto; padding-bottom:4px; }
+.dprog-scroll { display:flex; align-items:flex-end; gap:4px; overflow-x:auto; padding-bottom:4px; cursor:grab; user-select:none; -webkit-user-select:none; }
+.dprog-scroll.dprog-dragging { cursor:grabbing; scroll-behavior:auto; }
 .dprog-scroll::-webkit-scrollbar { height:3px; }
 .dprog-scroll::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
 .dprog-bar-row { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; width:26px; }
 .dprog-bar { width:100%; height:60px; background:var(--s3); border:1px solid var(--border); border-radius:4px 4px 0 0; overflow:hidden; display:flex; flex-direction:column-reverse; align-items:stretch; }
+.dprog-bar-row.dprog-future .dprog-bar { background:transparent; border-style:dashed; border-color:var(--border); opacity:.5; }
+.dprog-bar-row.dprog-future .dprog-label { opacity:.45; }
 .dprog-today .dprog-bar { border-color:var(--accent); box-shadow:0 0 6px rgba(123,111,255,.3); }
 .dprog-segment { width:100%; flex-shrink:0; }
 .dprog-label { font-family:var(--fm); font-size:10px; color:var(--muted2); text-align:center; white-space:nowrap; }
@@ -2417,16 +2414,15 @@ button, a, [onclick], [ontouchstart] {
   </div>
 
   <div id="rpg-dia-content">
+  <!-- Daily missions — ahora arriba del todo -->
+  <div id="daily-missions-habits"></div>
+
   <!-- HORARIO DEL DÍA -->
-  <div class="schedule-list" id="scheduleList">
+  <div class="schedule-list" id="scheduleList" style="margin-top:12px">
     <!-- generado por JS -->
   </div>
 
-  <button onclick="openDayPlanModal()" style="width:100%;margin:10px 0 4px;padding:11px;border-radius:10px;border:1px solid rgba(91,124,246,.35);background:rgba(91,124,246,.08);color:var(--accent);font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.06em;cursor:pointer;touch-action:manipulation">📋 PLANIFICAR MAÑANA</button>
   <button class="next-day-btn" onclick="nextDay()">⏭ CERRAR DÍA Y PASAR AL SIGUIENTE</button>
-
-  <!-- Daily missions -->
-  <div id="daily-missions-habits" style="margin-top:12px"></div>
 
   <!-- ══ FOCUS TIMER ══ -->
   <div class="card" id="rpg-focus-timer" style="margin-top:16px;padding:18px 16px">
@@ -2514,18 +2510,10 @@ button, a, [onclick], [ontouchstart] {
     </div>
   </div>
 
-  <!-- Energy filter -->
-  <div class="energy-filter" id="energyFilterRow">
-    <button class="ef-btn" data-ef="alta" onclick="setEnergyFilter('alta',this)" title="Solo P1 — máxima prioridad">🔥 Foco</button>
-    <button class="ef-btn ef-active" data-ef="all" onclick="setEnergyFilter('all',this)" title="Todas las tareas">⚡ Todo</button>
-    <button class="ef-btn" data-ef="baja" onclick="setEnergyFilter('baja',this)" title="Solo tareas P3 fáciles">🌿 Easy</button>
-  </div>
-
   <div class="area-tabs">
     <button class="atab active" onclick="filterArea('all',this)">Todo</button>
     <button class="atab" onclick="filterArea('trabajo',this)">◈ TRABAJO</button>
     <button class="atab" onclick="filterArea('marca',this)">⬡ MARCA</button>
-    <button class="atab" onclick="filterArea('despinsage',this)">▦ DESPINS</button>
     <button class="atab" onclick="filterArea('casa',this)">◫ CASA</button>
     <button class="atab" onclick="filterArea('yo',this)">⌘ YO</button>
     <button class="atab" onclick="filterArea('estudios',this)">◭ ESTUDIOS</button>
@@ -2603,39 +2591,6 @@ button, a, [onclick], [ontouchstart] {
 <div class="rb-sheet" id="rbSheet"></div>
 
 <!-- WEEKLY PLANNING MODAL -->
-<div class="plan-overlay" id="weekPlanModal" style="display:none">
-  <div class="plan-header">
-    <div class="plan-eyebrow">CADA LUNES · PLANIFICACIÓN</div>
-    <div class="plan-title">¿Qué hay que zanjar esta semana?</div>
-    <div class="plan-sub" id="wpModalSub">Elige las prioridades — no por día, sino por semana</div>
-  </div>
-  <div class="plan-body" id="wpModalBody"></div>
-  <div class="plan-footer">
-    <button class="plan-confirm-btn" onclick="confirmWeekPlan()">Confirmar semana →</button>
-    <button class="plan-skip-btn" onclick="skipWeekPlan()">Posponer (no recomendado)</button>
-  </div>
-</div>
-
-<!-- DAILY PLANNING MODAL -->
-<div class="plan-overlay" id="dayPlanModal" style="display:none">
-  <div class="plan-header">
-    <div class="plan-eyebrow">PLANIFICAR DÍA SIGUIENTE</div>
-    <div class="plan-title" id="dpModalTitle">Mañana</div>
-    <div class="plan-sub">Organiza los bloques — fijos + trabajo · Reordena con ▲▼</div>
-  </div>
-  <div class="plan-body" id="dpModalBody"></div>
-  <div class="plan-footer">
-    <div class="plan-add-row">
-      <input id="dpCustomInput" placeholder="+ Añadir bloque libre..."
-        onkeydown="if(event.key==='Enter'&&this.value.trim()){addDpCustomBlock(this.value.trim());this.value='';}" />
-      <button onclick="const v=document.getElementById('dpCustomInput');if(v.value.trim()){addDpCustomBlock(v.value.trim());v.value='';}"
-        style="background:var(--s3);border:none;border-radius:8px;padding:6px 12px;color:var(--accent);font-weight:800;font-size:16px;cursor:pointer">+</button>
-    </div>
-    <button class="plan-confirm-btn" onclick="confirmDayPlan()">Guardar plan del día →</button>
-    <button class="plan-skip-btn" onclick="closeDayPlanModal()">Cerrar sin guardar</button>
-  </div>
-</div>
-
 <script>
 // ══════════════════════════════════
 // DATA
@@ -2665,7 +2620,7 @@ const LEVELS = [
   {min:2200, name:'Legendary Creator'},
 ];
 
-const AREA_COLORS = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
+const AREA_COLORS = {trabajo:'#5b7cf6',marca:'#9b65e0',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
 
 
 const ALL_HABITS = ['estirar','paseo-m','agua1','paseo-d','agua2','agua3','paseo-n','agua4','cierre-dia'];
@@ -2679,21 +2634,13 @@ const XP_MAP = {'notion':10,'lectura':10,'paseo-m':15,'trabajo1':25,'dibujo':10,
 
 const EVENTS = [
   {d:'2026-05-07',n:'Psicólogo 13:00h',t:'personal'},
-  {d:'2026-05-07',n:'Reunión Alternativa DESPINSAGE 19h',t:'despinsage'},
   {d:'2026-05-08',n:'Entrega Visuales La Mina',t:'work'},
-  {d:'2026-05-08',n:'Bajando La Mina 22h',t:'despinsage'},
-  {d:'2026-05-16',n:'Vermut Electronik',t:'despinsage'},
   {d:'2026-05-18',n:'Psicólogo 12:00h',t:'personal'},
-  {d:'2026-05-22',n:'Bajando pa La Mina',t:'despinsage'},
-  {d:'2026-06-12',n:'Correbars',t:'despinsage'},
-  {d:'2026-06-18',n:'Seguici',t:'despinsage'},
-  {d:'2026-06-19',n:'Alternativa',t:'despinsage'},
   {d:'2026-07-03',n:'🎂 Cumple Nachete',t:'cumple'},
   {d:'2026-07-11',n:'🎂 Cumple Bernat',t:'cumple'},
   {d:'2026-08-01',n:'🎂 Cumple Cris',t:'cumple'},
   {d:'2026-09-01',n:'🎂 Cumple Nana',t:'cumple'},
   {d:'2026-09-02',n:'🎂 Cumple Poleti',t:'cumple'},
-  {d:'2026-09-19',n:'Sopar Tancament Estiu',t:'despinsage'},
   {d:'2026-10-05',n:'🎂 Cumple Xavielingu',t:'cumple'},
   {d:'2026-10-07',n:'🎂 Cumple Biggie',t:'cumple'},
   {d:'2026-10-18',n:'🎂 Cumple Gina',t:'cumple'},
@@ -2711,11 +2658,6 @@ let TASKS = [
   {id:'t8',name:'Start Creating Content',area:'marca',prio:'alta',done:false},
   {id:'t9',name:'TOMACO — Animación 3D',area:'marca',prio:'alta',done:false},
   {id:'t10',name:'ASICS Maratón Sevilla',area:'marca',prio:'alta',done:true},
-  {id:'t11',name:'Entrega Vídeo Merxan',area:'despinsage',prio:'prog',done:false},
-  {id:'t12',name:'Cartell Seguici',area:'despinsage',prio:'prog',done:false},
-  {id:'t13',name:'Cartell Monedes Valors',area:'despinsage',prio:'alta',done:false},
-  {id:'t14',name:'Pancarta Consum Barra',area:'despinsage',prio:'alta',done:false},
-  {id:'t15',name:'Revisar Grup de Socis',area:'despinsage',prio:'alta',done:false},
   {id:'t16',name:'Osmosis nuevo',area:'casa',prio:'prog',done:false},
   {id:'t17',name:'Reconfigurar PC',area:'casa',prio:'prog',done:false},
   {id:'t18',name:'Vaciar y triar ropa',area:'casa',prio:'alta',done:false},
@@ -3209,7 +3151,6 @@ function toggleH(id, xpVal) {
     ST.xp += xp;
     showXpPop('+'+xp+' XP');
     updateDailyLog();
-    if(id === 'cierre-dia') setTimeout(() => openDayPlanModal(), 700);
   } else {
     ST.completed[id] = false;
     ST.xp = Math.max(0, ST.xp - xp);
@@ -3225,7 +3166,7 @@ function renderSchedule() {
   if(!list) return;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const tagColors = {despinsage:'#22b8cf', personal:'#3db872', cumple:'#c47da8', work:'#e8c56a'};
+  const tagColors = { personal:'#3db872', cumple:'#c47da8', work:'#e8c56a'};
   const catColors = {purple:'#9b65e0', cyan:'#22b8cf', gold:'#e8c56a', green:'#3db872', pink:'#e07895'};
   const dow = new Date().getDay();
   const DOW_EMOJIS = ['😴','🔨','🎸','⚡','🤖','✅','🎨'];
@@ -3239,8 +3180,8 @@ function renderSchedule() {
     })
     .sort((a,b) => (a.time||'00:00').localeCompare(b.time||'00:00'));
 
-  // Tareas del TODO: hoy + vencidas
-  const todayTasks = TASKS.filter(t => !t.done && t.dueDate && t.dueDate <= todayStr);
+  // Tareas del TODO: solo las que vencen HOY (las vencidas de días pasados se quedan en TODO, no aquí)
+  const todayTasks = TASKS.filter(t => !t.done && t.dueDate === todayStr);
 
   // Hábitos del día
   const habits = getDaySchedule();
@@ -3739,7 +3680,6 @@ function confirmQuickCapture() {
 
 function autoCategorize(text) {
   const t = text.toLowerCase();
-  if(/despinsage|despins|vermut|correbars|sopar.*comunitat|alternativa|torneig|quinto/.test(t)) return 'despinsage';
   if(/jesse|asics|contable|cliente|factura|presupuesto|proyecto|reunión.*trabajo|trabajo/.test(t)) return 'trabajo';
   if(/portfolio|instagram|redes|post|feed|monart.*brand|marca/.test(t)) return 'marca';
   if(/blender|houdini|fusion|rhino|curso|tutorial|aprender|clase/.test(t)) return 'estudios';
@@ -4040,7 +3980,7 @@ function renderAddStep() {
   if(!box) return;
   const s = _addWiz.step;
   const AREAS = [
-    {v:'trabajo',l:'💼 Trabajo'},{v:'marca',l:'✦ Marca'},{v:'despinsage',l:'◈ Despins'},
+    {v:'trabajo',l:'💼 Trabajo'},{v:'marca',l:'✦ Marca'},
     {v:'casa',l:'⌂ Casa'},{v:'yo',l:'◉ Yo'},{v:'estudios',l:'◭ Estudios'}
   ];
 
@@ -4114,7 +4054,7 @@ function renderAddStep() {
         ${_addWiz.hasDate ? `<button class="todo-modal-confirm" onclick="goAddStep(5);">Siguiente →</button>` : ''}
       </div>`;
   } else if(s === 5) {
-    const aL = {trabajo:'💼 Trabajo',marca:'✦ Marca',despinsage:'◈ Despinsage',casa:'⌂ Casa',yo:'◉ Yo',estudios:'◭ Estudios'};
+    const aL = {trabajo:'💼 Trabajo',marca:'✦ Marca',casa:'⌂ Casa',yo:'◉ Yo',estudios:'◭ Estudios'};
     const pL = {alta:'🔥 Alta',media:'⚡ Media',baja:'🌱 Baja'};
     const autoReminder = _addWiz.hasDate && _addWiz.dueDate && _addWiz.dueTime;
     html = `
@@ -4153,7 +4093,7 @@ function confirmAdd() {
   save();
 
   if(hasDate && dueDate) {
-    const evTypeMap = {trabajo:'work',marca:'work',despinsage:'despinsage',casa:'personal',yo:'personal',estudios:'personal'};
+    const evTypeMap = {trabajo:'work',marca:'work',casa:'personal',yo:'personal',estudios:'personal'};
     const ev = { id: 'ev'+Date.now(), d: dueDate, n: name, t: evTypeMap[area]||'personal', notes:'' };
     if(dueTime) ev.time = dueTime;
     const evs = getUserEvents(); evs.push(ev); saveUserEvents(evs);
@@ -4181,7 +4121,7 @@ function confirmAdd() {
 // Google, no un refresh token) — cuando caduca, se repide consentimiento silencioso.
 const _GC_CID   = '1002615306694-db3fffsbbic0qp82eku7n1f2ng95scct.apps.googleusercontent.com';
 const _GC_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
-const _GC_COLOR_MAP = { trabajo:'9', marca:'3', despinsage:'7', casa:'2', yo:'6', estudios:'5', work:'9', personal:'2' };
+const _GC_COLOR_MAP = { trabajo:'9', marca:'3',  casa:'2', yo:'6', estudios:'5', work:'9', personal:'2' };
 let _gcClient = null, _gcToken = null, _gcPending = null;
 
 function _gcInit() {
@@ -4287,16 +4227,10 @@ async function _gcDelete(gcalId) {
 
 function renderTodoAll() {
   const list = document.getElementById('task-list');
-  const AREAS = ['trabajo','marca','despinsage','casa','yo','estudios'];
-  const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
+  const AREAS = ['trabajo','marca','casa','yo','estudios'];
+  const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
 
-  const _ef = typeof _energyFilter !== 'undefined' ? _energyFilter : 'all';
-  const _efOk = t => {
-    if(_ef === 'all') return true;
-    if(_ef === 'alta') return t.prio === 'alta';
-    if(_ef === 'baja') return t.prio === 'baja';
-    return true;
-  };
+  const _efOk = () => true; // filtro de energía (Foco/Todo/Easy) eliminado — la lista siempre va junta
   const riding = {
     ontheline: TASKS.filter(t => getStatus(t) === 'ontheline' && _efOk(t)),
     ongoing:   TASKS.filter(t => getStatus(t) === 'ongoing' && _efOk(t)),
@@ -4395,8 +4329,8 @@ function renderTodoAll() {
     _blActiveArea = backlogTotal > 0 ? 'todas' : null;
   }
 
-  const AREA_ICONS = {trabajo:'💼',marca:'⭐',despinsage:'🤝',casa:'🏠',yo:'🧠',estudios:'◭'};
-  const AREA_LABELS = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINSAGE',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
+  const AREA_ICONS = {trabajo:'💼',marca:'⭐',casa:'🏠',yo:'🧠',estudios:'◭'};
+  const AREA_LABELS = {trabajo:'TRABAJO',marca:'MARCA',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
 
   function blTabs() {
     const todasActive = _blActiveArea === 'todas' ? ' bl-active' : '';
@@ -4434,7 +4368,6 @@ function renderTodoAll() {
       <div class="todo-sec-head">
         <span class="todo-sec-label">RIDING</span>
         <span class="todo-sec-sub">trabajo activo</span>
-        ${(ST.weekPlan?.week||0) < getWeekNum(new Date()) ? `<button onclick="openWeekPlanModal()" ontouchend="event.preventDefault();openWeekPlanModal()" style="font-family:var(--fm);font-size:9px;font-weight:700;padding:3px 10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;margin-left:auto;touch-action:manipulation">⚡ Planificar semana</button>` : ''}
       </div>
       <div class="kanban-wrap todo-kanban">
         ${rCol('ontheline','ON THE LINE','#e05c6e',riding.ontheline)}
@@ -4469,7 +4402,7 @@ function renderTodoAll() {
 
 function renderAllColumns_REMOVED() {
   const list = document.getElementById('task-list');
-  const AREA_COLORS_T = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
+  const AREA_COLORS_T = {trabajo:'#5b7cf6',marca:'#9b65e0',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
 
   const p1    = TASKS.filter(t => !t.done && t.prio === 'alta');
   const curso = TASKS.filter(t => !t.done && t.prio === 'prog');
@@ -4549,7 +4482,7 @@ function renderKanban() {
 }
 
 function areaLabel(a) {
-  return {trabajo:'💼 TRABAJO',marca:'🌟 MARCA',despinsage:'🤝 DESPINSAGE',casa:'🏠 CASA',yo:'🧠 YO',estudios:'◭ ESTUDIOS'}[a]||a;
+  return {trabajo:'💼 TRABAJO',marca:'🌟 MARCA',casa:'🏠 CASA',yo:'🧠 YO',estudios:'◭ ESTUDIOS'}[a]||a;
 }
 
 function prioLabel(p) {
@@ -4583,6 +4516,16 @@ function toggleTask(id) {
           else { ST.xp = Math.max(0, ST.xp - 200); }
           renderMissions();
         }
+      }
+    }
+    // Igual con misiones del día
+    if(ST.dailyMissions && Array.isArray(ST.dailyMissions.items)) {
+      const dm = ST.dailyMissions.items.find(m => m && m.taskId === id);
+      if(dm && dm.done !== t.done) {
+        dm.done = t.done;
+        if(t.done) { ST.xp += 50; showXpPop('+50 XP'); }
+        else ST.xp = Math.max(0, ST.xp - 50);
+        renderDailyMissions();
       }
     }
     sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, notes: t.notes||null, created_at: new Date().toISOString() });
@@ -4627,9 +4570,7 @@ function renderCal() {
 
   // Eventos multi-día (hardcoded + user events con endDate)
   const SPAN_EVENTS = [
-    {start:'2026-05-06', end:'2026-05-12', n:'Cartell Seguici', t:'despinsage'},
     {start:'2026-07-31', end:'2026-08-02', n:'Cumple Cris', t:'cumple'},
-    {start:'2026-10-01', end:'2026-11-30', n:'Torneig Esports', t:'despinsage'},
     ...getUserEvents()
       .filter(ev => ev.endDate && ev.endDate > ev.d)
       .map(ev => ({start: ev.d, end: ev.endDate, n: ev.n, t: ev.t || 'personal'}))
@@ -4707,8 +4648,8 @@ function selectDay(dateStr) {
 
   const dayEvents = allEvents().filter(e => e.d === selectedDateStr);
   const p1Tasks = TASKS.filter(t => !t.done && t.prio === 'alta');
-  const tagLabels = {despinsage:'Despinsage',personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
-  const tagColors = {despinsage:'var(--cyan)',personal:'var(--green)',cumple:'var(--pink)',work:'var(--gold)'};
+  const tagLabels = {personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
+  const tagColors = {personal:'var(--green)',cumple:'var(--pink)',work:'var(--gold)'};
 
   const dt = new Date(selectedDateStr + 'T12:00:00');
   const dateLabel = dt.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
@@ -4759,7 +4700,7 @@ function selectDay(dateStr) {
 function renderEventList() {
   const evList = document.getElementById('eventList');
   const listTitle = document.querySelector('.event-list .card-title');
-  const tagLabels = {despinsage:'Despinsage', personal:'Personal', cumple:'Cumpleaños', work:'Trabajo'};
+  const tagLabels = { personal:'Personal', cumple:'Cumpleaños', work:'Trabajo'};
 
   let eventsToShow, titleText;
 
@@ -4854,7 +4795,7 @@ function selectWeekDay(dateStr) {
   const dayLabel = dt.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
   const dayEvs = allEvents().filter(e => e.d === dateStr);
   const dayTasks = TASKS.filter(t => !t.done && t.dueDate === dateStr);
-  const tagColors = {despinsage:'#22b8cf', personal:'#3db872', cumple:'#c47da8', work:'#e8c56a'};
+  const tagColors = { personal:'#3db872', cumple:'#c47da8', work:'#e8c56a'};
 
   let html = `<div class="hub-dp-title">${dayLabel.charAt(0).toUpperCase()+dayLabel.slice(1)}</div>`;
 
@@ -4890,8 +4831,8 @@ function renderUpcoming() {
   const upcoming = allEvents().filter(e=>e.d>=todayStr).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,3);
   const el = document.getElementById('upcoming-events');
   if(!el) return;
-  const tagColors = {despinsage:' ev-despinsage',personal:' ev-personal',cumple:' ev-cumple',work:' ev-work'};
-  const tagLabels = {despinsage:'Despinsage',personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
+  const tagColors = {personal:' ev-personal',cumple:' ev-cumple',work:' ev-work'};
+  const tagLabels = {personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
   el.innerHTML = upcoming.map(ev=>{
     const dt = new Date(ev.d+'T12:00:00');
     const label = dt.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
@@ -4914,7 +4855,6 @@ function renderAreaStats() {
     {key:'trabajo',   label:'TRABAJO',  color:'#5b7cf6'},
     {key:'marca',     label:'MARCA',    color:'#9b65e0'},
     {key:'yo',        label:'YO',       color:'#e07895'},
-    {key:'despinsage',label:'DESPINS',  color:'#22b8cf'},
     {key:'casa',      label:'CASA',     color:'#3db872'},
     {key:'estudios',  label:'ESTUDIOS', color:'#e8a83a'},
   ];
@@ -5123,9 +5063,9 @@ function renderWeekPlan() {
   if(weekEvents.length === 0) {
     evEl.innerHTML = '<div style="font-family:var(--fm);font-size:11px;color:var(--muted);padding:8px 0">Sin entregas esta semana</div>';
   } else {
-    const tagLabels = {despinsage:'DESPINSAGE',personal:'PERSONAL',cumple:'CUMPLE',work:'TRABAJO'};
-    const tagBg = {despinsage:'rgba(34,184,207,.15)',personal:'rgba(61,184,114,.15)',cumple:'rgba(196,125,168,.15)',work:'rgba(232,197,106,.15)'};
-    const tagCol = {despinsage:'#22b8cf',personal:'#3db872',cumple:'#c47da8',work:'#e8c56a'};
+    const tagLabels = {personal:'PERSONAL',cumple:'CUMPLE',work:'TRABAJO'};
+    const tagBg = {personal:'rgba(61,184,114,.15)',cumple:'rgba(196,125,168,.15)',work:'rgba(232,197,106,.15)'};
+    const tagCol = {personal:'#3db872',cumple:'#c47da8',work:'#e8c56a'};
     evEl.innerHTML = weekEvents.map(ev => {
       const dt = new Date(ev.d+'T12:00:00');
       const dayN = dt.getDay()===0?6:dt.getDay()-1;
@@ -5198,7 +5138,7 @@ function renderWeekPlan() {
       // Events on this day+time
       if(slot.time==='18:00' || slot.time==='19:00') {
         dayEv.forEach(ev => {
-          const cls = ev.t==='despinsage'?'despins':'event';
+          const cls = 'event';
           html += `<div class="wg-block ${cls}">${ev.n.substring(0,18)}</div>`;
         });
       }
@@ -5235,7 +5175,7 @@ function renderWeekPlan() {
     const dayTaskEv = weekTaskEvents.filter(t=>t.dueDate===dateStr);
     html += `<div class="wg-cell${isToday?' today-col':''}">`;
     dayEv.forEach(ev => {
-      const cls = ev.t==='despinsage'?'despins':'event';
+      const cls = 'event';
       html += `<div class="wg-block ${cls}">${ev.n.replace('🎂','').substring(0,16)}</div>`;
     });
     dayTaskEv.forEach(t => {
@@ -5297,7 +5237,7 @@ function renderWeekPriorities(weekEvents) {
 
 function autoplanWeek() {
   const missions = ST.missions || Array(5).fill(null).map(()=>({name:null,area:null,done:false}));
-  const AREAS = [{v:'trabajo',l:'💼 Trabajo'},{v:'marca',l:'✦ Marca'},{v:'despinsage',l:'◈ Despinsage'},{v:'casa',l:'⌂ Casa'},{v:'yo',l:'◉ Yo'},{v:'estudios',l:'◭ Estudios'}];
+  const AREAS = [{v:'trabajo',l:'💼 Trabajo'},{v:'marca',l:'✦ Marca'},{v:'casa',l:'⌂ Casa'},{v:'yo',l:'◉ Yo'},{v:'estudios',l:'◭ Estudios'}];
 
   const inputsHTML = Array.from({length:5},(_,i) => {
     const m = missions[i] || {name:'',area:'trabajo'};
@@ -5326,7 +5266,7 @@ function autoplanWeek() {
 
 function saveWeekPlan() {
   const week = getMissionWeek();
-  const AREAS = ['trabajo','marca','despinsage','casa','yo','estudios'];
+  const AREAS = ['trabajo','marca','casa','yo','estudios'];
   const newMissions = Array.from({length:5},(_,i) => {
     const name = (document.getElementById('weekplan-name-'+i)?.value||'').trim();
     const area = document.getElementById('weekplan-area-'+i)?.value || 'trabajo';
@@ -5351,172 +5291,6 @@ function getWeekNum(d) {
   return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
 }
 
-
-// ══════════════════════════════════
-// WEEK PLAN & DAY PLAN
-// ══════════════════════════════════
-let _wpSelected = new Set();
-let _dpBlocks = [];
-
-// ── Day Plan ── auto-trigger por la noche si mañana no está planificado
-function checkDayPlanModal() {
-  const hour = new Date().getHours();
-  if(hour < 20) return; // solo a partir de las 20h
-  const tom = new Date(); tom.setDate(tom.getDate()+1);
-  const tomStr = tom.toISOString().split('T')[0];
-  if(ST.dayPlan?.date === tomStr) return; // ya planificado
-  setTimeout(() => openDayPlanModal(), 2000);
-}
-
-// ── Week Plan ──
-function checkWeekPlanModal() {
-  const dow = new Date().getDay();
-  if(dow < 1 || dow > 3) return;
-  const week = getWeekNum(new Date());
-  if((ST.weekPlan?.week||0) >= week) return;
-  if(ST.weekPlanSkippedWeek === week) return;
-  setTimeout(() => openWeekPlanModal(), 900);
-}
-
-function openWeekPlanModal() {
-  _wpSelected = new Set(ST.weekPlan?.tasks || []);
-  _renderWpBody();
-  document.getElementById('wpModalSub').textContent = `Semana ${getWeekNum(new Date())} · Elige qué zanjamos esta semana`;
-  document.getElementById('weekPlanModal').style.display = 'flex';
-}
-
-function _renderWpBody() {
-  const AREA_NAMES = {trabajo:'TRABAJO',marca:'MARCA',despinsage:'DESPINS',casa:'CASA',yo:'YO',estudios:'ESTUDIOS'};
-  const AREA_C = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
-  const urgent = TASKS.filter(t => !t.done && (getStatus(t)==='ontheline'||getStatus(t)==='forreview'||t.prio==='alta'));
-  const rest = TASKS.filter(t => !t.done && !urgent.includes(t));
-  function row(t) {
-    const sel = _wpSelected.has(t.id);
-    return `<div class="plan-task-item${sel?' selected':''}" onclick="toggleWpTask('${t.id}')">
-      <div class="plan-task-check">${sel?'✓':''}</div>
-      <div style="flex:1;min-width:0">
-        <div class="plan-task-name">${t.name}</div>
-        <div class="plan-task-area" style="color:${AREA_C[t.area]||'#888'}">${AREA_NAMES[t.area]||t.area}</div>
-      </div>
-    </div>`;
-  }
-  let html = '';
-  if(urgent.length) html += `<div class="plan-section-label">⚡ Prioritarias</div>`+urgent.map(row).join('');
-  if(rest.length) html += `<div class="plan-section-label">Backlog</div>`+rest.map(row).join('');
-  document.getElementById('wpModalBody').innerHTML = html || '<div style="color:var(--muted);font-size:13px;padding:12px 0">Sin tareas pendientes 🎉</div>';
-}
-
-function toggleWpTask(id) {
-  if(_wpSelected.has(id)) _wpSelected.delete(id); else _wpSelected.add(id);
-  _renderWpBody();
-}
-
-function confirmWeekPlan() {
-  ST.weekPlan = { week: getWeekNum(new Date()), tasks: [..._wpSelected] };
-  if(!ST.roadmap) ST.roadmap = {};
-  ST.roadmap.__weekPlan = ST.weekPlan;
-  save(); syncToCloud();
-  document.getElementById('weekPlanModal').style.display = 'none';
-  showToast(`⚡ Plan semanal — ${_wpSelected.size} prioridades`);
-}
-
-function skipWeekPlan() {
-  ST.weekPlanSkippedWeek = getWeekNum(new Date());
-  save();
-  document.getElementById('weekPlanModal').style.display = 'none';
-  showToast('⏭ Plan semanal pospuesto');
-}
-
-// ── Day Plan ──
-function openDayPlanModal() {
-  const tom = new Date(); tom.setDate(tom.getDate()+1);
-  const tomStr = tom.toISOString().split('T')[0];
-  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  document.getElementById('dpModalTitle').textContent = DOW_NAMES[tom.getDay()]+' '+tom.getDate();
-
-  if(ST.dayPlan?.date === tomStr) {
-    _dpBlocks = [...ST.dayPlan.blocks];
-  } else {
-    const dow = tom.getDay();
-    const isE = (dow===1||dow===2||dow===3||dow===5);
-    const habitDef = [
-      {id:'estirar',   time:'09:00', name:'Estiramientos'},
-      {id:'paseo-m',   time:'10:00', name:'Paseo mañana'},
-      {id:'agua1',     time:'11:00', name:'Agua — Vaso 1'},
-      {id:'paseo-d',   time:'13:30', name:'Paseo mediodía'},
-      {id:'agua2',     time:'14:00', name:'Agua — Vaso 2'},
-      {id:'agua3',     time:'17:00', name:'Agua — Vaso 3'},
-      ...(isE?[{id:'entreno',time:'17:30',name:'Entreno'}]:[]),
-      {id:'paseo-n',   time:'22:00', name:'Paseo noche'},
-      {id:'agua4',     time:'22:30', name:'Agua — Vaso 4'},
-      {id:'cierre-dia',time:'23:00', name:'Cierre del día'},
-    ];
-    _dpBlocks = habitDef.map(h => ({type:'habit',id:h.id,label:h.name,time:h.time}));
-    allEvents().filter(e => e.d === tomStr).forEach(ev => {
-      _dpBlocks.push({type:'cal',id:ev.id||('cal_'+Math.random()),label:ev.n,time:ev.time||null});
-    });
-    _dpBlocks.sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99'));
-  }
-  _renderDpBody();
-  document.getElementById('dayPlanModal').style.display = 'flex';
-}
-
-function _renderDpBody() {
-  const typeColor = {habit:'var(--accent)',cal:'#e8c56a',task:'#9b65e0',custom:'var(--muted2)'};
-  const typeLabel = {habit:'HÁBITO',cal:'EVENTO',task:'TAREA',custom:'LIBRE'};
-  const AREA_C = {trabajo:'#5b7cf6',marca:'#9b65e0',despinsage:'#22b8cf',casa:'#3db872',yo:'#e07895',estudios:'#e8a83a'};
-  let html = `<div class="plan-section-label">Bloques del día</div>`;
-  _dpBlocks.forEach((b,i) => {
-    const col = typeColor[b.type]||'var(--muted2)';
-    const isFixed = b.type === 'habit';
-    html += `<div class="plan-dp-block" style="border-left-color:${col}">
-      <div class="plan-dp-time">${b.time||'—'}</div>
-      <div class="plan-dp-label">${b.label}</div>
-      <div class="plan-dp-type" style="color:${col}">${typeLabel[b.type]||''}</div>
-      ${!isFixed ? `<div class="plan-dp-btns">
-        <button onclick="moveDpBlock(${i},-1)"${i===0?' disabled':''}>▲</button>
-        <button onclick="moveDpBlock(${i},1)"${i===_dpBlocks.length-1?' disabled':''}>▼</button>
-        <button onclick="removeDpBlock(${i})" style="color:var(--accent2)">✕</button>
-      </div>` : ''}
-    </div>`;
-  });
-  const wpTaskIds = ST.weekPlan?.tasks || [];
-  const available = TASKS.filter(t => wpTaskIds.includes(t.id) && !t.done && !_dpBlocks.some(b => b.id===t.id && b.type==='task'));
-  if(available.length) {
-    html += `<div class="plan-section-label">+ Añadir desde plan semanal</div>`;
-    available.forEach(t => {
-      const col = AREA_C[t.area]||'#888';
-      html += `<div class="plan-dp-block" style="border-left-color:${col};opacity:.65;cursor:pointer" onclick="addDpTask('${t.id}')">
-        <div class="plan-dp-time">＋</div>
-        <div class="plan-dp-label">${t.name}</div>
-        <div class="plan-dp-type" style="color:${col}">${t.area.toUpperCase()}</div>
-      </div>`;
-    });
-  }
-  document.getElementById('dpModalBody').innerHTML = html;
-}
-
-function moveDpBlock(i, dir) {
-  const j = i+dir; if(j<0||j>=_dpBlocks.length) return;
-  [_dpBlocks[i],_dpBlocks[j]] = [_dpBlocks[j],_dpBlocks[i]]; _renderDpBody();
-}
-function removeDpBlock(i) { _dpBlocks.splice(i,1); _renderDpBody(); }
-function addDpTask(id) { const t = TASKS.find(x=>x.id===id); if(!t) return; _dpBlocks.push({type:'task',id,label:t.name,time:null}); _renderDpBody(); }
-function addDpCustomBlock(text) { _dpBlocks.push({type:'custom',id:'c'+Date.now(),label:text,time:null}); _renderDpBody(); }
-
-function confirmDayPlan() {
-  const tom = new Date(); tom.setDate(tom.getDate()+1);
-  ST.dayPlan = { date: tom.toISOString().split('T')[0], blocks: [..._dpBlocks] };
-  if(!ST.roadmap) ST.roadmap = {};
-  ST.roadmap.__dayPlan = ST.dayPlan;
-  save(); syncToCloud();
-  document.getElementById('dayPlanModal').style.display = 'none';
-  showToast('✅ Plan del día guardado');
-}
-
-function closeDayPlanModal() {
-  document.getElementById('dayPlanModal').style.display = 'none';
-}
 
 // ══════════════════════════════════
 // USER EVENTS (voice-added, localStorage)
@@ -5625,50 +5399,65 @@ function updateDailyLog() {
   ST.dailyLog[today].tasks = doneTasks.map(t=>({name:t.name, area:t.area}));
 }
 
+let _dprogDaysBack = 29; // cuántos días hacia atrás tenemos cargados — crece al arrastrar hasta el borde izquierdo
+const DPROG_FUTURE_DAYS = 14;
+
 function renderDailyProgress() {
   if(!ST.dailyLog) ST.dailyLog = {};
   const today = new Date().toISOString().split('T')[0];
   const days = [];
-  for(let i=29; i>=0; i--) {
+  for(let i=_dprogDaysBack; i>=0; i--) {
     const d = new Date(); d.setDate(d.getDate()-i);
     days.push(d.toISOString().split('T')[0]);
   }
+  // Días futuros — vacíos a propósito, solo para que el hueco no quede en blanco
+  for(let i=1; i<=DPROG_FUTURE_DAYS; i++) {
+    const d = new Date(); d.setDate(d.getDate()+i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  const pastDays = days.filter(ds => ds <= today);
   // Max tasks in any day (for scaling), min 5 so bars are visible even with few tasks
-  const maxTasks = Math.max(5, ...days.map(ds => (ST.dailyLog[ds]?.tasks||[]).length));
+  const maxTasks = Math.max(5, ...pastDays.map(ds => (ST.dailyLog[ds]?.tasks||[]).length));
 
   let totalTasksAllTime = computeTotalTasksDone();
 
   const barsHTML = days.map(dateStr => {
+    const isFuture = dateStr > today;
     const log = ST.dailyLog[dateStr] || {habitsDone:0, tasks:[]};
     const isToday = dateStr === today;
     const tasks = log.tasks || [];
     const segments = [];
 
-    // Habits segment (gold, on top)
-    if(log.habitsDone > 0) {
-      const h = Math.max(3, Math.round((log.habitsDone / getActiveHabits().length) * 20));
-      segments.push({color:'#e8c56a', h});
-    }
-    // Tasks by area
-    const areaMap = {};
-    tasks.forEach(t => { if(t.area) areaMap[t.area]=(areaMap[t.area]||0)+1; });
-    const taskCount = tasks.length;
-    if(taskCount > 0) {
-      const barH = Math.max(4, Math.round((taskCount / maxTasks) * 40));
-      // Stack area colors proportionally within bar height
-      Object.entries(areaMap).forEach(([area, count]) => {
-        const h = Math.max(2, Math.round((count / taskCount) * barH));
-        segments.push({color: AREA_COLORS[area]||'#5b7cf6', h});
-      });
+    if(!isFuture) {
+      // Habits segment (gold, on top)
+      if(log.habitsDone > 0) {
+        const h = Math.max(3, Math.round((log.habitsDone / getActiveHabits().length) * 20));
+        segments.push({color:'#e8c56a', h});
+      }
+      // Tasks by area
+      const areaMap = {};
+      tasks.forEach(t => { if(t.area) areaMap[t.area]=(areaMap[t.area]||0)+1; });
+      const taskCount = tasks.length;
+      if(taskCount > 0) {
+        const barH = Math.max(4, Math.round((taskCount / maxTasks) * 40));
+        // Stack area colors proportionally within bar height
+        Object.entries(areaMap).forEach(([area, count]) => {
+          const h = Math.max(2, Math.round((count / taskCount) * barH));
+          segments.push({color: AREA_COLORS[area]||'#5b7cf6', h});
+        });
+      }
     }
 
+    const taskCount = tasks.length;
     const segsHTML = segments.length
       ? segments.map(s=>`<div class="dprog-segment" style="height:${s.h}px;background:${s.color}"></div>`).join('')
       : '';
     const d = new Date(dateStr+'T12:00:00');
     const label = d.getDate()+'/'+(d.getMonth()+1);
-    const taskLabel = taskCount > 0 ? `<div style="font-family:var(--fm);font-size:10px;color:var(--muted2);margin-bottom:1px" title="${taskCount} tareas">${taskCount}t</div>` : '';
-    return `<div class="dprog-bar-row${isToday?' dprog-today':''}" onclick="showDayStats('${dateStr}')" style="cursor:pointer">
+    const taskLabel = (!isFuture && taskCount > 0) ? `<div style="font-family:var(--fm);font-size:10px;color:var(--muted2);margin-bottom:1px" title="${taskCount} tareas">${taskCount}t</div>` : '';
+    const rowCls = `dprog-bar-row${isToday?' dprog-today':''}${isFuture?' dprog-future':''}`;
+    const clickAttr = isFuture ? '' : `onclick="showDayStats('${dateStr}')" style="cursor:pointer"`;
+    return `<div class="${rowCls}" data-date="${dateStr}" ${clickAttr}>
       ${taskLabel}
       <div class="dprog-bar">${segsHTML}</div>
       <div class="dprog-label">${label}</div>
@@ -5683,7 +5472,7 @@ function renderDailyProgress() {
     <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:6px;display:flex;gap:10px;align-items:center">
       <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#e8c56a;border-radius:2px;display:inline-block"></span>hábitos</span>
       <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;background:#5b7cf6;border-radius:2px;display:inline-block"></span>tareas (Nt = nº ese día)</span>
-      <span style="color:var(--muted);font-size:10px">toca un día ↓</span>
+      <span style="color:var(--muted);font-size:10px">arrastra ↔</span>
     </div>
     <div class="dprog-scroll">${barsHTML}</div>
   </div>`;
@@ -5691,10 +5480,90 @@ function renderDailyProgress() {
   ['daily-progress-dash','daily-progress-habits'].forEach(id => {
     const el = document.getElementById(id);
     if(!el) return;
+    // Conservar la posición relativa de scroll si ya había una barra renderizada antes
+    const prevScroll = el.querySelector('.dprog-scroll');
+    const prevLeft = prevScroll ? prevScroll.scrollLeft : null;
+    const prevWidth = prevScroll ? prevScroll.scrollWidth : null;
     el.innerHTML = html;
     const scroll = el.querySelector('.dprog-scroll');
-    if(scroll) setTimeout(()=>{ scroll.scrollLeft = scroll.scrollWidth; }, 30);
+    if(!scroll) return;
+    if(prevLeft !== null && prevWidth !== null) {
+      // El nuevo contenido puede ser más ancho por delante (más historial cargado) —
+      // desplazamos el scroll para que el usuario no note el salto.
+      setTimeout(() => { scroll.scrollLeft = prevLeft + (scroll.scrollWidth - prevWidth); }, 0);
+    } else {
+      setTimeout(()=>{ scroll.scrollLeft = scroll.scrollWidth - (DPROG_FUTURE_DAYS*30) - 300; }, 30);
+    }
+    initDprogDrag(scroll);
   });
+}
+
+// ── Arrastre con carga infinita hacia atrás y efecto goma hacia adelante ──
+// Un solo listener global (se registra una vez) en vez de uno por render — evita fugas de memoria.
+let _dprogDrag = null; // {scroll, startX, startScroll}
+let _dprogGlobalInit = false;
+const DPROG_MAX_RUBBER = 46;
+
+function _dprogOnMove(clientX) {
+  if(!_dprogDrag) return;
+  const { scroll, startX, startScroll } = _dprogDrag;
+  const delta = startX - clientX;
+  let target = startScroll + delta;
+  const max = scroll.scrollWidth - scroll.clientWidth;
+  if(target > max) {
+    _dprogDrag.overdrag = Math.min(DPROG_MAX_RUBBER, (target - max) * 0.35);
+    scroll.scrollLeft = max + _dprogDrag.overdrag;
+  } else if(target < 0) {
+    _dprogDrag.overdrag = Math.max(-DPROG_MAX_RUBBER, target * 0.35);
+    scroll.scrollLeft = 0;
+  } else {
+    _dprogDrag.overdrag = 0;
+    scroll.scrollLeft = target;
+    if(target < 80 && _dprogDaysBack < 3650) {
+      _dprogDaysBack += 60;
+      renderDailyProgress();
+    }
+  }
+}
+function _dprogOnUp() {
+  if(!_dprogDrag) return;
+  const { scroll, overdrag } = _dprogDrag;
+  scroll.classList.remove('dprog-dragging');
+  if(overdrag) {
+    const max = scroll.scrollWidth - scroll.clientWidth;
+    scroll.style.scrollBehavior = 'smooth';
+    scroll.scrollLeft = overdrag > 0 ? max : 0;
+    setTimeout(() => { scroll.style.scrollBehavior = ''; }, 350);
+  }
+  _dprogDrag = null;
+}
+function _dprogEnsureGlobalListeners() {
+  if(_dprogGlobalInit) return;
+  _dprogGlobalInit = true;
+  window.addEventListener('mousemove', e => _dprogOnMove(e.clientX));
+  window.addEventListener('mouseup', _dprogOnUp);
+  window.addEventListener('touchmove', e => { if(_dprogDrag) _dprogOnMove(e.touches[0].clientX); }, {passive:true});
+  window.addEventListener('touchend', _dprogOnUp);
+}
+
+function initDprogDrag(scroll) {
+  _dprogEnsureGlobalListeners();
+  scroll.addEventListener('mousedown', e => {
+    _dprogDrag = { scroll, startX: e.clientX, startScroll: scroll.scrollLeft, overdrag: 0 };
+    scroll.classList.add('dprog-dragging');
+    e.preventDefault();
+  });
+  scroll.addEventListener('touchstart', e => {
+    _dprogDrag = { scroll, startX: e.touches[0].clientX, startScroll: scroll.scrollLeft, overdrag: 0 };
+    scroll.classList.add('dprog-dragging');
+  }, {passive:true});
+  // Scroll nativo (trackpad/rueda) cerca del borde izquierdo también dispara la carga infinita
+  scroll.addEventListener('scroll', () => {
+    if(!_dprogDrag && scroll.scrollLeft < 80 && _dprogDaysBack < 3650) {
+      _dprogDaysBack += 60;
+      renderDailyProgress();
+    }
+  }, {passive:true});
 }
 
 function showDayStats(dateStr) {
@@ -5759,13 +5628,25 @@ function renderDailyMissions() {
         <button class="dmission-action" onclick="deleteDailyMission(${i})">✕</button>
       </div>`).join('');
 
+    // Tareas abiertas para elegir, ordenadas por prioridad (alta→baja) y fecha (más próxima primero)
+    const prioRank = {alta:0, prog:1, media:2, baja:3};
+    const linkedIds = new Set(items.map(m => m.taskId).filter(Boolean));
+    const openTasks = TASKS
+      .filter(t => !t.done && !linkedIds.has(t.id))
+      .sort((a,b) => (prioRank[a.prio]??9) - (prioRank[b.prio]??9) || (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
+    const pickerOptions = openTasks.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+
     const addRow = canAdd ? `
       <div class="dmission-add-row">
         <span class="dmission-add-icon">+</span>
         <input class="dmission-add-input" placeholder="+ Nueva misión del día..."
           onkeydown="if(event.key==='Enter'&&this.value.trim()){addDailyMission(this.value.trim());this.value='';}
           else if(event.key==='Escape')this.blur();" />
-      </div>` : `<div class="dmission-full-msg">Max. 5 misiones diarias</div>`;
+      </div>
+      <select class="dmission-add-input" style="margin-top:6px" onchange="if(this.value){addDailyMissionFromTask(this.value);this.value='';}">
+        <option value="">— o elegir tarea pendiente del TODO —</option>
+        ${pickerOptions}
+      </select>` : `<div class="dmission-full-msg">Max. 5 misiones diarias</div>`;
 
     el.innerHTML = `<div class="dmission-card card">
       <div class="card-title" style="display:flex;justify-content:space-between;margin-bottom:10px">
@@ -5778,11 +5659,17 @@ function renderDailyMissions() {
   });
 }
 
-function addDailyMission(text) {
+function addDailyMission(text, taskId) {
   if(!ST.dailyMissions) initDailyMissions();
   if(ST.dailyMissions.items.length >= 5) return;
-  ST.dailyMissions.items.push({text, done:false});
+  ST.dailyMissions.items.push({text, done:false, taskId: taskId || null});
   save(); updateDailyLog(); renderDailyProgress(); renderDailyMissions();
+}
+
+function addDailyMissionFromTask(taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  if(!t) return;
+  addDailyMission(t.name, t.id);
 }
 
 function toggleDailyMission(idx) {
@@ -5792,7 +5679,8 @@ function toggleDailyMission(idx) {
   m.done = !m.done;
   if(m.done) { ST.xp += 50; showXpPop('+50 XP'); }
   else ST.xp = Math.max(0, ST.xp - 50);
-  save(); updateDailyLog(); renderDailyProgress(); renderDailyMissions();
+  if(m.taskId) _syncTaskFromMission(m.taskId, m.done);
+  save(); updateDailyLog(); renderDailyProgress(); renderDailyMissions(); renderTasks();
 }
 
 function deleteDailyMission(idx) {
@@ -6115,7 +6003,7 @@ function _blSwipeStart(e) { _blSwX = e.touches[0].clientX; }
 function _blSwipeEnd(e) {
   const dx = e.changedTouches[0].clientX - _blSwX;
   if(Math.abs(dx) < 40) return;
-  const AREAS = ['trabajo','marca','despinsage','casa','yo','estudios'];
+  const AREAS = ['trabajo','marca','casa','yo','estudios'];
   const areasWithTasks = AREAS.filter(a => {
     const backlog = TASKS.filter(t => getStatus(t)==='backlog' && t.area===a && !t.inbox);
     return backlog.length > 0;
@@ -6659,55 +6547,6 @@ function closeRoadmapBlock() {
 }
 
 // ══════════════════════════════════
-// WEEK INJECTION — Despinsage W23
-// ══════════════════════════════════
-function injectDespinsageWeek2026() {
-  if(ST.w23_injected) return;
-
-  // Events
-  const existing = getUserEvents();
-  const existingIds = new Set(existing.map(e => e.id));
-  const newEvs = [
-    {id:'w23_01', n:'Reunió nucli + Pul·lus correbars', d:'2026-06-09', time:'18:30', t:'despinsage', notes:'Fins les ~23h'},
-    {id:'w23_02', n:'Muntatge packs Despinsage', d:'2026-06-10', time:'17:00', t:'despinsage', notes:'Tothom qui pugui'},
-    {id:'w23_03', n:'Entrega packs + Repartir samarretes', d:'2026-06-10', time:'18:00', t:'despinsage', notes:'Sergi, Joan, Naima, Cris'},
-    {id:'w23_04', n:'Tall de cabell (pendent confirmar)', d:'2026-06-11', time:'11:30', t:'personal'},
-    {id:'w23_05', n:'Psicòloga — Barcelona', d:'2026-06-11', time:'13:00', t:'personal'},
-    {id:'w23_06', n:'Furgo + Nus Despinsage', d:'2026-06-11', time:'16:00', t:'despinsage', notes:'Gui, Joan, Monfi · Xibeces fred casta'},
-    {id:'w23_07', n:'Packs: Viu i Pau — Formació Naima i Cris', d:'2026-06-11', time:'18:00', t:'despinsage'},
-    {id:'w23_08', n:'Dinar al mercat', d:'2026-06-12', time:'14:30', t:'despinsage'},
-    {id:'w23_09', n:'Muntatge Paradeta Despinsage', d:'2026-06-12', time:'18:00', t:'despinsage'},
-    {id:'w23_10', n:'Desmuntatge furgo al local', d:'2026-06-13', time:'02:00', t:'despinsage'},
-    {id:'w23_11', n:'Devolver furgo + descargar', d:'2026-06-13', time:'16:00', t:'despinsage', notes:'Joan i Monfi busquen furgo a FFC'},
-  ].filter(e => !existingIds.has(e.id));
-  if(newEvs.length) saveUserEvents([...existing, ...newEvs]);
-
-  // Task: animació coches juguete (si no existe ya)
-  const animExists = TASKS.some(t => t.id === 'w23_anim');
-  if(!animExists) {
-    const animTask = {id:'w23_anim', name:'Acabar animació coches de juguete', area:'marca', prio:'alta', done:false, status:'ontheline'};
-    TASKS.push(animTask);
-    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
-    sbUpsertTask(animTask);
-  }
-
-  // Set week plan priorities for W23
-  if(!ST.weekPlan || ST.weekPlan.week < 23) {
-    const wpTasks = [
-      'w23_anim',
-      ...TASKS.filter(t => t.area === 'despinsage' && !t.done).map(t => t.id).slice(0,3)
-    ];
-    ST.weekPlan = { week: 23, tasks: wpTasks };
-    if(!ST.roadmap) ST.roadmap = {};
-    ST.roadmap.__weekPlan = ST.weekPlan;
-  }
-
-  ST.w23_injected = true;
-  save();
-  syncToCloud();
-}
-
-// ══════════════════════════════════
 // INIT
 // ══════════════════════════════════
 async function init() {
@@ -6745,9 +6584,6 @@ async function init() {
 
   // Luego sincronizar con la nube
   await loadFromCloud();
-  injectDespinsageWeek2026();
-  checkWeekPlanModal();
-  checkDayPlanModal();
 }
 
 function _setSyncIndicator(state) {
@@ -6797,7 +6633,6 @@ setInterval(check2amAutoClose, 60000);
     <select id="missionAreaSelect" onchange="_missionLinkedTaskId=null; populateMissionTaskPicker()">
       <option value="trabajo">&#128188; Trabajo</option>
       <option value="marca">&#11088; Marca</option>
-      <option value="despinsage">&#129309; Despinsage</option>
       <option value="casa">&#127968; Casa</option>
       <option value="yo">&#129504; Yo</option>
       <option value="estudios">&#9651; Estudios</option>
@@ -6843,7 +6678,6 @@ setInterval(check2amAutoClose, 60000);
       <div class="ev-modal-label">Tipo</div>
       <select class="ev-modal-input" id="evModalType">
         <option value="personal">Personal</option>
-        <option value="despinsage">Despinsage</option>
         <option value="cumple">Cumpleaños</option>
         <option value="work">Trabajo</option>
       </select>
@@ -6905,7 +6739,6 @@ setInterval(check2amAutoClose, 60000);
     <select class="ev-modal-input" id="catAreaSelect">
       <option value="trabajo">💼 Trabajo</option>
       <option value="marca">⭐ Marca</option>
-      <option value="despinsage">🤝 Despinsage</option>
       <option value="casa">🏠 Casa</option>
       <option value="yo">🧠 Yo</option>
       <option value="estudios">△ Estudios</option>
@@ -6976,7 +6809,6 @@ setInterval(check2amAutoClose, 60000);
         <div class="tsheet-chips" id="tsAreaChips">
           <button class="tsc" data-ts="trabajo" onclick="tsSetChip('area',this)">💼 Trabajo</button>
           <button class="tsc" data-ts="marca" onclick="tsSetChip('area',this)">⭐ Marca</button>
-          <button class="tsc" data-ts="despinsage" onclick="tsSetChip('area',this)">🤝 Despinsage</button>
           <button class="tsc" data-ts="casa" onclick="tsSetChip('area',this)">🏠 Casa</button>
           <button class="tsc" data-ts="yo" onclick="tsSetChip('area',this)">🧠 Yo</button>
           <button class="tsc" data-ts="estudios" onclick="tsSetChip('area',this)">◭ Estudios</button>
