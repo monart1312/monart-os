@@ -2805,11 +2805,23 @@ async function sbUpsertTask(task) {
 
 async function sbDeleteTask(id) {
   try {
-    await fetch(`${SB_URL}/rest/v1/tasks?id=eq.${id}`, {
+    const r = await fetch(`${SB_URL}/rest/v1/tasks?id=eq.${id}`, {
       method: 'DELETE',
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
     });
-  } catch(e) {}
+    if(!r.ok) {
+      const errTxt = await r.text().catch(()=> '');
+      console.error(`Supabase delete tasks HTTP ${r.status}:`, errTxt);
+      // El borrado local ya se aplico: avisar para que no quede un fantasma en la nube
+      try { showToast(`⚠️ Borrada aqui, pero no en la nube (${r.status}). Sincroniza mas tarde.`, 5000); } catch(_) {}
+      return false;
+    }
+    return true;
+  } catch(e) {
+    console.error('[sbDeleteTask] red:', e);
+    try { showToast('⚠️ Borrada aqui, pero sin conexion no se borro en la nube.', 5000); } catch(_) {}
+    return false;
+  }
 }
 
 // ── Track deleted task IDs — siempre STRING para evitar int/string mismatch ──
@@ -3703,6 +3715,19 @@ function filterArea(area, btn) {
   renderTasks();
 }
 
+// Retraso de una tarea vencida, en formato corto: 3d, 2sem, 1mes
+function daysLate(dueDate) {
+  try {
+    const d0 = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00');
+    const d1 = new Date(dueDate + 'T00:00:00');
+    const n = Math.round((d0 - d1) / 86400000);
+    if(!isFinite(n) || n <= 0) return '';
+    if(n < 14) return n + 'd';
+    if(n < 60) return Math.floor(n/7) + 'sem';
+    return Math.floor(n/30) + 'mes';
+  } catch(e) { return ''; }
+}
+
 function renderTasks() {
   const addRow = document.querySelector('.add-task-row');
   if(currentArea === 'kanban') { renderKanban(); if(addRow) addRow.style.display='none'; return; }
@@ -3726,7 +3751,7 @@ function renderTasks() {
   list.innerHTML = all.map(t => {
     let urgency = '', dueBadge = '';
     if(!t.done && t.dueDate) {
-      if(t.dueDate < todayISO) { urgency = 'overdue'; dueBadge = `<span class="t-due overdue">VENCIDA</span>`; }
+      if(t.dueDate < todayISO) { urgency = 'overdue'; dueBadge = `<span class="t-due overdue">VENCIDA · ${daysLate(t.dueDate)}</span>`; }
       else if(t.dueDate === todayISO) { urgency = 'due-today'; dueBadge = `<span class="t-due today">HOY</span>`; }
       else { dueBadge = `<span class="t-due upcoming">${t.dueDate.slice(5).replace('-','/')}</span>`; }
     }
