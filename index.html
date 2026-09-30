@@ -3615,10 +3615,8 @@ function nextDay(silent) {
   ST.completed = {};
   ST._prevLvl = getLevel(ST.xp);
 
-  // Borrar tareas completadas (quedan archivadas en dailyLog)
-  const doneTasks = TASKS.filter(t => t.done);
-  doneTasks.forEach(t => sbDeleteTask(t.id));
-  TASKS = TASKS.filter(t => !t.done);
+  // Archivar tareas completadas (antes se BORRABAN de Supabase para siempre)
+  archiveDoneTasks();
 
   // Registrar fecha de cierre
   ST.lastDayClose = new Date().toISOString().split('T')[0];
@@ -3666,9 +3664,7 @@ function checkAutoClose() {
   const _pendingMA = (ST.dailyMissions?.items || []).filter(m => !m.done);
   ST.dailyMissions = { date: today, items: _pendingMA.map(m => ({text: m.text, done: false, carried: true})) };
 
-  const doneTasks = TASKS.filter(t => t.done);
-  doneTasks.forEach(t => sbDeleteTask(t.id));
-  TASKS = TASKS.filter(t => !t.done);
+  archiveDoneTasks();
 
   save();
   updateAll();
@@ -3965,7 +3961,7 @@ function renderTasks() {
     if(ua !== ub) return ua - ub;
     return (prioOrder[a.prio]??4) - (prioOrder[b.prio]??4);
   });
-  const done = filtered.filter(t=>t.done);
+  const done = filtered.filter(t=>t.done && !isArchived(t));
   const all = [...active, ...done];
 
   const todayISO = new Date().toISOString().split('T')[0];
@@ -3991,6 +3987,15 @@ function renderTasks() {
       <button class="t-del" onclick="event.stopPropagation();deleteTask('${t.id}')" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation();event.preventDefault();deleteTask('${t.id}')" title="Borrar tarea">✕</button>
     </div>`;
   }).join('');
+}
+
+// Archivadas: done=true + status='archived'. Siguen en Supabase (notas, fechas, id
+// intactos para el secretario) pero no aparecen en ninguna vista ni cuentan dos veces.
+function isArchived(t) { return !!t && t.status === 'archived'; }
+function archiveDoneTasks() {
+  const toArchive = TASKS.filter(t => !isArchived(t) && (t.done || getStatus(t) === 'done'));
+  toArchive.forEach(t => { t.done = true; t.status = 'archived'; sbUpsertTask(t); });
+  return toArchive.length;
 }
 
 function getStatus(t) {
@@ -4177,13 +4182,11 @@ function sendToRiding(id) {
 }
 
 function limpiarDone() {
-  const done = TASKS.filter(t => getStatus(t) === 'done');
-  if(!done.length) return;
-  done.forEach(t => sbDeleteTask(t.id));
-  TASKS = TASKS.filter(t => getStatus(t) !== 'done');
-  updateDailyLog();
+  updateDailyLog(); // registrar antes de archivar (las archivadas ya no cuentan en el log)
+  const n = archiveDoneTasks();
+  if(!n) return;
   save(); updateAll(); renderTasks();
-  showToast(`🗑 ${done.length} tarea${done.length>1?'s':''} archivada${done.length>1?'s':''}`);
+  showToast(`🗄 ${n} tarea${n>1?'s':''} archivada${n>1?'s':''}`);
 }
 
 // ══════════════════════════════════
@@ -4691,7 +4694,7 @@ function renderKanban() {
   const list = document.getElementById('task-list');
   const todo = TASKS.filter(t => !t.done && t.prio !== 'prog');
   const inProgress = TASKS.filter(t => t.prio === 'prog' && !t.done);
-  const done = TASKS.filter(t => t.done).slice(0, 10);
+  const done = TASKS.filter(t => t.done && !isArchived(t)).slice(0, 10);
 
   const prioOrder = {alta:0, media:1, baja:2};
   todo.sort((a,b) => (prioOrder[a.prio]??3) - (prioOrder[b.prio]??3));
@@ -5110,7 +5113,7 @@ function renderAreaStats() {
   AREAS_LIST.forEach(a => { counts[a.key] = 0; });
 
   // Tareas actuales marcadas como done
-  TASKS.filter(t => t.done || getStatus(t) === 'done').forEach(t => {
+  TASKS.filter(t => !isArchived(t) && (t.done || getStatus(t) === 'done')).forEach(t => {
     if(t.area && counts[t.area] !== undefined) counts[t.area]++;
   });
 
@@ -5641,8 +5644,15 @@ function updateDailyLog() {
   if(!ST.dailyLog) ST.dailyLog = {};
   if(!ST.dailyLog[today]) ST.dailyLog[today] = {habitsDone:0, tasks:[]};
   ST.dailyLog[today].habitsDone = getActiveHabits().filter(h=>ST.completed[h]).length;
-  const doneTasks = TASKS.filter(t => t.done || getStatus(t)==='done');
-  ST.dailyLog[today].tasks = doneTasks.map(t=>({name:t.name, area:t.area}));
+  const doneTasks = TASKS.filter(t => !isArchived(t) && (t.done || getStatus(t)==='done'));
+  // Lo ya registrado hoy de tareas que después se archivaron se conserva
+  // (antes, LIMPIAR / cerrar día borraba esas tareas del log de hoy)
+  const key = t => (t.name||'') + '|' + (t.area||'');
+  const archivedKeys = new Set(TASKS.filter(isArchived).map(key));
+  const kept = (ST.dailyLog[today].tasks || []).filter(t => archivedKeys.has(key(t)));
+  const seen = new Set();
+  ST.dailyLog[today].tasks = [...kept, ...doneTasks.map(t=>({name:t.name, area:t.area}))]
+    .filter(t => { const k = key(t); if(seen.has(k)) return false; seen.add(k); return true; });
 }
 
 let _dprogDaysBack = 29; // cuántos días hacia atrás tenemos cargados — crece al arrastrar hasta el borde izquierdo
@@ -6876,7 +6886,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // Pestañas abiertas con una versión vieja del código: recargar si hay deploy nuevo
-const APP_BUILD = '2026-09-30-sync3way';
+const APP_BUILD = '2026-09-30-archive';
 async function checkForNewBuild() {
   try {
     const r = await fetch(location.pathname + '?build=' + Date.now(), { cache: 'no-store' });
