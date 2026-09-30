@@ -2768,27 +2768,51 @@ async function migrateLegacyEventsIfNeeded() {
 async function sbGetAllTasks() {
   try {
     const r = await fetch(`${SB_URL}/rest/v1/tasks?order=created_at.asc`, {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }, cache: 'no-store'
     });
-    return await r.json();
+    if(!r.ok) return null;
+    const data = await r.json();
+    return Array.isArray(data) ? data : null;
   } catch(e) { return null; }
 }
 
+// ── Tareas pendientes de subir: si la subida falla, la tarea NO se pierde en el
+// siguiente pull (antes el pull reemplazaba TASKS por lo remoto y la borraba).
+const _taskInflight = {};
+function getPendingTaskIds() {
+  try { return new Set((JSON.parse(localStorage.getItem('monart-tasks-pending')||'[]')).map(String)); } catch(e){ return new Set(); }
+}
+function _setTaskPending(id, on) {
+  try {
+    const set = getPendingTaskIds();
+    if(on) set.add(String(id)); else set.delete(String(id));
+    localStorage.setItem('monart-tasks-pending', JSON.stringify([...set]));
+  } catch(e) { console.warn('[_setTaskPending]', e); }
+}
+
+// Pasar SIEMPRE el objeto tarea completo: se envían todos los campos (null incluido),
+// así borrar una fecha o una nota también llega a la nube.
 async function sbUpsertTask(task) {
+  if(!task || task.id === undefined || task.id === null) return false;
+  const id = String(task.id);
+  _setTaskPending(id, true);
+  _taskInflight[id] = (_taskInflight[id] || 0) + 1;
+  let ok = false;
   try {
     // Schema tasks: id, name, area, prio, done, created_at, status, due, duedate, notes
-    // dueTime and reminderTime don't exist in schema — strip them
-    // Note: Supabase column is 'duedate' (lowercase), local field is 'dueDate' (camelCase)
+    // dueTime / reminderTime / inbox no existen en el schema — solo locales
+    // Columna Supabase 'duedate' (minúscula) ↔ campo local 'dueDate'
+    const dd = ('dueDate' in task) ? (task.dueDate || null) : (task.due || null);
     const payload = {
       id: task.id,
       name: task.name,
       area: task.area,
       prio: task.prio,
       done: !!task.done,
-      status: task.status || 'backlog',
-      ...(task.due ? { due: task.due } : {}),
-      ...(task.dueDate ? { duedate: task.dueDate } : {}),
-      ...(task.notes ? { notes: task.notes } : {}),
+      status: task.status || (task.done ? 'done' : 'backlog'),
+      due: dd,
+      duedate: dd,
+      notes: task.notes || null,
       ...(task.created_at ? { created_at: task.created_at } : {}),
     };
     const r = await fetch(`${SB_URL}/rest/v1/tasks`, {
@@ -2799,11 +2823,18 @@ async function sbUpsertTask(task) {
     if(!r.ok) {
       const errTxt = await r.text().catch(()=>'');
       console.error(`Supabase upsert tasks HTTP ${r.status}:`, errTxt);
-    }
+    } else ok = true;
   } catch(e) { console.warn('sbUpsertTask failed:', e); }
+  _taskInflight[id]--;
+  if(_taskInflight[id] <= 0) {
+    delete _taskInflight[id];
+    if(ok) _setTaskPending(id, false);
+  }
+  return ok;
 }
 
-async function sbDeleteTask(id) {
+async function sbDeleteTask(id, quiet = false) {
+  _setTaskPending(id, false);
   try {
     const r = await fetch(`${SB_URL}/rest/v1/tasks?id=eq.${id}`, {
       method: 'DELETE',
@@ -2812,14 +2843,14 @@ async function sbDeleteTask(id) {
     if(!r.ok) {
       const errTxt = await r.text().catch(()=> '');
       console.error(`Supabase delete tasks HTTP ${r.status}:`, errTxt);
-      // El borrado local ya se aplico: avisar para que no quede un fantasma en la nube
-      try { showToast(`⚠️ Borrada aqui, pero no en la nube (${r.status}). Sincroniza mas tarde.`, 5000); } catch(_) {}
+      // El borrado local ya se aplico y queda en monart-deleted-tasks: el siguiente pull lo reintenta
+      if(!quiet) try { showToast(`⚠️ Borrada aqui, pero no en la nube (${r.status}). Se reintentará.`, 5000); } catch(_) {}
       return false;
     }
     return true;
   } catch(e) {
     console.error('[sbDeleteTask] red:', e);
-    try { showToast('⚠️ Borrada aqui, pero sin conexion no se borro en la nube.', 5000); } catch(_) {}
+    if(!quiet) try { showToast('⚠️ Borrada aqui, pero sin conexion no se borro en la nube. Se reintentará.', 5000); } catch(_) {}
     return false;
   }
 }
@@ -2919,176 +2950,372 @@ if(localStorage.getItem('monart-tasks')) {
   try { TASKS = JSON.parse(localStorage.getItem('monart-tasks')); } catch(e){}
 }
 
+// ══════════════════════════════════
+// SYNC ENGINE — fila 'habits' (merge a 3 bandas por columna)
+// ══════════════════════════════════
+// Antes: cada save() subía la fila ENTERA con updated_at=ahora. Un dispositivo con
+// datos viejos (pestaña del móvil abierta semanas) que hacía cualquier save()
+// automático se creía "el más nuevo" y machacaba misiones, log, etc.
+// Ahora:
+//  1. _syncBase guarda el último valor conocido de cada columna en la nube.
+//  2. Una columna está "sucia" si el valor local difiere de la base. Solo se suben
+//     las columnas sucias (PATCH), nunca la fila entera.
+//  3. Al bajar: columna no tocada en local → gana la nube (incluye al secretario).
+//  4. El PATCH va condicionado a updated_at: si alguien escribió entretanto,
+//     se vuelve a bajar, se fusiona y se reintenta.
+//  5. Nada automático (cierre de día, reset semanal, arrastre de misiones) corre
+//     antes de haber bajado la nube en esta sesión.
+const SYNC_COLS = ['completed','xp','streak','day','prev_lvl','history','missions','daily_log','daily_missions','roadmap'];
+const SYNC_OBJ_COLS = new Set(['completed','daily_log','roadmap']); // se fusionan clave a clave
+const SYNC_STALE_MS = 6 * 3600 * 1000; // cambios locales sin subir más viejos que esto no ganan a la nube
+
 let _saveTimer = null;
 let _syncFailed = false;
+let _cloudReady = false;          // true tras el primer pull correcto de esta sesión
+let _syncQueue = Promise.resolve(); // serializa pulls y pushes
+let _pullInFlight = null;
+
+// JSON estable (claves ordenadas): jsonb de Postgres reordena claves, así que
+// comparar con JSON.stringify daría "distinto" siempre.
+function _canon(v) {
+  if(v === undefined || v === null) return 'null';
+  if(typeof v !== 'object') return JSON.stringify(v);
+  if(Array.isArray(v)) return '[' + v.map(_canon).join(',') + ']';
+  return '{' + Object.keys(v).filter(k => v[k] !== undefined).sort()
+    .map(k => JSON.stringify(k) + ':' + _canon(v[k])).join(',') + '}';
+}
+
+function _syncGet(col) {
+  switch(col) {
+    case 'completed': return ST.completed || {};
+    case 'xp': return ST.xp || 0;
+    case 'streak': return ST.streak || 0;
+    case 'day': return ST.day || 1;
+    case 'prev_lvl': return ST._prevLvl || 1;
+    case 'history': return ST.history || [];
+    case 'missions': return { week: ST.missionsWeek || null, items: ST.missions || [] };
+    case 'daily_log': return ST.dailyLog || {};
+    case 'daily_missions': return ST.dailyMissions || null;
+    case 'roadmap': {
+      const { __weekPlan, __dayPlan, __lastDayClose, ...rest } = ST.roadmap || {};
+      return { ...rest, __weekPlan: ST.weekPlan || null, __dayPlan: ST.dayPlan || null, __lastDayClose: ST.lastDayClose || null };
+    }
+  }
+  return null;
+}
+
+function _syncSet(col, v, row) {
+  switch(col) {
+    case 'completed': ST.completed = (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; break;
+    case 'xp': ST.xp = Math.max(0, Number(v) || 0); break;
+    case 'streak': ST.streak = Number(v) || 0; break;
+    case 'day': ST.day = Number(v) || 1; break;
+    case 'prev_lvl': ST._prevLvl = Number(v) || 1; break;
+    case 'history': ST.history = Array.isArray(v) ? v : []; break;
+    case 'missions': {
+      const d = v || {};
+      ST.missions = Array.isArray(d) ? d : (Array.isArray(d.items) ? d.items : []);
+      ST.missionsWeek = (!Array.isArray(d) && d.week) || (row && row.mission_week) || ST.missionsWeek || null;
+      break;
+    }
+    case 'daily_log': ST.dailyLog = (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; break;
+    case 'daily_missions': ST.dailyMissions = v || null; break;
+    case 'roadmap': {
+      const { __weekPlan, __dayPlan, __lastDayClose, ...rest } = (v && typeof v === 'object') ? v : {};
+      ST.roadmap = rest;
+      ST.weekPlan = __weekPlan || null;
+      ST.dayPlan = __dayPlan || null;
+      // Cierre de día compartido: nunca retrocede → dos dispositivos no cierran el mismo día
+      const a = ST.lastDayClose || '', b = __lastDayClose || '';
+      ST.lastDayClose = (a > b ? a : b) || null;
+      break;
+    }
+  }
+}
+
+function _loadSyncBase() {
+  try {
+    const b = JSON.parse(localStorage.getItem('monart-sync-base') || 'null');
+    return (b && b.cols && typeof b.cols === 'object') ? b : null;
+  } catch(e) { return null; }
+}
+function _saveSyncBase() {
+  try { localStorage.setItem('monart-sync-base', JSON.stringify(_syncBase)); }
+  catch(e) { console.warn('[sync] no se pudo guardar la base', e); }
+}
+let _syncBase = _loadSyncBase(); // { updated_at, cols: { col: canonString } }
+
+function _setBaseFrom(values, updatedAt) {
+  _syncBase = { updated_at: updatedAt || null, cols: {} };
+  SYNC_COLS.forEach(c => { _syncBase.cols[c] = _canon(values[c]); });
+  _saveSyncBase();
+}
+
+function _dirtyCols() {
+  if(!_syncBase) return SYNC_COLS.slice();
+  return SYNC_COLS.filter(c => _canon(_syncGet(c)) !== _syncBase.cols[c]);
+}
+
+function _markDirtyTime() {
+  try { if(!localStorage.getItem('monart-sync-dirty-at')) localStorage.setItem('monart-sync-dirty-at', String(Date.now())); } catch(e) {}
+}
+function _clearDirtyTime() { try { localStorage.removeItem('monart-sync-dirty-at'); } catch(e) {} }
+function _dirtyIsStale() {
+  const t = Number(localStorage.getItem('monart-sync-dirty-at') || 0);
+  return t > 0 && (Date.now() - t) > SYNC_STALE_MS;
+}
+
+// Fusión clave a clave: cada clave toma el lado que cambió respecto a la base.
+function _merge3Obj(local, remote, base, preferRemote) {
+  local = local || {}; remote = remote || {}; base = base || {};
+  const out = {};
+  new Set([...Object.keys(local), ...Object.keys(remote), ...Object.keys(base)]).forEach(k => {
+    const b = _canon(base[k]);
+    const lc = _canon(local[k]) !== b;
+    const rc = _canon(remote[k]) !== b;
+    const v = (lc && !(rc && preferRemote)) ? local[k] : remote[k];
+    if(v !== undefined) out[k] = v;
+  });
+  return out;
+}
+
+function _mergeRemoteRow(row) {
+  const stale = _dirtyIsStale();
+  SYNC_COLS.forEach(col => {
+    const remoteVal = row[col];
+    if(!_syncBase || _syncBase.cols[col] === undefined) {
+      // Sin base (primer arranque con este código): la nube manda, salvo que esté vacía
+      if(remoteVal !== null && remoteVal !== undefined) _syncSet(col, remoteVal, row);
+      return;
+    }
+    const baseStr = _syncBase.cols[col];
+    const localVal = _syncGet(col);
+    const lc = _canon(localVal) !== baseStr;
+    const rc = _canon(remoteVal) !== baseStr;
+    if(!lc) { if(rc) _syncSet(col, remoteVal, row); return; }
+    if(!rc) return; // solo cambió en local → se sube después
+    // Cambió en ambos lados
+    let baseVal = null;
+    try { baseVal = JSON.parse(baseStr); } catch(e) {}
+    if(col === 'xp') {
+      _syncSet(col, (Number(remoteVal) || 0) + ((Number(localVal) || 0) - (Number(baseVal) || 0)), row);
+    } else if(SYNC_OBJ_COLS.has(col) && remoteVal && typeof remoteVal === 'object' && !Array.isArray(remoteVal)) {
+      _syncSet(col, _merge3Obj(localVal, remoteVal, baseVal, stale), row);
+    } else if(stale) {
+      _syncSet(col, remoteVal, row); // cambio local viejo que nunca se subió: gana la nube
+    }
+    // si no: gana el cambio local reciente y se sube después
+  });
+  // Cierre de día: siempre la fecha más reciente de ambos lados, gane quien gane la fusión
+  const remoteClose = (row.roadmap && row.roadmap.__lastDayClose) || '';
+  if(remoteClose > (ST.lastDayClose || '')) ST.lastDayClose = remoteClose;
+  _setBaseFrom(row, row.updated_at);
+  localStorage.setItem('monart-os', JSON.stringify(ST));
+}
+
+async function _sbFetchHabitsRow() {
+  const r = await fetch(`${SB_URL}/rest/v1/habits?id=eq.sergi&select=id,updated_at,mission_week,${SYNC_COLS.join(',')}`, {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }, cache: 'no-store'
+  });
+  if(!r.ok) throw new Error('habits GET HTTP ' + r.status);
+  const rows = await r.json();
+  if(!Array.isArray(rows)) throw new Error('habits GET respuesta inesperada');
+  return rows[0] || null;
+}
+
+function _syncPayload() {
+  const p = { id: 'sergi', updated_at: new Date().toISOString() };
+  SYNC_COLS.forEach(c => { p[c] = _syncGet(c); });
+  return p;
+}
+
+async function _createHabitsRow() {
+  const p = _syncPayload();
+  const ok = await sbUpsert('habits', p);
+  if(!ok) throw new Error('no se pudo crear la fila habits');
+  _setBaseFrom(p, p.updated_at);
+}
+
+// Sube solo columnas sucias. Devuelve true si hubo que fusionar datos remotos.
+async function _pushDirty() {
+  if(!_syncBase) return false;
+  let merged = false;
+  for(let attempt = 0; attempt < 4; attempt++) {
+    const cols = _dirtyCols();
+    if(!cols.length) { _clearDirtyTime(); return merged; }
+    const payload = {};
+    cols.forEach(c => { payload[c] = _syncGet(c); });
+    payload.updated_at = new Date().toISOString();
+    // Los 3 primeros intentos son condicionales; el último, solo con columnas sucias, sin condición
+    let url = `${SB_URL}/rest/v1/habits?id=eq.sergi`;
+    if(attempt < 3 && _syncBase.updated_at) url += `&updated_at=eq.${encodeURIComponent(_syncBase.updated_at)}`;
+    const r = await fetch(url, {
+      method: 'PATCH',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+      body: JSON.stringify(payload)
+    });
+    if(!r.ok) throw new Error('habits PATCH HTTP ' + r.status + ' ' + (await r.text().catch(() => '')));
+    const rows = await r.json().catch(() => []);
+    if(Array.isArray(rows) && rows.length) {
+      cols.forEach(c => { _syncBase.cols[c] = _canon(payload[c]); });
+      _syncBase.updated_at = rows[0].updated_at || payload.updated_at;
+      _saveSyncBase();
+      ST.updated_at = _syncBase.updated_at;
+      localStorage.setItem('monart-os', JSON.stringify(ST));
+      continue; // vuelve a comprobar por si hubo cambios durante la petición
+    }
+    // 0 filas: otro dispositivo / el secretario escribió entretanto (o la fila no existe)
+    const fresh = await _sbFetchHabitsRow();
+    if(!fresh) { await _createHabitsRow(); return merged; }
+    _mergeRemoteRow(fresh);
+    merged = true;
+  }
+  return merged;
+}
+
+function _enqueueSync(fn) {
+  const p = _syncQueue.then(() => fn());
+  _syncQueue = p.catch(() => {});
+  return p;
+}
 
 function save() {
   ST.updated_at = new Date().toISOString();
   localStorage.setItem('monart-os', JSON.stringify(ST));
   localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+  _markDirtyTime();
   clearTimeout(_saveTimer);
   _setSyncIndicator('pending');
-  _saveTimer = setTimeout(() => syncToCloud(), 300);
+  // Antes del primer pull no se sube nada: así datos viejos nunca pisan la nube
+  if(!_cloudReady) return;
+  _saveTimer = setTimeout(() => syncToCloud(), 600);
 }
 
-function _syncPayload() {
-  return {
-    id: 'sergi',
-    completed: ST.completed, xp: ST.xp, streak: ST.streak, day: ST.day,
-    prev_lvl: ST._prevLvl || 1, history: ST.history,
-    missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
-    daily_log: ST.dailyLog || {}, daily_missions: ST.dailyMissions || null,
-    roadmap: { ...(ST.roadmap || {}), __weekPlan: ST.weekPlan || null, __dayPlan: ST.dayPlan || null },
-    updated_at: ST.updated_at
-  };
-}
-
-async function syncToCloud() {
-  ST.updated_at = new Date().toISOString();
-  localStorage.setItem('monart-os', JSON.stringify(ST));
-  const ok = await sbUpsert('habits', {
-    id: 'sergi',
-    completed: ST.completed,
-    xp: ST.xp,
-    streak: ST.streak,
-    day: ST.day,
-    prev_lvl: ST._prevLvl || 1,
-    history: ST.history,
-    missions: { week: ST.missionsWeek || null, items: ST.missions || [] },
-    daily_log: ST.dailyLog || {},
-    daily_missions: ST.dailyMissions || null,
-    roadmap: { ...(ST.roadmap || {}), __weekPlan: ST.weekPlan || null, __dayPlan: ST.dayPlan || null },
-    updated_at: ST.updated_at
+function syncToCloud() {
+  clearTimeout(_saveTimer);
+  if(!_cloudReady) return Promise.resolve(false);
+  return _enqueueSync(async () => {
+    try {
+      const merged = await _pushDirty();
+      _syncFailed = false;
+      _setSyncIndicator('ok');
+      if(merged) _renderAfterSync();
+      return true;
+    } catch(e) {
+      console.warn('[sync] push falló', e);
+      _syncFailed = true;
+      _setSyncIndicator('error');
+      if(document.visibilityState !== 'hidden') showToast('⚠️ Sin conexión — datos guardados en local');
+      return false;
+    }
   });
-  if(!ok) {
-    _syncFailed = true;
-    _setSyncIndicator('error');
-    if(document.visibilityState !== 'hidden') showToast('⚠️ Sin conexión — datos guardados en local');
-  } else {
-    _syncFailed = false;
-    _setSyncIndicator('ok');
-  }
 }
 
-async function loadFromCloud(silent = false) {
+function loadFromCloud(silent = false) {
+  // Evitar amontonar pulls automáticos si la red va lenta
+  if(silent && _pullInFlight) return _pullInFlight;
+  const p = _enqueueSync(() => _pullAll(silent));
+  _pullInFlight = p;
+  p.finally(() => { if(_pullInFlight === p) _pullInFlight = null; });
+  return p;
+}
+
+async function _pullAll(silent) {
   if(!silent) showToast('☁️ Sincronizando...');
-  await migrateLegacyEventsIfNeeded(); // una sola vez: copia habits.user_events → tabla events, si hace falta
-  const remoteEvents = await sbFetchAllEvents();
-  if(remoteEvents !== null) {
-    // Merge por id, remoto gana en empate — igual criterio que ya usaba el merge viejo
-    const localEvs = getUserEvents();
-    const localMap = {};
-    localEvs.forEach(e => { localMap[e.id] = e; });
-    remoteEvents.forEach(e => { localMap[e.id] = e; });
-    saveUserEvents(Object.values(localMap));
-  }
-  const remote = await sbGet('habits', 'sergi');
-  if(remote && remote.completed !== undefined) {
-    if(!silent) {
-      const _today = new Date().toISOString().split('T')[0];
-      const _remoteToday = (remote.updated_at||'').slice(0,10) >= _today;
-      // Si local es más reciente que Supabase, mantener datos locales para misiones/planes
-      // Esto previene que un sync fallido en Supabase sobreescriba cambios que sí están en localStorage
-      const _localIsNewer = !!(ST.updated_at && remote.updated_at && ST.updated_at > remote.updated_at);
-      const base = _remoteToday ? Object.assign({}, remote.completed) : {};
-      Object.keys(ST.completed || {}).forEach(k => { if(ST.completed[k]) base[k] = true; });
-      ST.completed = base;
-      ST.xp = Math.max(ST.xp || 0, remote.xp || 0);
-      ST.streak = Math.max(ST.streak || 0, remote.streak || 0);
-      ST.day = Math.max(ST.day || 1, remote.day || 1);
-      if((remote.history||[]).length > (ST.history||[]).length) ST.history = remote.history;
-      const rmd = remote.missions || {};
-      const rmItems = rmd.items || (Array.isArray(rmd) ? rmd : []);
-      if(rmItems.some(m=>m&&m.name) && !_localIsNewer) {
-        ST.missions = rmItems;
-        ST.missionsWeek = rmd.week || remote.missions_week || ST.missionsWeek;
-      }
-      // Merge dailyLog (union de días, gana el que tenga más tareas por día)
-      const remoteDL = remote.daily_log || {};
-      const mergedDL = Object.assign({}, ST.dailyLog || {});
-      Object.entries(remoteDL).forEach(([date, log]) => {
-        if(!mergedDL[date] || (log.tasks||[]).length > (mergedDL[date].tasks||[]).length) mergedDL[date] = log;
-      });
-      ST.dailyLog = mergedDL;
-      // Merge dailyMissions — local ALWAYS wins if it has today's date (carries over pending missions)
-      const todayStr = new Date().toISOString().split('T')[0];
-      const remoteDM = remote.daily_missions;
-      if(!ST.dailyMissions || ST.dailyMissions.date !== todayStr) {
-        // No local missions for today — take remote only if it's for today or newer
-        if(remoteDM && (remoteDM.date||'') >= (ST.dailyMissions?.date||'')) {
-          ST.dailyMissions = remoteDM;
-        }
-      }
-      // If local already has today's missions, NEVER overwrite — prevents sync from erasing carries
-      // Merge roadmap (local gana para bloques ya modificados)
-      if(remote.roadmap) {
-        const merged = { ...remote.roadmap };
-        Object.keys(ST.roadmap || {}).forEach(k => { merged[k] = (ST.roadmap)[k]; });
-        ST.roadmap = merged;
-      }
-      // Merge weekPlan / dayPlan (stored inside roadmap.__weekPlan / __dayPlan)
-      const rwp = (remote.roadmap||{}).__weekPlan;
-      const rdp = (remote.roadmap||{}).__dayPlan;
-      if(rwp && !_localIsNewer && (!ST.weekPlan || (rwp.week||0) >= (ST.weekPlan?.week||0))) ST.weekPlan = rwp;
-      if(rdp && !_localIsNewer && (!ST.dayPlan || (rdp.date||'') >= (ST.dayPlan?.date||''))) ST.dayPlan = rdp;
-      // Los eventos ya se sincronizaron arriba contra la tabla 'events' dedicada —
-      // no se leen más de remote.user_events (blob congelado tras la migración,
-      // reintroduciría eventos ya borrados si se siguiera usando).
-      await syncToCloud();
-    } else {
-      const localTs = ST.updated_at || '2000-01-01';
-      const remoteTs = remote.updated_at || '2000-01-01';
-      if(remoteTs > localTs) {
-        // Only restore remote.completed if we haven't closed the day locally — prevents old completed restoring after reset
-        const _syncToday = new Date().toISOString().split('T')[0];
-        const _remoteUpdatedToday = (remote.updated_at||'').slice(0,10) >= _syncToday;
-        const _safeCompleted = _remoteUpdatedToday ? (remote.completed||{}) : (ST.completed||{});
-        ST = { xp: remote.xp||0, streak: remote.streak||0, day: remote.day||1,
-               completed: _safeCompleted, history: remote.history||[],
-               _prevLvl: remote.prev_lvl||1, updated_at: remote.updated_at,
-               missions: (()=>{ const d=remote.missions||{}; const it=d.items||(Array.isArray(d)?d:[]); return it.some(m=>m&&m.name)?it:(ST.missions||[]); })(),
-               missionsWeek: (()=>{ const d=remote.missions||{}; return d.week||remote.missions_week||ST.missionsWeek||null; })(),
-               lastDayClose: ST.lastDayClose || null,
-               rpgDayOrder: ST.rpgDayOrder || [],
-               roadmap: remote.roadmap || ST.roadmap || {},
-               dailyLog: remote.daily_log || ST.dailyLog || {},
-               dailyMissions: (()=>{ const td=new Date().toISOString().split('T')[0]; if(ST.dailyMissions?.date===td) return ST.dailyMissions; const rd=remote.daily_missions; return (rd&&(rd.date||'')>=(ST.dailyMissions?.date||''))?rd:(ST.dailyMissions||null); })(),
-               weekPlan: (remote.roadmap||{}).__weekPlan || ST.weekPlan || null,
-               weekPlanSkippedWeek: ST.weekPlanSkippedWeek || null,
-               dayPlan: (remote.roadmap||{}).__dayPlan || ST.dayPlan || null };
-        localStorage.setItem('monart-os', JSON.stringify(ST));
-        // Eventos ya sincronizados arriba contra la tabla 'events' — no tocar aquí.
-      }
+  let ok = false;
+  try {
+    await migrateLegacyEventsIfNeeded(); // una sola vez: habits.user_events → tabla events
+    const remoteEvents = await sbFetchAllEvents();
+    if(remoteEvents !== null) {
+      // Merge por id, remoto gana en empate
+      const localMap = {};
+      getUserEvents().forEach(e => { localMap[e.id] = e; });
+      remoteEvents.forEach(e => { localMap[e.id] = e; });
+      saveUserEvents(Object.values(localMap));
     }
-  } else if(!silent) {
-    await syncToCloud();
+    const row = await _sbFetchHabitsRow();
+    if(row) _mergeRemoteRow(row);
+    else await _createHabitsRow();
+    ok = true;
+    _cloudReady = true;
+  } catch(e) {
+    console.warn('[sync] pull falló', e);
+    _setSyncIndicator('error');
+    if(!silent) showToast('⚠️ Sin conexión — usando datos locales');
   }
-  if(!document.body.classList.contains('drag-active')) {
-    const remoteTasks = await sbGetAllTasks();
-    if(remoteTasks && Array.isArray(remoteTasks) && remoteTasks.length > 0) {
-      const _deletedIds = getDeletedTaskIds();
-      TASKS = remoteTasks.filter(rt => !_deletedIds.has(String(rt.id))).map(rt => {
-        const local = TASKS.find(t => String(t.id) === String(rt.id));
-        const merged = {...rt};
-        // Normalizar duedate (Supabase lowercase) → dueDate (camelCase usado en el código)
-        if(merged.duedate && !merged.dueDate) { merged.dueDate = merged.duedate; }
-        // Preservar campos locales si vienen vacíos de Supabase
-        if(local && local.status && !merged.status) { merged.status = local.status; merged.done = local.done; }
-        if(local && local.notes && !merged.notes) merged.notes = local.notes;
-        if(local && local.dueDate && !merged.dueDate) merged.dueDate = local.dueDate;
-        if(local && local.dueTime && !merged.dueTime) merged.dueTime = local.dueTime;
-        return merged;
-      });
-      localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+  try { await _pullTasks(); } catch(e) { console.warn('[sync] pull tareas falló', e); }
+  // Automatismos de fecha SOLO con datos frescos de la nube
+  if(ok) _runDateAutomations();
+  _renderAfterSync();
+  if(ok) {
+    try {
+      const merged = await _pushDirty();
+      if(merged) _renderAfterSync();
+      _syncFailed = false;
+      _setSyncIndicator('ok');
+    } catch(e) {
+      console.warn('[sync] push tras pull falló', e);
+      _syncFailed = true;
+      _setSyncIndicator('error');
     }
   }
+  if(!silent && ok) showToast('✅ Sincronizado');
+  return ok;
+}
+
+// Idempotentes: solo hacen algo si cambió la semana / el día.
+function _runDateAutomations() {
+  try {
+    initMissions();       // reset semanal de misiones (done→false)
+    initDailyMissions();  // arrastre de misiones diarias pendientes
+    checkAutoClose();     // cierre de días no cerrados (compartido vía roadmap.__lastDayClose)
+  } catch(e) { console.error('[sync] automatismos de fecha', e); }
+}
+
+async function _pullTasks() {
+  if(document.body.classList.contains('drag-active')) return;
+  const remoteTasks = await sbGetAllTasks();
+  // null = error; [] = sospechoso (nunca vaciar la lista local por una respuesta vacía)
+  if(!Array.isArray(remoteTasks) || remoteTasks.length === 0) return;
+  const deleted = getDeletedTaskIds();
+  const pending = getPendingTaskIds();
+  const localById = new Map(TASKS.map(t => [String(t.id), t]));
+  const remoteIds = new Set();
+  const out = [];
+  remoteTasks.forEach(rt => {
+    const id = String(rt.id);
+    remoteIds.add(id);
+    if(deleted.has(id)) { sbDeleteTask(rt.id, true); return; } // borrado que no llegó a la nube: reintentar
+    const local = localById.get(id);
+    if(local && pending.has(id)) { out.push(local); return; } // cambio local aún subiendo
+    const t = { ...rt };
+    // Normalizar duedate (Supabase lowercase) → dueDate (camelCase usado en el código)
+    t.dueDate = rt.duedate || rt.due || null;
+    t.due = rt.due || t.dueDate;
+    // Campos que solo existen en local (no hay columna en Supabase)
+    if(local) ['dueTime', 'reminderTime', 'inbox'].forEach(k => { if(local[k] !== undefined) t[k] = local[k]; });
+    out.push(t);
+  });
+  // Tareas creadas aquí que aún no están en la nube (sin conexión / fallo): conservar
+  TASKS.forEach(t => {
+    const id = String(t.id);
+    if(!remoteIds.has(id) && pending.has(id) && !deleted.has(id)) out.push(t);
+  });
+  TASKS = out;
+  localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
+  // Reintentar subidas pendientes
+  pending.forEach(id => {
+    const t = TASKS.find(x => String(x.id) === id);
+    if(t) { if(!_taskInflight[id]) sbUpsertTask(t); }
+    else _setTaskPending(id, false);
+  });
+}
+
+function _renderAfterSync() {
   updateDailyLog(); // actualizar log con estado actual de TASKS tras sync
   updateAll(); renderTasks(); renderAreaStats();
-  // Refresh calendar UI if visible
   if(document.getElementById('page-cal')?.classList.contains('active')) renderCal();
-  // Always refresh schedule (RPG shows today's events)
   if(document.getElementById('scheduleList')) renderSchedule();
-  if(!silent) showToast('✅ Sincronizado');
 }
 
 // ══════════════════════════════════
@@ -3449,14 +3676,8 @@ function checkAutoClose() {
   showToast(`⏰ ${diffDays} día${diffDays>1?'s':''} cerrado${diffDays>1?'s':''} automáticamente`);
 }
 
-function check2amAutoClose() {
-  const now = new Date();
-  if(now.getHours() !== 2 || now.getMinutes() !== 0) return;
-  const today = now.toISOString().split('T')[0];
-  if((ST.lastDayClose||'') < today) checkAutoClose();
-  // Lunes = reset semanal misiones (done→false, nombres se mantienen)
-  if(now.getDay() === 1) { initMissions(); save(); }
-}
+// check2amAutoClose eliminado: el cierre de día y el reset semanal ahora corren tras
+// cada pull (_runDateAutomations), siempre con datos frescos de la nube.
 
 function updateAll() {
   const xp = ST.xp;
@@ -3606,7 +3827,7 @@ function _syncTaskFromMission(taskId, done) {
   const t = TASKS.find(x => x.id === taskId);
   if(!t || t.done === done) return;
   t.done = done; t.status = done ? 'done' : 'backlog';
-  sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, notes: t.notes||null, created_at: new Date().toISOString() });
+  sbUpsertTask(t);
 }
 
 function toggleMission(idx) {
@@ -3682,9 +3903,9 @@ function confirmQuickCapture() {
   const name = inp ? inp.value.trim() : '';
   if(!name) return;
   const area = autoCategorize(name);
-  const task = { id:'t'+Date.now(), name, area, prio:'media', done:false, status:'backlog', inbox: area === 'inbox' };
+  const task = { id:'t'+Date.now(), name, area, prio:'media', done:false, status:'backlog', inbox: area === 'inbox', created_at: new Date().toISOString() };
   TASKS.push(task); // al final, no al principio
-  sbUpsertTask({...task, created_at: new Date().toISOString()});
+  sbUpsertTask(task);
   ST.xp += 5; save(); updateAll(); renderTasks();
   showToast(`⚡ Capturado${area!=='inbox'?' → '+areaLabel(area):' → INBOX'}`);
   closeQuickCapture();
@@ -4107,14 +4328,14 @@ function confirmAdd() {
   if(!_addWiz || !_addWiz.name) return;
   const { name, area, prio, hasDate, dueDate, dueTime } = _addWiz;
 
-  const task = { id:'t'+Date.now(), name, area: area||'trabajo', prio: prio||'media', done:false, status:'backlog' };
+  const task = { id:'t'+Date.now(), name, area: area||'trabajo', prio: prio||'media', done:false, status:'backlog', created_at: new Date().toISOString() };
   if(hasDate && dueDate) { task.due = dueDate; task.dueDate = dueDate; }
   if(hasDate && dueDate && dueTime) {
     const [h, m] = dueTime.split(':');
     task.reminderTime = String((parseInt(h) + 23) % 24).padStart(2, '0') + ':' + m;
   }
   TASKS.unshift(task);
-  sbUpsertTask({...task, created_at: new Date().toISOString()});
+  sbUpsertTask(task);
   save();
 
   if(hasDate && dueDate) {
@@ -4553,7 +4774,7 @@ function toggleTask(id) {
         renderDailyMissions();
       }
     }
-    sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status, notes: t.notes||null, created_at: new Date().toISOString() });
+    sbUpsertTask(t);
     save();
     updateAll();
     renderTasks();
@@ -5737,7 +5958,7 @@ function confirmCategorize() {
   t.area = document.getElementById('catAreaSelect').value;
   t.prio = document.getElementById('catPrioSelect').value;
   t.inbox = false;
-  sbUpsertTask({id:t.id,name:t.name,area:t.area,prio:t.prio,done:t.done,status:t.status||'backlog',notes:t.notes||null,created_at:t.created_at||new Date().toISOString()});
+  sbUpsertTask(t);
   save(); renderTasks(); closeCategorizeModal();
   showToast(`✅ Catalogado → ${areaLabel(t.area)}`);
 }
@@ -5761,7 +5982,7 @@ function onTaskDatePicked(val) {
   t.dueDate = val || null;
   t.due = t.dueDate;
   save();
-  sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status||'backlog', notes: t.notes||null, dueDate: t.dueDate||null, created_at: t.created_at || new Date().toISOString() });
+  sbUpsertTask(t);
   renderTasks();
   showToast(val ? `📅 Fecha: ${val.slice(5).replace('-','/')}` : 'Fecha eliminada');
 }
@@ -5779,7 +6000,7 @@ function saveTaskNotes() {
   const t = TASKS.find(x=>x.id===_tnModalId);
   if(t) {
     t.notes = document.getElementById('tnModalNotes').value.trim() || null;
-    sbUpsertTask({ id: t.id, name: t.name, area: t.area, prio: t.prio, done: t.done, status: t.status||'backlog', notes: t.notes, created_at: t.created_at || new Date().toISOString() });
+    sbUpsertTask(t);
     save(); renderTasks();
   }
   closeTaskNotes();
@@ -5918,7 +6139,8 @@ function completeFocusTask() {
   t.done = true; t.status = 'done';
   if(t.prio === 'alta') triggerConfetti();
   const xpGain = {alta:30,prog:25,media:20,baja:10}[t.prio]||15;
-  ST.xp += xpGain; save(); updateAll(); renderTasks();
+  ST.xp += xpGain; updateDailyLog();
+  sbUpsertTask(t); save(); updateAll(); renderTasks();
   resetFocusTimer(); _ft.taskId = null;
   showToast(`✅ ${t.name} — +${xpGain} XP`);
   setTimeout(initRpgFocusTimer, 200);
@@ -6090,6 +6312,7 @@ function saveTaskSheet() {
   t.area = _tsField.area;
   t.prio = _tsField.prio;
   t.dueDate = document.getElementById('tsDueDate').value || null;
+  t.due = t.dueDate;
   t.notes = document.getElementById('tsNotes').value.trim() || null;
   t.done = t.status === 'done';
   t.inbox = false;
@@ -6582,17 +6805,12 @@ async function init() {
 
   ST._prevLvl = ST._prevLvl || getLevel(ST.xp);
 
-  // Inicializar misiones (reset semanal si cambió la semana)
-  initMissions();
-  // Inicializar misiones diarias
-  initDailyMissions();
-
-  // Cargar local primero (instantáneo)
+  // Pintar lo local primero (instantáneo), SIN mutar nada todavía.
+  // El reset semanal, el arrastre de misiones y el cierre de días pendientes
+  // corren dentro de loadFromCloud (_runDateAutomations), después de bajar la nube:
+  // así un dispositivo con datos viejos nunca decide sobre datos viejos.
   updateAll();
   renderTasks();
-
-  // Auto-cierre retroactivo si hubo días sin cerrar
-  checkAutoClose();
 
   // Morning boot check
   checkMorningBoot();
@@ -6609,6 +6827,7 @@ async function init() {
 
   // Luego sincronizar con la nube
   await loadFromCloud();
+  checkForNewBuild();
 }
 
 function _setSyncIndicator(state) {
@@ -6627,24 +6846,53 @@ function _setSyncIndicator(state) {
   }
 }
 
-// Keepalive sync al cerrar/navegar — previene pérdida de datos si el debounce no había disparado
-window.addEventListener('beforeunload', () => {
+// Al cerrar/ocultar: subir SOLO columnas con cambios reales (antes se subía la fila entera,
+// que es justo lo que dejaba a una pestaña vieja machacar la nube)
+function _flushOnExit() {
   clearTimeout(_saveTimer);
-  ST.updated_at = new Date().toISOString();
-  localStorage.setItem('monart-os', JSON.stringify(ST));
   try {
-    fetch(`${SB_URL}/rest/v1/habits`, {
-      method: 'POST',
-      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(_syncPayload()),
-      keepalive: true
-    });
+    localStorage.setItem('monart-os', JSON.stringify(ST));
+    localStorage.setItem('monart-tasks', JSON.stringify(TASKS));
   } catch(e) {}
+  if(!_cloudReady || !_syncBase) return;
+  const cols = _dirtyCols();
+  if(!cols.length) return;
+  const payload = { updated_at: new Date().toISOString() };
+  cols.forEach(c => { payload[c] = _syncGet(c); });
+  try {
+    fetch(`${SB_URL}/rest/v1/habits?id=eq.sergi`, {
+      method: 'PATCH', headers: { ...SB_HEADERS }, body: JSON.stringify(payload), keepalive: true
+    }).catch(() => {});
+  } catch(e) {}
+}
+window.addEventListener('pagehide', _flushOnExit);
+window.addEventListener('beforeunload', _flushOnExit);
+
+// Al volver a una pestaña (p.ej. móvil tras horas/días): bajar la nube ANTES de nada
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') { if(_cloudReady) syncToCloud(); return; }
+  loadFromCloud(true);
+  checkForNewBuild();
 });
+
+// Pestañas abiertas con una versión vieja del código: recargar si hay deploy nuevo
+const APP_BUILD = '2026-09-30-sync3way';
+async function checkForNewBuild() {
+  try {
+    const r = await fetch(location.pathname + '?build=' + Date.now(), { cache: 'no-store' });
+    if(!r.ok) return;
+    const m = (await r.text()).match(/const APP_BUILD = '([^']+)'/);
+    if(!m || m[1] === APP_BUILD) return;
+    // Un solo intento por build y sesión → imposible entrar en bucle de recargas
+    if(sessionStorage.getItem('monart-reload-build') === m[1]) return;
+    sessionStorage.setItem('monart-reload-build', m[1]);
+    if(_cloudReady) await syncToCloud();
+    location.reload();
+  } catch(e) { console.warn('[checkForNewBuild]', e); }
+}
 
 init();
 setInterval(() => loadFromCloud(true), 30000);
-setInterval(check2amAutoClose, 60000);
 </script>
 
 <!-- ══ MISSION EDIT MODAL ══ -->

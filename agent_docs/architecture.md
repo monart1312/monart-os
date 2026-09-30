@@ -44,13 +44,22 @@ Repo: github.com/monart1312/monart-os · Prod: monart-os.pages.dev
 
 ## Sync
 
-`save()` → localStorage inmediato → debounce `syncToCloud()` 800ms.
-- `silent=false`: merge bidireccional → push merged.
-- `silent=true` (auto 30s): sobreescribe local solo si `remote.updated_at > local`.
-- Tasks: preserva `status` local si Supabase devuelve null en esa columna.
+Motor de sync reescrito el 2026-09-30 tras un incidente: una pestaña vieja del móvil subió la fila `habits` entera y machacó las misiones de la semana.
+
+Fila `habits` — merge a 3 bandas por columna (`SYNC_COLS`):
+- `_syncBase` (localStorage `monart-sync-base`) = último valor conocido de cada columna en la nube, en JSON canónico (`_canon`, claves ordenadas: jsonb las reordena).
+- Columna "sucia" = local ≠ base. `syncToCloud()` hace PATCH SOLO de las columnas sucias, condicionado a `updated_at`; si hay conflicto (0 filas) → baja, fusiona, reintenta (3 veces; el 4º va sin condición).
+- `loadFromCloud()` (pull): columna no tocada en local → gana la nube (así el secretario, que escribe directo en Supabase, siempre se respeta). Ambos cambiados → `xp` suma deltas; `completed`/`daily_log`/`roadmap` se fusionan por clave; resto gana local, salvo que el cambio local lleve >6h sin subir (`monart-sync-dirty-at`).
+- `save()` no sube nada hasta el primer pull correcto de la sesión (`_cloudReady`).
+- Automatismos de fecha (`initMissions`, `initDailyMissions`, `checkAutoClose`) corren SOLO tras cada pull (`_runDateAutomations`). `lastDayClose` se comparte en `roadmap.__lastDayClose` y nunca retrocede.
+- Pull + push serializados en `_syncQueue`. Pull al volver a la pestaña (`visibilitychange`). `APP_BUILD` recarga pestañas con código viejo. Al cerrar: `_flushOnExit` sube solo columnas sucias.
+
+Tasks:
+- `sbUpsertTask(t)` — pasar SIEMPRE la tarea completa (envía `due`/`duedate`/`notes` aunque sean null).
+- Subidas pendientes en `monart-tasks-pending`: el pull no las borra y las reintenta. Borrados fallidos (`monart-deleted-tasks`) se reintentan en cada pull.
 - Drag activo: `document.body.classList.contains('drag-active')` bloquea overwrite de tasks durante 15s tras soltar.
 
-**NO modificar sync logic. NO modificar missions weekly logic.**
+**Antes de tocar el sync: leer esta sección. NO modificar missions weekly logic sin confirmar con Sergi.**
 
 ## Modales principales
 
