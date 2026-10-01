@@ -695,6 +695,7 @@ body::after {
 .chip-cumple     { background: rgba(196,125,168,0.2); color: #c47da8; border-left: 2px solid #c47da8; }
 .chip-work       { background: rgba(232,197,106,0.18); color: #e8c56a; border-left: 2px solid #e8c56a; }
 .chip-span       { background: rgba(91,124,246,0.15); color: #8aa4f8; border-left: 2px solid #5b7cf6; opacity: .7; }
+.cal-task-chip   { border-left: 2px dashed; opacity: .85; }
 
 .event-list { margin-top: 16px; }
 
@@ -4796,6 +4797,18 @@ function calNav(dir) {
 
 let selectedDateStr = null;
 
+// Eventos multi-día (hardcoded + user events con endDate) — fuente ÚNICA,
+// usada tanto por renderCal (celda del mes) como por selectDay (panel de detalle).
+// Antes cada una tenía su propia copia y se desincronizaban.
+function getSpanEvents() {
+  return [
+    {start:'2026-07-31', end:'2026-08-02', n:'Cumple Cris', t:'cumple'},
+    ...getUserEvents()
+      .filter(ev => ev.endDate && ev.endDate > ev.d)
+      .map(ev => ({start: ev.d, end: ev.endDate, n: ev.n, t: ev.t || 'personal'}))
+  ];
+}
+
 function renderCal() {
   const y = calDate.getFullYear();
   const m = calDate.getMonth();
@@ -4817,13 +4830,15 @@ function renderCal() {
     eventsByDate[ev.d].push(ev);
   });
 
-  // Eventos multi-día (hardcoded + user events con endDate)
-  const SPAN_EVENTS = [
-    {start:'2026-07-31', end:'2026-08-02', n:'Cumple Cris', t:'cumple'},
-    ...getUserEvents()
-      .filter(ev => ev.endDate && ev.endDate > ev.d)
-      .map(ev => ({start: ev.d, end: ev.endDate, n: ev.n, t: ev.t || 'personal'}))
-  ];
+  // Tareas por fecha límite — sin hora concreta, pero visibles igual (antes el calendario
+  // parecía vacío aunque hubiera trabajo pendiente ese día)
+  const tasksByDate = {};
+  TASKS.filter(t => !t.done && t.dueDate).forEach(t => {
+    if(!tasksByDate[t.dueDate]) tasksByDate[t.dueDate] = [];
+    tasksByDate[t.dueDate].push(t);
+  });
+
+  const SPAN_EVENTS = getSpanEvents();
 
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
@@ -4841,6 +4856,7 @@ function renderCal() {
   for(let d=1; d<=daysInMonth; d++) {
     const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const evs = eventsByDate[dateStr] || [];
+    const dueTasks = tasksByDate[dateStr] || [];
     const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
     const isSelected = selectedDateStr === dateStr;
     const spanEvs = SPAN_EVENTS.filter(se => dateStr >= se.start && dateStr <= se.end);
@@ -4849,7 +4865,7 @@ function renderCal() {
     let cls = 'cal-cell';
     if(isToday) cls += ' today';
     if(isSelected) cls += ' selected';
-    if(evs.length || spanEvs.length) cls += ' has-events';
+    if(evs.length || spanEvs.length || dueTasks.length) cls += ' has-events';
     cell.className = cls;
     cell.setAttribute('data-date', dateStr);
     cell.onclick = () => selectDay(dateStr);
@@ -4869,6 +4885,17 @@ function renderCal() {
     spanEvs.slice(0,1).forEach(se => {
       html += `<div class="cal-ev-chip chip-span">↔ ${se.n}</div>`;
     });
+
+    // Chips de tareas con fecha límite (sin hora — borde discontinuo las distingue de citas reales)
+    const maxTaskChips = Math.max(0, 2 - evs.length);
+    dueTasks.slice(0, maxTaskChips).forEach(t => {
+      const col = AREA_COLORS[t.area] || '#888';
+      html += `<div class="cal-ev-chip cal-task-chip" style="color:${col};border-left-color:${col};background:${col}22">◷ ${t.name}</div>`;
+    });
+    const hiddenTasks = dueTasks.length - maxTaskChips;
+    if(hiddenTasks > 0) {
+      html += `<div class="cal-ev-chip cal-task-chip" style="color:var(--muted);border-left-color:var(--muted);background:var(--s3)">+${hiddenTasks} tarea${hiddenTasks>1?'s':''}</div>`;
+    }
 
     cell.innerHTML = html;
     grid.appendChild(cell);
@@ -4896,6 +4923,7 @@ function selectDay(dateStr) {
   }
 
   const dayEvents = allEvents().filter(e => e.d === selectedDateStr);
+  const daySpans = getSpanEvents().filter(se => selectedDateStr >= se.start && selectedDateStr <= se.end);
   const p1Tasks = TASKS.filter(t => !t.done && t.prio === 'alta');
   const tagLabels = {personal:'Personal',cumple:'Cumpleaños',work:'Trabajo'};
   const tagColors = {personal:'var(--green)',cumple:'var(--pink)',work:'var(--gold)'};
@@ -4904,6 +4932,24 @@ function selectDay(dateStr) {
   const dateLabel = dt.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
 
   let html = `<div style="font-size:14px;font-weight:800;margin-bottom:12px">${dateLabel.charAt(0).toUpperCase()+dateLabel.slice(1)}</div>`;
+
+  if(daySpans.length) {
+    html += `<div class="cal-panel-title">Proyectos en curso</div>`;
+    html += daySpans.map(se => {
+      const startEv = getUserEvents().find(ev => ev.d === se.start && ev.n === se.n);
+      const onclick = startEv ? `openEventModalById('${startEv.id}')` : '';
+      const dEnd = new Date(se.end+'T12:00:00');
+      return `
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);${startEv?'cursor:pointer':''}" ${onclick?`onclick="${onclick}"`:''}>
+        <div style="width:3px;height:32px;border-radius:2px;background:#5b7cf6;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">↔ ${se.n}</div>
+          <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">hasta ${dEnd.getDate()}/${dEnd.getMonth()+1}</div>
+        </div>
+        ${startEv ? `<div style="font-size:14px;color:var(--muted)">›</div>` : ''}
+      </div>`;
+    }).join('');
+  }
 
   const calEvNotes = getEventNotes();
   if(dayEvents.length) {
@@ -5748,7 +5794,12 @@ function renderDailyProgress() {
       // desplazamos el scroll para que el usuario no note el salto.
       setTimeout(() => { scroll.scrollLeft = prevLeft + (scroll.scrollWidth - prevWidth); }, 0);
     } else {
-      setTimeout(()=>{ scroll.scrollLeft = scroll.scrollWidth - (DPROG_FUTURE_DAYS*30) - 300; }, 30);
+      setTimeout(() => {
+        const dayW = 30; // 26px de barra + 4px de gap, ver .dprog-bar-row
+        const todayIndex = _dprogDaysBack; // los días pasados ocupan los índices 0.._dprogDaysBack-1
+        const todayCenter = todayIndex * dayW + dayW / 2;
+        scroll.scrollLeft = Math.max(0, todayCenter - scroll.clientWidth / 2);
+      }, 30);
     }
     initDprogDrag(scroll);
   });
@@ -6886,7 +6937,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // Pestañas abiertas con una versión vieja del código: recargar si hay deploy nuevo
-const APP_BUILD = '2026-09-30-archive';
+const APP_BUILD = '2026-10-02-calendar';
 async function checkForNewBuild() {
   try {
     const r = await fetch(location.pathname + '?build=' + Date.now(), { cache: 'no-store' });
